@@ -32,7 +32,7 @@
 
 package cck.stat;
 
-import cck.text.Printer;
+import cck.text.Terminal;
 import cck.util.Util;
 
 /**
@@ -49,11 +49,11 @@ public class Distribution extends MinMaxMean {
      * array. Therefore, <code>distrib[myval - distribMin]</code> contains the count for <code>myval</code>,
      * provided that the array is large enough. Values outside the array have have a count of zero.
      */
-    public int[] distrib; // table of number of occurrences of each value
+    public int distrib[]; // table of number of occurrences of each value
 
     /**
      * The <code>median</code> field stores the median value of the distribution. This field is not computed
-     * until the <code>process()</code> method has been called after data has been collected.
+     * until the <code>processData()</code> method has been called after data has been collected.
      */
     public int median;
 
@@ -66,7 +66,7 @@ public class Distribution extends MinMaxMean {
     /**
      * The <code>distribname</code> field stores the string that should be reported as the name of the
      * distribution, e.g. "Distribution of hashcodes". When this string is non-null, a textual table of the
-     * distribution will be printed to the terminal when the <code>report()</code> method is called.
+     * distribution will be printed to the terminal when the <code>textReport()</code> method is called.
      */
     protected String distribname;
 
@@ -111,47 +111,49 @@ public class Distribution extends MinMaxMean {
         int oldMax = observedMaximum, oldMin = observedMinimum;
         super.record(value);
 
-        if (observedMaximum > oldMax) recomputeMaxDistrib(observedMaximum);
-        else if (observedMinimum < oldMin) recomputeMinDistrib(observedMinimum);
-        else incrementDistrib(value);
+        if (observedMaximum > oldMax)
+            recomputeMaxDistrib(observedMaximum);
+        else if (observedMinimum < oldMin)
+            recomputeMinDistrib(observedMinimum);
+        else
+            incrementDistrib(value);
     }
 
     /**
      * Generate a textual report of the data gathered.
-     * @param printer
      */
-    public void print(Printer printer) {
-        printer.print("\n " + name);
-        printer.print("\n---------------------------------------------------------------------\n");
+    public void textReport() {
+        Terminal.print("\n " + name);
+        Terminal.print("\n---------------------------------------------------------------------\n");
 
         if (totalname != null) {
-            printer.print("   " + totalname + ": " + total);
+            Terminal.print("   " + totalname + ": " + total);
         }
         if (cumulname != null) {
-            printer.print("   " + cumulname + ": " + accumulation);
+            Terminal.print("   " + cumulname + ": " + accumulation);
         }
 
-        printer.print("\n Statistics: ");
-        printer.print("\n   Minimum: " + observedMinimum + ", " + countMinimum + " occurences of min.");
-        printer.print("\n   Maximum: " + observedMaximum + ", " + countMaximum + " occurences of max.");
-        printer.print("\n   Mean: " + mean + ", Median: " + median + '\n');
+        Terminal.print("\n Statistics: ");
+        Terminal.print("\n   Minimum: " + observedMinimum + ", " + countMinimum + " occurences of min.");
+        Terminal.print("\n   Maximum: " + observedMaximum + ", " + countMaximum + " occurences of max.");
+        Terminal.print("\n   Mean: " + mean + ", Median: " + median + '\n');
 
         if (distribname != null) {
-            printer.print("\n Distribution: ");
-            printDistribution(printer, distribMin, distrib);
+            Terminal.print("\n Distribution: ");
+            printDistribution(distribMin, distrib);
         }
     }
 
     /**
      * PrintVST the distribution using stars
      */
-    protected void printDistribution(Printer printer, int base, int[] data) {
+    protected void printDistribution(int base, int data[]) {
         int cntr, max;
         float scale = 1;
         int num = data.length;
 
         if (num == 0) {
-            printer.print("\n");
+            Terminal.print("\n");
             return;
         }
 
@@ -159,31 +161,31 @@ public class Distribution extends MinMaxMean {
             if (data[cntr] > max) max = data[cntr];
         }
 
-        if (max > 70) scale = ((float) max) / 70;
+        if (max > 70) scale = ((float)max) / 70;
 
         // loop through occurrences and print distribution
         for (cntr = 0; cntr < num; cntr++) {
-            float fstars = ((float) data[cntr]) / scale;
-            int stars = (int) fstars;
+            float fstars = ((float)data[cntr]) / scale;
+            int stars = (int)fstars;
             if ((fstars - stars) >= 0.5) stars++;
 
             // collapse a string of redundant 0's.
             if (data[cntr] == 0) {
                 if (cntr > 0 && cntr < num - 1) {
                     if ((data[cntr - 1] == 0) && (data[cntr + 1] == 0)) {
-                        printer.print("\n   . . .");
+                        Terminal.print("\n   . . .");
                         while ((data[cntr + 1] == 0) && (cntr < data.length - 1)) cntr++;
                     }
                 }
             }
 
-            printer.print("\n   " + (base + cntr) + ": " + data[cntr] + " \t");
+            Terminal.print("\n   " + (base + cntr) + ": " + data[cntr] + " \t");
 
             for (int scntr = 0; scntr < stars; scntr++) {
-                printer.print("*");
+                Terminal.print("*");
             }
         }
-        printer.print("\n");
+        Terminal.print("\n");
     }
 
     public void expandInterval(int min, int max) {
@@ -195,7 +197,7 @@ public class Distribution extends MinMaxMean {
 
         if (newsize == distrib.length) return;
 
-        int[] newdistrib = new int[newsize];
+        int newdistrib[] = new int[newsize];
 
         // copy the old data to the new array
         System.arraycopy(distrib, 0, newdistrib, distribMin - min, distrib.length);
@@ -216,7 +218,7 @@ public class Distribution extends MinMaxMean {
      */
     protected void recomputeMaxDistrib(int newMax) {
         int newsize = 1 + newMax - distribMin;
-        int[] newdistrib = new int[newsize];
+        int newdistrib[] = new int[newsize];
 
         // copy the old data to the new array
         System.arraycopy(distrib, 0, newdistrib, 0, distrib.length);
@@ -231,7 +233,7 @@ public class Distribution extends MinMaxMean {
     protected void recomputeMinDistrib(int newMin) {
         int mindiff = distribMin - newMin;
         int newsize = mindiff + distrib.length;
-        int[] newdistrib = new int[newsize];
+        int newdistrib[] = new int[newsize];
 
         // copy the old data to the new array
         System.arraycopy(distrib, 0, newdistrib, mindiff, distrib.length);
@@ -241,8 +243,8 @@ public class Distribution extends MinMaxMean {
         distribMin = newMin;
     }
 
-    public void process() {
-        super.process();
+    public void processData() {
+        super.processData();
         int mid = total / 2;
         if ((distrib == null)) {
             median = 0;
