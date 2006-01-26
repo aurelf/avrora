@@ -145,7 +145,7 @@ public class Distribution extends MinMaxMean {
     }
 
     /**
-     * Print the distribution using stars
+     * PrintVST the distribution using stars
      */
     protected void printDistribution(int base, int data[]) {
         int cntr, max;
