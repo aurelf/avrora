@@ -37,6 +37,7 @@ import cck.util.Util;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.*;
+import java.io.File;
 
 /**
  * The <code>StringUtil</code> class implements several useful functions for dealing with strings such as
@@ -71,6 +72,14 @@ public class StringUtil {
      */
     public static String addrToString(int address) {
         return to0xHex(address, 4);
+    }
+
+    public static String baseFileName(String f) {
+        int sind = f.lastIndexOf(File.pathSeparatorChar);
+        if ( sind >= 0 ) f = f.substring(sind);
+        int dind = f.lastIndexOf('.');
+        if ( dind >= 0 ) f = f.substring(0, dind);
+        return f;
     }
 
     public static String readIdentifier(CharacterIterator i) {

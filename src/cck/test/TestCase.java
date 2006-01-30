@@ -103,7 +103,7 @@ public abstract class TestCase {
     protected String expectProperty(String prop) {
         String value = properties.getProperty(prop);
         if ( value == null )
-            Util.userError("Property "+ StringUtil.quote("Arch")+" not found in testcase");
+            Util.userError("Property "+ StringUtil.quote(prop)+" not found in testcase");
         return trimString(value);
     }
 
