@@ -29,37 +29,22 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Sep 12, 2005
+ * Created Jan 29, 2006
  */
-
-package cck;
-
-import cck.util.VersionTag;
+package cck.text;
 
 /**
- * The <code>Version</code> class records the version information for this module.
- * It has a single static method called <code>getVersion()</code> to retrieve the
- * version for this module in a <code>VersionTag</code> object.
- *
- * </p>
- * This file is automatically updated by CVS commit scripts that increment the
- * commit number each time code is committed to CVS. This guarantees that the
- * version number uniquely determines the version of the software.
+ * The <code>Printable</code> interface can be implemented by classes that support
+ * printing to a printer (e.g. syntax trees). This interface corresponds roughly
+ * to a type of visitor pattern for printing.
  *
  * @author Ben L. Titzer
  */
-public class Version {
-
+public interface Printable {
     /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
+     * The <code>print()</code> method prints this object to the specified printer.
+     * @param p the printer to which to output the textual representation of this
+     * object.
      */
-    public static final int commit = 27;
-
-    /**
-     * The <code>TAG</code> field stores a reference to the version tag for the current
-     * release and commit number.
-     */
-    public static final VersionTag TAG = new VersionTag("cck", "Stable", 0, 1, commit);
-
+    public void print(Printer p);
 }
