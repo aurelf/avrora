@@ -76,7 +76,7 @@ public class StringUtil {
 
     public static String baseFileName(String f) {
         int sind = f.lastIndexOf('/');
-        if ( sind >= 0 ) f = f.substring(sind);
+        if ( sind >= 0 ) f = f.substring(sind+1);
         int dind = f.lastIndexOf('.');
         if ( dind >= 0 ) f = f.substring(0, dind);
         return f;
