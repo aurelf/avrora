@@ -556,8 +556,8 @@ public class InstrIRGenerator extends Generator {
             println("super($oname_val, sym);");
             endblock();
         } else {
-            println("public static final int low = "+d.low+ ';');
-            println("public static final int high = "+d.high+ ';');
+            println("public static final int low = "+d.low+";");
+            println("public static final int high = "+d.high+";");
             if ( d.isRelative() ) {
                 JIGIRTypeEnv.TYPE_addr a = ((JIGIRTypeEnv.TYPE_addr)d.typeRef.getType());
                 startblock("$oname(int pc, int rel)");
@@ -715,7 +715,7 @@ public class InstrIRGenerator extends Generator {
 
     private void emitOperandFields(List<AddrModeDecl.Operand> list) {
         List<String> ntl = nameTypeList(list);
-        for ( String str : ntl ) println("public final "+str+ ';');
+        for ( String str : ntl ) println("public final "+str+";");
     }
 
     private void emitRenderer(Property syntax, List<AddrModeDecl.Operand> list) {

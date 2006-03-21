@@ -216,6 +216,14 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
                 Type ovt = vt.typeRef.getType();
                 inner = new DotExpr(e.expr, token("value"));
                 inner.setType(ovt);
+
+		if (ovt.getTypeCon() instanceof JIGIRTypeEnv.TYPE_enum) {
+		    // Enums need to retain the conversion expression to
+		    // generate the explicit type cast when generating 
+		    // java code.
+		    inner = new ConversionExpr(inner, vt.typeRef);
+		    inner.setType(ovt);
+		}
             } else throw Util.failure("cannot convert complex operand to any other type");
         } else {
             inner = convert(inner, e.getType(), env.shift);
@@ -328,7 +336,8 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
             if ( k2 < 0 && abs(k2) <= abs(k1) ) { return SE(e, k2, shift); } // SE(e, k2)
             if ( k2 < 0 && abs(k2) > abs(k1) ) { return shift(e, shift); } // e
         }
-        throw Util.failure("cannot convert integer type "+k1+" to "+k2+" at "+e.getSourcePoint());
+	return e;
+        //throw Util.failure("cannot convert integer type "+k1+" to "+k2+" at "+e.getSourcePoint());
     }
 
     protected Expr SE(Expr e, int k2, int shift) {
