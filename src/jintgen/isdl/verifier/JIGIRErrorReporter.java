@@ -78,6 +78,10 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         unresolved("Subroutine", "subroutine", t);
     }
 
+    public void UnresolvedSubOperand(AbstractToken t) {
+	unresolved("Suboperand", "suboperand", t);
+    }
+
     public void ArityMismatch(AbstractToken t) {
         String report = "Argument count mismatch";
         error("ArityMismatch", t.getSourcePoint(), report);
@@ -144,6 +148,32 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         error("IntTypeExpected", e.getSourcePoint(), report);
     }
 
+    public void IntTypeTooLarge(Expr e, int expected, int recieved) {
+	String report = "Integer type expecting at most " + expected 
+	    + " bits, recieved " + recieved + " bits";
+	error("IntTypeTooLarge", e.getSourcePoint(), report);
+    }
+
+    public void SignMismatch(Expr e, boolean expected, boolean recieved) {
+	String s1 = expected ? "signed" : "unsigned";
+	String s2 = recieved ? "signed" : "unsigned";
+	String report = "Interger signs mismatch: expected " + s1 + 
+	    ", recieved " + s2;
+	error("SignMismatch", e.getSourcePoint(), report);
+    }
+
+    public void RangeOutOfBounds(Expr e, int low, int high, int limit) {
+	String report = "Fixed range indices are out of bounds: [" + low + ":"
+	    + high + "]; should be between within [0:" + limit + ")";
+	error("RangeOutOfBounds", e.getSourcePoint(), report);
+    }
+
+    public void InvalidRange(Expr e, int low, int high) {
+	String report = "Low index (" + low + ") should be less than high "
+	    + "index (" + high + ")";
+	error("InvalidRange", e.getSourcePoint(), report);
+    }
+
     public void UnresolvedOperator(Token op, Type lt, Type rt) {
         String report = "Unresolved operator "+StringUtil.quote(op)+ " on types ("+lt.getTypeCon()+","+rt.getTypeCon()+")";
         error("UnresolvedOperator", op.getSourcePoint(), report);
@@ -168,6 +198,11 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         AbstractToken token = tr.getToken();
         String report = "Value type expected, found "+token;
         error("ValueTypeExpected", token.getSourcePoint(), report);
+    }
+    
+    public void CompoundTypeExpected(Expr e) {
+	String report = "Compound Operand type expected, found " + e.getType();
+	error("CompoundTypeExpected", e.getSourcePoint(), report);
     }
 
     public void ReturnStmtNotInSubroutine(ReturnStmt s) {

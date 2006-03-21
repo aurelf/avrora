@@ -63,6 +63,12 @@ public class InterpreterGenerator extends Generator {
                         "is code written by the user that defines the state associated with the interpreter. ", arch.name));
         setPrinter(printer);
         javaCodePrinter = new JavaCodePrinter();
+
+	startblock(tr("public $interpreter(avrora.sim.Simulator sim) ", arch.name));
+	println("super(sim);");
+	endblock();
+	println("");
+
         generateUtilities();
         generatePolyMethods();
         for (SubroutineDecl d : arch.subroutines) visit(d);

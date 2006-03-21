@@ -102,9 +102,12 @@ public class InstrIRGenerator extends Generator {
     //=========================================================================================
 
     private void generateInstrClasses() throws IOException {
-        LinkedList<String> impl = new LinkedList<String>();
+	LinkedList<String> imports = new LinkedList<String>();
+	imports.add("avrora.arch.AbstractArchitecture");
+	imports.add("avrora.arch.AbstractInstr");
+	LinkedList<String> impl = new LinkedList<String>();
         impl.add("AbstractInstr");
-        setPrinter(newAbstractClassPrinter("instr", null, null, impl,
+        setPrinter(newAbstractClassPrinter("instr", imports, null, impl,
                 tr("The <code>$instr</code> class is a container (almost a namespace) for " +
                 "all of the instructions in this architecture. Each inner class represents an instruction " +
                 "in the architecture and also extends the outer class.")));

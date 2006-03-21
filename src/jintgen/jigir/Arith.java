@@ -131,7 +131,7 @@ public class Arith {
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             // TODO: is this type rule reasonable?
-            return jenv.newIntType(false, max(lt, rt));
+            return jenv.newIntType(lt.isSigned() || rt.isSigned(), max(lt, rt));
         }
         public int evaluate(int ll, int lr) {
             return ll & lr;
@@ -144,7 +144,7 @@ public class Arith {
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             // TODO: is this type rule reasonable?
-            return jenv.newIntType(false, max(lt, rt));
+            return jenv.newIntType(lt.isSigned() || rt.isSigned(), max(lt, rt));
         }
         public int evaluate(int ll, int lr) {
             return ll | lr;
@@ -157,7 +157,7 @@ public class Arith {
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             // TODO: is this type rule reasonable?
-            return jenv.newIntType(false, max(lt, rt));
+            return jenv.newIntType(lt.isSigned() || rt.isSigned(), max(lt, rt));
         }
         public int evaluate(int ll, int lr) {
             return ll ^ lr;

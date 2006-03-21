@@ -34,6 +34,7 @@
 
 package jintgen.jigir;
 
+import jintgen.isdl.AddrModeDecl;
 import jintgen.isdl.EnumDecl;
 import jintgen.isdl.OperandTypeDecl;
 import jintgen.isdl.parser.Token;
@@ -358,6 +359,12 @@ public class JIGIRTypeEnv extends TypeEnv {
     public void addOperandType(OperandTypeDecl ot) {
         TypeCon tycon = new TYPE_operand(ot);
         addTypeCon(tycon, ASSIGNABLE, COMPARABLE);
+	if (ot.isValue()) {
+	    // Value types may be converted to their underlying type.
+	    TypeCon baseCon = 
+		((OperandTypeDecl.Value) ot).typeRef.resolveTypeCon(this);
+	    CONVERTIBLE.add(tycon, baseCon);
+	}
 
     }
 

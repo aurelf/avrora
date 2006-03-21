@@ -96,6 +96,8 @@ public class DisassemblerGenerator extends Generator {
 
     public void generate() throws Exception {
         List<String> imports = new LinkedList<String>();
+	imports.add("avrora.arch.AbstractDisassembler");
+	imports.add("avrora.arch.AbstractInstr");
         imports.add("java.util.Arrays");
         initStatics();
         List<String> impl = new LinkedList<String>();
