@@ -43,15 +43,11 @@ import java.util.*;
 public class Options {
 
     protected final HashMap knownValues;
-    protected final HashMap unknownValues;
-
-    protected String firstUnknownOption;
 
     protected String[] arguments;
 
     public Options() {
         knownValues = new HashMap();
-        unknownValues = new HashMap();
     }
 
     public Option.Bool newOption(String name, boolean val, String desc) {
@@ -91,9 +87,8 @@ public class Options {
     }
 
     public String getOptionValue(String name) {
-        Option o = (Option)knownValues.get(name);
-        if (o != null) return o.stringValue();
-        return (String)unknownValues.get(name);
+        Option option = (Option) knownValues.get(name);
+        return option == null ? null : option.stringValue();
     }
 
     public Option getOption(String name) {
@@ -101,19 +96,11 @@ public class Options {
     }
 
     public boolean hasOption(String name) {
-        return knownValues.get(name) != null || unknownValues.get(name) != null;
+        return knownValues.get(name) != null;
     }
 
     public String[] getArguments() {
         return arguments;
-    }
-
-    public boolean unknownOptions() {
-        return unknownValues.size() > 0;
-    }
-
-    public String getFirstUnknownOption() {
-        return firstUnknownOption;
     }
 
     public void parseCommandLine(String[] args) {
@@ -150,10 +137,10 @@ public class Options {
         Option option = (Option)knownValues.get(optname);
 
         if (option == null) {
-            unknownValues.put(optname, value);
-            if (firstUnknownOption == null) firstUnknownOption = optname;
-        } else
-            option.set(value);
+            option = new Option.Str(optname, value, "");
+            knownValues.put(optname, option);
+        }
+        option.set(value);
     }
 
     public Collection getAllOptions() {
@@ -161,11 +148,11 @@ public class Options {
     }
 
     public void process(Options o) {
-        Iterator i = o.unknownValues.keySet().iterator();
+        Iterator i = o.knownValues.keySet().iterator();
 
         while (i.hasNext()) {
             String name = (String)i.next();
-            String val = (String)o.unknownValues.get(name);
+            String val = ((Option)o.knownValues.get(name)).stringValue();
             setOption(name, val);
         }
     }
@@ -179,9 +166,4 @@ public class Options {
             setOption(name, val);
         }
     }
-
-    public int size() {
-        return knownValues.size();
-    }
-
 }
