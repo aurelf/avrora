@@ -32,13 +32,7 @@
 
 package cck.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * The <code>Options</code> class represents a collection of command line options and utility methods for
@@ -97,13 +91,8 @@ public class Options {
         return option == null ? null : option.stringValue();
     }
 
-    public String getOptionValue(String name, String def) {
-        Option option = (Option) knownValues.get(name);
-        return option == null ? def : option.stringValue();
-    }
-
     public Option getOption(String name) {
-        return (Option) knownValues.get(name);
+        return (Option)knownValues.get(name);
     }
 
     public boolean hasOption(String name) {
@@ -144,8 +133,8 @@ public class Options {
 
     }
 
-    public void setOption(String optname, String value) {
-        Option option = (Option) knownValues.get(optname);
+    private void setOption(String optname, String value) {
+        Option option = (Option)knownValues.get(optname);
 
         if (option == null) {
             option = new Option.Str(optname, value, "");
@@ -162,8 +151,8 @@ public class Options {
         Iterator i = o.knownValues.keySet().iterator();
 
         while (i.hasNext()) {
-            String name = (String) i.next();
-            String val = ((Option) o.knownValues.get(name)).stringValue();
+            String name = (String)i.next();
+            String val = ((Option)o.knownValues.get(name)).stringValue();
             setOption(name, val);
         }
     }
@@ -172,18 +161,9 @@ public class Options {
         Iterator i = p.keySet().iterator();
 
         while (i.hasNext()) {
-            String name = (String) i.next();
+            String name = (String)i.next();
             String val = p.getProperty(name);
             setOption(name, val);
         }
     }
-
-    public void loadFile(String fname) throws IOException {
-        //checkFileExists(fname);
-        File f = new File(fname);
-        Properties defs = new Properties();
-        defs.load(new FileInputStream(f));
-        process(defs);
-    }
-
 }
