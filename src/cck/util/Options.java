@@ -33,6 +33,9 @@
 package cck.util;
 
 import java.util.*;
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.File;
 
 /**
  * The <code>Options</code> class represents a collection of command line options and utility methods for
@@ -166,4 +169,13 @@ public class Options {
             setOption(name, val);
         }
     }
+
+    public void loadFile(String fname) throws IOException {
+        //checkFileExists(fname);
+        File f = new File(fname);
+        Properties defs = new Properties();
+        defs.load(new FileInputStream(f));
+        process(defs);
+    }
+
 }
