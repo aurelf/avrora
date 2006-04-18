@@ -62,16 +62,6 @@ public class AutomatedTester {
         harnessMap = hm;
     }
 
-    private class TestPair {
-        final TestCase testcase;
-        final TestResult result;
-
-        TestPair(TestCase tc, TestResult tr) {
-            testcase = tc;
-            result = tr;
-        }
-    }
-
     /**
      * The <code>runTests()</code> method runs the testing framework on each of the specified filenames. The
      * name of the target for the testcase is specified in the text of each file. The testing framework
@@ -95,19 +85,13 @@ public class AutomatedTester {
             printer.println("Running test " + StringUtil.quote(fnames[cntr]) + "...");
 
             String fname = fnames[cntr];
-            TestPair pair = runTest(fname);
-            TestResult result = pair.result;
+            TestCase tc = runTest(fname);
 
-            if (result.isSuccess())
-                slist.add(pair);
-            else if (result.isInternalError())
-                ilist.add(pair);
-            else if (result.isUnexpectedException())
-                ulist.add(pair);
-            else if (result.isMalformed())
-                mlist.add(pair);
-            else
-                flist.add(pair);
+            if (tc.result.isSuccess()) slist.add(tc);
+            else if (tc.result.isInternalError()) ilist.add(tc);
+            else if (tc.result.isUnexpectedException()) ulist.add(tc);
+            else if (tc.result.isMalformed()) mlist.add(tc);
+            else flist.add(tc);
         }
 
         Terminal.printBrightGreen("Test successes");
@@ -119,10 +103,8 @@ public class AutomatedTester {
         report(mlist, "Malformed test cases", Terminal.COLOR_CYAN, fnames.length);
 
         // return 0 if all tests were successful, 1 otherwise
-        if (slist.size() == fnames.length)
-            System.exit(0);
-        else
-            System.exit(1);
+        if (slist.size() == fnames.length) System.exit(0);
+        else System.exit(1);
     }
 
     private static void report(List l, String c, int color, int total) {
@@ -132,8 +114,8 @@ public class AutomatedTester {
         Terminal.println(": " + l.size() + " of " + total);
         Iterator i = l.iterator();
         while (i.hasNext()) {
-            TestPair p = (TestPair)i.next();
-            report(p.testcase.getFileName(), p.result);
+            TestCase tc = (TestCase)i.next();
+            report(tc.getFileName(), tc.result);
         }
     }
 
@@ -153,7 +135,7 @@ public class AutomatedTester {
         Terminal.print("\n");
     }
 
-    private TestPair runTest(String fname) throws java.io.IOException {
+    private TestCase runTest(String fname) throws java.io.IOException {
         TestCase tc = readTestCase(fname);
         Throwable exception = null;
 
@@ -163,7 +145,8 @@ public class AutomatedTester {
             exception = t;
         }
 
-        return new TestPair(tc, tc.match(exception));
+        tc.result = tc.match(exception);
+        return tc;
     }
 
     private TestCase readTestCase(String fname) throws java.io.IOException {

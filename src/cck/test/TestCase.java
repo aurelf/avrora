@@ -50,6 +50,7 @@ public abstract class TestCase {
 
     protected final String filename;
     protected final Properties properties;
+    protected TestResult result;
 
     /**
      * The default constructor for the <code>TestCase</code> class creates a new test case corresponding
