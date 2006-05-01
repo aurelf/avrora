@@ -32,8 +32,8 @@
 
 package avrora.sim.mcu;
 
-import avrora.arch.avr.AVRProperties;
 import avrora.arch.legacy.LegacyInterpreter;
+import avrora.arch.avr.AVRProperties;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
@@ -374,6 +374,10 @@ public class ATMega128 extends ATMegaFamily {
         installPins();
         installDevices();
         new Energy("CPU", modeAmpere, sleepState);
+        
+        // Jacob's temporary addition for bootloader
+        //interpreter.setBootPC(0x1E000);
+        
     }
 
     protected void installPins() {

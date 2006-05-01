@@ -32,6 +32,9 @@
     1     devs  Check auto-unpost behavior of ADC interrupt
 
 ----------------------------------- Completed -----------------------------------------
+    1      sim  ATMega128 sleep mode codes                                    1.7.56
+    1    flash  Fixes to external flash implementation                        1.7.56
+    1    input  Objdump fixes for binutils incompatibility                    1.7.56
     1      sim  Nullpointer in updateNodeID() when loading from ELF file      1.7.40
     1    input  Fixed processing of -sections option                         1.5.118
     1    probe  Recursion in State.getDataByte() from within watch           1.5.102
@@ -87,6 +90,7 @@
     1   energy  Report energy counts in amp-hours
 
 ----------------------------------- Completed -----------------------------------------
+    1    input  ELF format loads symbols for use in monitors                 1.7.56
     1    probe  Implement stack change probe that uses probes, watches       1.7.38
   2-3    input  ELF format reader                                            1.7.xx
     1    probe  Added simplest interactive monitor                           1.5.118
