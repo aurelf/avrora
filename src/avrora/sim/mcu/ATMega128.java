@@ -60,23 +60,23 @@ public class ATMega128 extends ATMegaFamily {
     public static final int ATMEGA128_NUM_INTS = 36;
 
     public static final int MODE_IDLE       = 1;
-    public static final int MODE_RESERVED1  = 2;
-    public static final int MODE_ADCNRED    = 3;
-    public static final int MODE_RESERVED2  = 4;
-    public static final int MODE_POWERDOWN  = 5;
-    public static final int MODE_STANDBY    = 6;
-    public static final int MODE_POWERSAVE  = 7;
+    public static final int MODE_ADCNRED    = 2;
+    public static final int MODE_POWERDOWN  = 3;
+    public static final int MODE_POWERSAVE  = 4;
+    public static final int MODE_RESERVED1  = 5;
+    public static final int MODE_RESERVED2  = 6;
+    public static final int MODE_STANDBY    = 7;
     public static final int MODE_EXTSTANDBY = 8;
 
     protected static final String[] idleModeNames = {
         "Active",
         "Idle",
-        "RESERVED 1",
         "ADC Noise Reduction",
-        "RESERVED 2",
         "Power Down",
-        "Standby",
         "Power Save",
+        "RESERVED 1",
+        "RESERVED 2",
+        "Standby",
         "Extended Standby"
     };
 
@@ -84,17 +84,18 @@ public class ATMega128 extends ATMegaFamily {
     private static final double[] modeAmpere = {
         0.0075667,
         0.0033433,
-        0.0,
         0.0009884,
-        0.0,
         0.0001158,
-        0.0002356,
         0.0001237,
+        0.0,
+        0.0,
+        0.0002356,
         0.0002433
     };
 
+
     protected static final int[] wakeupTimes = {
-        0, 0, 0, 0, 0, 1000, 6, 1000, 6
+        0, 0, 0, 1000, 1000, 0, 0, 6, 6
     };
 
     protected final ActiveRegister MCUCR_reg;

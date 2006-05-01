@@ -36,6 +36,8 @@ import avrora.Main;
 import avrora.arch.*;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
+import avrora.core.SourceMapping;
+import avrora.core.LabelMapping;
 import cck.text.*;
 import cck.util.Option;
 import cck.util.Util;
@@ -64,10 +66,10 @@ public class ELFLoader extends ProgramReader {
             "including information the sections and the symbol table.");
     protected final Option.Bool SYMBOLS = options.newOption("load-symbols", true,
             "This option causes the ELF loader to load the symbol table (if it exists) from " +
-                    "the ELF file. The symbol table contains information about the names and sizes of " +
-                    "data items and functions within the executable. Enabling this option allows for " +
-                    "more source-level information during simulation, but disabling it speeds up loading " +
-                    "of ELF files.");
+            "the ELF file. The symbol table contains information about the names and sizes of " +
+            "data items and functions within the executable. Enabling this option allows for " +
+            "more source-level information during simulation, but disabling it speeds up loading " +
+            "of ELF files.");
 
     public ELFLoader() {
         super("The \"elf\" format loader reads a program from an ELF (Executable and Linkable " +
@@ -100,11 +102,12 @@ public class ELFLoader extends ProgramReader {
         // read the section header table (if it exists)
         readSectionHeader(fis);
 
-        // read the symbol tables (if they exist)
-        readSymbolTables(fis);
-
         // load the sections from the ELF file
-        return loadSections(fis);
+        Program p = loadSections(fis);
+
+        // read the symbol tables (if they exist)
+        readSymbolTables(p, fis);
+        return p;
     }
 
     public AbstractArchitecture getArchitecture() {
@@ -157,9 +160,11 @@ public class ELFLoader extends ProgramReader {
         }
     }
 
-    private void readSymbolTables(RandomAccessFile fis) throws IOException {
+    private void readSymbolTables(Program p, RandomAccessFile fis) throws IOException {
         symbolTables = new LinkedList();
-        if ( !DUMP.get() && SYMBOLS.get() ) return;
+        LabelMapping map = new LabelMapping(p);
+        p.setSourceMapping(map);
+        if ( !SYMBOLS.get() ) return;
 
         for ( int cntr = 0; cntr < sht.entries.length; cntr++ ) {
             ELFSectionHeaderTable.Entry32 e = sht.entries[cntr];
@@ -175,12 +180,13 @@ public class ELFLoader extends ProgramReader {
                     stab.setStringTable(str);
                 }
                 if ( DUMP.get() ) printSymbolTable(stab, str);
+                addSymbols(map, stab, str);
             }
         }
     }
 
     private void readSectionHeader(RandomAccessFile fis) throws IOException {
-        if ( !DUMP.get() && SYMBOLS.get() ) return;
+        if ( !SYMBOLS.get() ) return;
         sht = new ELFSectionHeaderTable(header);
         sht.read(fis);
 
@@ -278,6 +284,17 @@ public class ELFLoader extends ProgramReader {
             Terminal.print("  "+StringUtil.toHex(e.st_value, 8));
             Terminal.print("  "+StringUtil.rightJustify(e.st_size, 8));
             Terminal.nextln();
+        }
+    }
+
+    private void addSymbols(LabelMapping map, ELFSymbolTable stab, ELFStringTable str) {
+        for ( int cntr = 0; cntr < stab.entries.length; cntr++ ) {
+            ELFSymbolTable.Entry e = stab.entries[cntr];
+            if ( e.isFunction() || e.isObject() ) {
+                String section = sectionName(e.st_shndx);
+                String name = getName(str, e.st_name);
+                map.newLocation(section, name, e.st_value);
+            }
         }
     }
 

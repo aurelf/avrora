@@ -87,6 +87,14 @@ public class ELFSymbolTable {
             }
         }
 
+        public boolean isFunction() {
+            return (st_info & 0xf) == STT_FUNC;
+        }
+
+        public boolean isObject() {
+            return (st_info & 0xf) == STT_OBJECT;
+        }
+
         public String getName() {
             if ( strtab != null ) return strtab.getString(st_name);
             return "";

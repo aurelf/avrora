@@ -195,6 +195,8 @@ public class ObjDumpReformatter {
 
                         if (tok.matches("\\p{XDigit}\\p{XDigit}"))
                             out.append(" 0x" + tok);
+                        else if ( tok.charAt(0) == '<' )
+                            out.append("; "+tok);
                         else
                             out.append("  " + tok);
 
