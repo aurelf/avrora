@@ -89,6 +89,9 @@ public class Defaults {
             monitorMap = new ClassMap("Monitor", MonitorFactory.class);
             //-- DEFAULT MONITORS AVAILABLE
             monitorMap.addClass("calls", CallMonitor.class);
+            monitorMap.addClass("break", BreakMonitor.class);
+            monitorMap.addClass("c-print", PrintMonitor.class);
+            monitorMap.addClass("c-timer", TimerMonitor.class);
             monitorMap.addClass("profile", ProfileMonitor.class);
             monitorMap.addClass("memory", MemoryMonitor.class);
             monitorMap.addClass("sleep", SleepMonitor.class);

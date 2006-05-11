@@ -30,34 +30,60 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.sim.util;
 
-import cck.util.VersionTag;
+import cck.text.Terminal;
 
 /**
- * The <code>Version</code> class records the version information for this module.
- * It has a single static method called <code>getVersion()</code> to retrieve the
- * version for this module in a <code>VersionTag</code> object.
+ * <code>Mem8</code> is a memory use profiler, it keeps track of the
+ * set of values written to a single byte of RAM, dropping to bottom
+ * when a predefined maximum number of values is exceeded.
  *
- * </p>
- * This file is automatically updated by CVS commit scripts that increment the
- * commit number each time code is committed to CVS. This guarantees that the
- * version number uniquely determines the version of the software.
- *
- * @author Ben L. Titzer
+ * @author John Regehr
  */
-public class Version {
+public class Mem8 {
+    public final int[] values;
+    public final int max = 16;
+    public int count = 0;
 
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public static final int commit = 57;
+    public Mem8() {
+        values = new int[max];
+    }
 
-    /**
-     * The <code>TAG</code> field stores a reference to the version tag for the current
-     * release and commit number.
-     */
-    public static final VersionTag TAG = new VersionTag("avrora", "Beta", 1, 7, commit);
+    public int btoi(byte b) {
+        int i = (int) b;
+        if (i < 0) {
+            i += 256;
+        }
+        return i;
+    }
 
+    public void add(byte value) {
+        if (count == -1) return;
+        for (int i = 0; i < count; i++) {
+            if (values[i] == btoi(value)) {
+                return;
+            }
+        }
+        // not found
+        if (count == max) {
+            count = -1;
+        } else {
+            values[count] = btoi(value);
+            count++;
+        }
+    }
+
+    public int print() {
+        if (count == -1) {
+            Terminal.println("bottom");
+            return 256;
+        }
+        for (int i = 0; i < count; i++) {
+            Terminal.print(Integer.toString(values[i]) + " ");
+        }
+        Terminal.println("");
+        return count;
+    }
 }
+

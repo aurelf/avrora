@@ -183,13 +183,6 @@ public class SerialMonitor extends MonitorFactory {
         return new Monitor(s);
     }
 
-    static private String[] tokenize(String string) {
-        ArrayList list = new ArrayList();
-        StringTokenizer st = new StringTokenizer(string);
-        while (st.hasMoreTokens()) list.add(st.nextToken());
-        return (String[])list.toArray(new String[1]);
-    }
-
 }
 
 

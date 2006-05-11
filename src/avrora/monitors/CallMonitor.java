@@ -36,14 +36,12 @@
 
 package avrora.monitors;
 
-import avrora.arch.legacy.LegacyInstr;
-import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.sim.*;
 import avrora.sim.mcu.MCUProperties;
 import avrora.sim.util.SimUtil;
 import cck.text.*;
-import cck.util.Util;
+import cck.util.Option;
 
 /**
  * The <code>CallMonitor</code> class implements a monitor that is capable of tracing the call/return behavior
@@ -53,134 +51,143 @@ import cck.util.Util;
  */
 public class CallMonitor extends MonitorFactory {
 
-    public static final int MAX_STACK_DEPTH = 256;
+    protected final Option.Bool SITE = options.newOption("call-sites", true,
+            "When this option is specified, the call monitor will report the address " +
+            "of the instruction in the caller when a call or an interrupt " +
+            "occurs.");
+    protected final Option.Bool SHOW = options.newOption("show-stack", true,
+            "When this option is specified, the call monitor trace will print the " +
+            "call stack with each call, interrupt or return. When this option " +
+            "is set to false, this monitor will only indent calls and returns, " +
+            "without printing the entire call stack.");
+    protected final Option.Bool EDGE = options.newOption("edge-types", true,
+            "When this option is specified, the call monitor trace will print the " +
+            "type of each call or return. For example, if an interrupt occurs, then " +
+            "the interrupt number and name will be reported.");
 
-    class Mon implements Monitor {
+    class Mon implements Monitor, CallTrace.Monitor {
 
+        private final CallTrace trace;
+        private final CallStack stack;
         private final Simulator simulator;
         private final MCUProperties props;
         private final SourceMapping sourceMap;
 
-        private String[] stack;
-
-        private int depth = 0;
-        private int maxdepth = 0;
+        private String[] longNames;
+        private String[] shortNames;
 
         Mon(Simulator s) {
-            this.simulator = s;
+            simulator = s;
+            sourceMap = s.getProgram().getSourceMapping();
+            trace = new CallTrace(s);
             props = simulator.getMicrocontroller().getProperties();
-            Interpreter interpreter = s.getInterpreter();
-            InterruptTable itable = interpreter.getInterruptTable();
-            itable.insertProbe(new InterruptProbe());
+            trace.attachMonitor(this);
+            buildInterruptNames();
 
-            stack = new String[MAX_STACK_DEPTH];
-            stack[0] = "";
+            stack = new CallStack();
+        }
 
-            Program p = s.getProgram();
-            sourceMap = p.getSourceMapping();
-            for ( int pc = 0; pc < p.program_end; pc = p.getNextPC(pc)) {
-                LegacyInstr i = (LegacyInstr)p.readInstr(pc);
-                if ( i != null ) {
-                    if ( i instanceof LegacyInstr.CALL ) s.insertProbe(new CallProbe("CALL"), pc);
-                    else if ( i instanceof LegacyInstr.ICALL ) s.insertProbe(new CallProbe("ICALL"), pc);
-                    else if ( i instanceof LegacyInstr.RCALL) s.insertProbe(new CallProbe("RCALL"), pc);
-                    else if ( i instanceof LegacyInstr.RET ) s.insertProbe(new ReturnProbe("RET"), pc);
-                    else if ( i instanceof LegacyInstr.RETI ) s.insertProbe(new ReturnProbe("RETI"), pc);
-                }
-            }
+        private void buildInterruptNames() {
+            longNames = new String[props.num_interrupts+1];
+            for ( int cntr = 0; cntr < props.num_interrupts; cntr++ )
+                longNames[cntr] = getLongInterruptName(cntr);
+            shortNames = new String[props.num_interrupts+1];
+            for ( int cntr = 0; cntr < props.num_interrupts; cntr++ )
+                shortNames[cntr] = getShortInterruptName(cntr);
         }
 
         public void report() {
-            TermUtil.reportQuantity("Maximum stack depth", maxdepth, "frames");
             // do nothing
         }
 
-        private void push(String caller, String dest, String edge) {
-            String idstr = SimUtil.getIDTimeString(simulator);
-            if ( depth >= stack.length )
-                throw Util.failure("Stack overflow: more than "+MAX_STACK_DEPTH+" calls nested");
-            stack[depth+1] = dest;
+        private void push(int callsite, int color, String edge, int inum, int target) {
             synchronized (Terminal.class ) {
-                Terminal.print(idstr);
-                printStack(depth);
-                Terminal.print(" @ ");
-                Terminal.printBrightCyan(caller);
-                Terminal.print(" --(");
-                Terminal.printRed(edge);
-                Terminal.print(")-> ");
-                Terminal.printGreen(dest);
+                printStack(stack.getDepth(), callsite);
+                if ( EDGE.get() ) {
+                    Terminal.print(" --(");
+                    Terminal.print(color, edge);
+                    Terminal.print(")-> ");
+                } else {
+                    Terminal.print(" --> ");
+                }
+                printStackEntry(inum, target);
                 Terminal.nextln();
             }
-            depth++;
-            if ( depth > maxdepth ) maxdepth = depth;
         }
 
-        private void printStack(int depth) {
-            for ( int cntr = 0; cntr <= depth; cntr++ ) {
-                Terminal.printGreen(stack[cntr]);
-                if ( cntr != depth ) Terminal.print(":");
-            }
-        }
-
-        private void pop(String caller, String edge) {
-            String idstr = SimUtil.getIDTimeString(simulator);
-            synchronized (Terminal.class ) {
-                Terminal.print(idstr);
-                printStack(depth-1);
-                Terminal.print(" @ ");
-                Terminal.printBrightCyan(caller);
-                Terminal.print(" <-(");
-                Terminal.printRed(edge);
-                Terminal.println(")-- ");
-            }
-            stack[depth] = null;
-            depth--;
-            if ( depth < 0 ) depth = 0;
-        }
-
-        class CallProbe extends Simulator.Probe.Empty {
-            String itype;
-
-            CallProbe(String itype) {
-                this.itype = itype;
-            }
-
-            public void fireAfter(State s, int addr) {
-                int npc = s.getPC();
-                String caddr = StringUtil.addrToString(addr);
-                String daddr = sourceMap.getName(npc);
-                push(caddr, daddr, itype);
-            }
-
-        }
-
-        class InterruptProbe extends Simulator.InterruptProbe.Empty {
-            public void fireBeforeInvoke(State s, int inum) {
-                String istr;
-                if ( inum == 1) {
-                    istr = "RESET";
-                    depth = 0;
+        private void printStack(int depth, int callsite) {
+            // print the ID and time string for this simulator
+            Terminal.print(SimUtil.getIDTimeString(simulator));
+            // print each stack entry
+            for ( int cntr = 0; cntr < depth; cntr++ ) {
+                if ( SHOW.get() ) {
+                    printStackEntry(cntr);
+                    if ( cntr != depth ) Terminal.print(":");
+                } else {
+                    Terminal.print("    ");
                 }
-                else istr = "INT #"+inum+"("+props.getInterruptName(inum)+")";
-                String caddr = StringUtil.addrToString(s.getPC());
-                push(caddr, istr, istr);
             }
-
-        }
-
-        class ReturnProbe extends Simulator.Probe.Empty {
-            String itype;
-
-            ReturnProbe(String itype) {
-                this.itype = itype;
-            }
-
-            public void fireAfter(State s, int addr) {
-                int npc = s.getPC();
-                String daddr = StringUtil.addrToString(npc);
-                pop(daddr, itype);
+            // print the call site
+            if ( SITE.get() ) {
+                Terminal.print(" @ ");
+                Terminal.printBrightCyan(StringUtil.addrToString(callsite));
             }
         }
+
+        private void printStackEntry(int indx) {
+            printStackEntry(stack.getInterrupt(indx), stack.getTarget(indx));
+        }
+
+        private void printStackEntry(int inum, int target) {
+            if ( inum >= 0 ) Terminal.printRed(shortNames[inum]);
+            Terminal.printGreen(sourceMap.getName(target));
+        }
+
+        private void pop(int callsite, String edge, int color) {
+            synchronized (Terminal.class ) {
+                printStack(stack.getDepth() - 1, callsite);
+                if ( EDGE.get() ) {
+                    Terminal.print(" <-(");
+                    Terminal.print(color, edge);
+                    Terminal.print(")-- ");
+                } else {
+                    Terminal.print(" <-- ");
+                }
+                printStackEntry(stack.getDepth() - 1);
+                Terminal.nextln();
+            }
+        }
+
+        public void fireBeforeCall(long time, int pc, int target) {
+            push(pc, Terminal.COLOR_BROWN, "CALL", -1, target);
+            stack.fireBeforeCall(time, pc, target);
+        }
+
+        public void fireBeforeInterrupt(long time, int pc, int inum) {
+            // TODO: factor out code to compute interrupt handler start
+            push(pc, Terminal.COLOR_RED, shortNames[inum], inum, (inum - 1) * 4);
+            if ( inum == 1 ) stack.clear(); // clear stack on reset
+            stack.fireBeforeInterrupt(time, pc, inum);
+        }
+
+        public void fireAfterReturn(long time, int pc, int retaddr) {
+            pop(pc, "RET ", Terminal.COLOR_BROWN);
+            stack.fireAfterReturn(time, pc, retaddr);
+        }
+
+        public void fireAfterInterruptReturn(long time, int pc, int retaddr) {
+            pop(pc, "RETI", Terminal.COLOR_RED);
+            stack.fireAfterInterruptReturn(time, pc, retaddr);
+        }
+
+        private String getLongInterruptName(int inum) {
+            return inum == 1 ? "RESET": "#"+inum+","+props.getInterruptName(inum);
+        }
+
+        private String getShortInterruptName(int inum) {
+            return inum == 1 ? "RESET" :"#"+inum+" ";
+        }
+
     }
 
     /**

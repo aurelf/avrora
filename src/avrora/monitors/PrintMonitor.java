@@ -30,34 +30,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.monitors;
 
-import cck.util.VersionTag;
+import avrora.sim.Simulator;
+import avrora.sim.util.MemPrint;
 
 /**
- * The <code>Version</code> class records the version information for this module.
- * It has a single static method called <code>getVersion()</code> to retrieve the
- * version for this module in a <code>VersionTag</code> object.
+ * The <code>PrintMonitor</code> gives apps a simple way to tell the
+ * simulator to print a string or int to the screen
  *
- * </p>
- * This file is automatically updated by CVS commit scripts that increment the
- * commit number each time code is committed to CVS. This guarantees that the
- * version number uniquely determines the version of the software.
- *
- * @author Ben L. Titzer
+ * @author John Regehr
  */
-public class Version {
+public class PrintMonitor extends MonitorFactory {
 
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public static final int commit = 57;
+    public class Monitor implements avrora.monitors.Monitor {
+        public final MemPrint memprofile;
+        private final int BASE = 3000;
+        private final int MAX = 100;
 
-    /**
-     * The <code>TAG</code> field stores a reference to the version tag for the current
-     * release and commit number.
-     */
-    public static final VersionTag TAG = new VersionTag("avrora", "Beta", 1, 7, commit);
+        Monitor(Simulator s) {
+            memprofile = new MemPrint(BASE, MAX);
+            s.insertWatch(memprofile, BASE);
+        }
 
+        public void report() {
+        }
+    }
+
+    public PrintMonitor() {
+        super("The \"print\" monitor watches a dedicated range of SRAM for instructions " +
+                "to print a string or int to the screen.  Be careful to set the BASE variable " +
+                "to point to a block of RAM not otherwise used by your app.");
+    }
+
+    public avrora.monitors.Monitor newMonitor(Simulator s) {
+        return new Monitor(s);
+    }
 }
