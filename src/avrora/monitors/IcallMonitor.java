@@ -32,11 +32,15 @@
 
 package avrora.monitors;
 
-import avrora.arch.legacy.*;
+import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.legacy.LegacyRegister;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
+import avrora.sim.Interpreter;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.mcu.MCUProperties;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 
@@ -51,7 +55,9 @@ import cck.text.Terminal;
  */
 public class IcallMonitor extends MonitorFactory {
 
-    public class Mon implements Monitor {
+    public static final int MAX_STACK_DEPTH = 1000;
+
+    public class Mon implements avrora.monitors.Monitor {
         public final Simulator simulator;
         private final SourceMapping sourceMap;
 
@@ -105,7 +111,7 @@ public class IcallMonitor extends MonitorFactory {
         super("The \"icall\" monitor is used to detect possible bogus icalls, it " + "simply checks that the target for each icall has a source mapping " + "associated with it.");
     }
 
-    public Monitor newMonitor(Simulator s) {
+    public avrora.monitors.Monitor newMonitor(Simulator s) {
         return new Mon(s);
     }
 }

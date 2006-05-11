@@ -37,11 +37,10 @@
 package avrora.monitors;
 
 import avrora.core.SourceMapping;
-import avrora.sim.Simulator;
+import avrora.sim.*;
 import avrora.sim.mcu.MCUProperties;
 import avrora.sim.util.SimUtil;
-import cck.text.StringUtil;
-import cck.text.Terminal;
+import cck.text.*;
 import cck.util.Option;
 
 /**
@@ -52,33 +51,35 @@ import cck.util.Option;
  */
 public class CallMonitor extends MonitorFactory {
 
-    protected final Option.Bool SITE = newOption("call-sites", true,
+    protected final Option.Bool SITE = options.newOption("call-sites", true,
             "When this option is specified, the call monitor will report the address " +
             "of the instruction in the caller when a call or an interrupt " +
             "occurs.");
-    protected final Option.Bool SHOW = newOption("show-stack", true,
+    protected final Option.Bool SHOW = options.newOption("show-stack", true,
             "When this option is specified, the call monitor trace will print the " +
             "call stack with each call, interrupt or return. When this option " +
             "is set to false, this monitor will only indent calls and returns, " +
             "without printing the entire call stack.");
-    protected final Option.Bool EDGE = newOption("edge-types", true,
+    protected final Option.Bool EDGE = options.newOption("edge-types", true,
             "When this option is specified, the call monitor trace will print the " +
             "type of each call or return. For example, if an interrupt occurs, then " +
             "the interrupt number and name will be reported.");
 
     class Mon implements Monitor, CallTrace.Monitor {
 
+        private final CallTrace trace;
         private final CallStack stack;
         private final Simulator simulator;
         private final MCUProperties props;
         private final SourceMapping sourceMap;
 
+        private String[] longNames;
         private String[] shortNames;
 
         Mon(Simulator s) {
             simulator = s;
             sourceMap = s.getProgram().getSourceMapping();
-            CallTrace trace = new CallTrace(s);
+            trace = new CallTrace(s);
             props = simulator.getMicrocontroller().getProperties();
             trace.attachMonitor(this);
             buildInterruptNames();
@@ -87,7 +88,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         private void buildInterruptNames() {
-            String[] longNames = new String[props.num_interrupts + 1];
+            longNames = new String[props.num_interrupts+1];
             for ( int cntr = 0; cntr < props.num_interrupts; cntr++ )
                 longNames[cntr] = getLongInterruptName(cntr);
             shortNames = new String[props.num_interrupts+1];

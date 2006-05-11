@@ -40,10 +40,7 @@ import avrora.sim.mcu.AtmelMicrocontroller;
 import avrora.sim.mcu.USART;
 import avrora.sim.platform.SerialForwarder;
 import cck.util.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 
 /**
@@ -55,17 +52,17 @@ import java.util.HashSet;
  */
 public class SerialMonitor extends MonitorFactory {
 
-    protected final Option.List PORTS = newOptionList("ports", "0:0:2390",
+    protected final Option.List PORTS = options.newOptionList("ports", "0:0:2390",
             "The \"ports\" option specifies a list of server ports that the simulator will listen on " +
             "to connect to the serial forwarder for each node. The format is to first give " +
             "the node number, the UART number, and then the port number " +
             "($node:$uart:$port,$node:$uart:$port).");
-    protected final Option.List DEVICE = newOptionList("devices", "",
+    protected final Option.List DEVICE = options.newOptionList("devices", "",
             "The \"device\" option can be used to specify the devices (represented as file names) " +
             "to connect to each of the nodes' serial port. The format is to first give " +
             "the node number, the UART number, and then a file name for the input file, and (optionally) " +
             "a file name for the output ($node:$uart:$in[:$out],$node:$uart:$in[:$out]).");
-    protected final Option.Str COMMAND = newOption("command", "",
+    protected final Option.Str COMMAND = options.newOption("command", "",
             "The \"command\" option defines an external command to connect to the serial " +
             "port of the simulated system.");
 
@@ -110,17 +107,11 @@ public class SerialMonitor extends MonitorFactory {
          * @param s Simulator
          */
         Monitor(Simulator s) {
-            Set conns = (Set)portMap.get(new Integer(s.getID()));
-            if ( conns != null ) {
-                Iterator i = conns.iterator();
-                while ( i.hasNext() ) {
-                    Connection conn = (Connection)i.next();
-                    AtmelMicrocontroller mcu = (AtmelMicrocontroller)s.getMicrocontroller();
-                    USART usart = (USART)mcu.getDevice("usart" + conn.usart);
-                    if ( usart == null && conn.usart == 0 )
-                        usart = (USART)mcu.getDevice("usart");
-                    conn.connect(usart);
-                }
+            Connection conn = (Connection)portMap.get(new Integer(s.getID()));
+            if ( conn != null ) {
+                AtmelMicrocontroller mcu = (AtmelMicrocontroller)s.getMicrocontroller();
+                USART usart = (USART)mcu.getDevice("usart" + conn.usart);
+                conn.connect(usart);
             }
         }
 
@@ -159,7 +150,7 @@ public class SerialMonitor extends MonitorFactory {
             SocketConnection conn = new SocketConnection();
             conn.usart = uart;
             conn.port = port;
-            addConnection(nid, conn);
+            portMap.put(new Integer(nid), conn);
         }
     }
 
@@ -177,18 +168,8 @@ public class SerialMonitor extends MonitorFactory {
             conn.usart = uart;
             conn.infile = inf;
             conn.outfile = outf;
-            addConnection(nid, conn);
+            portMap.put(new Integer(nid), conn);
         }
-    }
-
-    private void addConnection(int nid, Connection ucon) {
-        Integer nidI = new Integer(nid);
-        Set set = (Set)portMap.get(nidI);
-        if (set == null) {
-            set = new HashSet();
-            portMap.put(nidI, set);
-        }
-        set.add(ucon);
     }
 
     /**

@@ -32,7 +32,9 @@
 
 package avrora.sim.util;
 
-import avrora.sim.*;
+import avrora.sim.AtmelInterpreter;
+import avrora.sim.Simulator;
+import avrora.sim.State;
 import cck.text.Terminal;
 
 
@@ -50,6 +52,9 @@ public class MemTimer extends Simulator.Watch.Empty {
 
     public MemTimer(int b) {
         base = b;
+    }
+
+    public void fireBeforeRead(State state, int data_addr) {
     }
 
     public void fireBeforeWrite(State state, int data_addr, byte value) {

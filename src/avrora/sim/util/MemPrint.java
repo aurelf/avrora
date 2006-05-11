@@ -32,7 +32,9 @@
 
 package avrora.sim.util;
 
-import avrora.sim.*;
+import avrora.sim.AtmelInterpreter;
+import avrora.sim.Simulator;
+import avrora.sim.State;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 
@@ -51,6 +53,9 @@ public class MemPrint extends Simulator.Watch.Empty {
     public MemPrint(int b, int m) {
         base = b;
         max = m;
+    }
+
+    public void fireBeforeRead(State state, int data_addr) {
     }
 
     public void fireBeforeWrite(State state, int data_addr, byte value) {

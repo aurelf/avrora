@@ -45,8 +45,8 @@ public class PrintMonitor extends MonitorFactory {
 
     public class Monitor implements avrora.monitors.Monitor {
         public final MemPrint memprofile;
-        private static final int BASE = 3000;
-        private static final int MAX = 100;
+        private final int BASE = 3000;
+        private final int MAX = 100;
 
         Monitor(Simulator s) {
             memprofile = new MemPrint(BASE, MAX);
@@ -54,7 +54,6 @@ public class PrintMonitor extends MonitorFactory {
         }
 
         public void report() {
-            // do nothing.
         }
     }
 

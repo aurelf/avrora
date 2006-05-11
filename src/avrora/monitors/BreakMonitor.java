@@ -32,13 +32,16 @@
 
 package avrora.monitors;
 
+import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.legacy.LegacyRegister;
+import avrora.arch.legacy.LegacyState;
 import avrora.arch.AbstractInstr;
-import avrora.arch.legacy.*;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.util.SimUtil;
+import avrora.sim.mcu.MCUProperties;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 
@@ -53,14 +56,14 @@ import cck.text.Terminal;
  */
 public class BreakMonitor extends MonitorFactory {
 
-    public class Mon implements Monitor {
+    public class Mon implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final CallTrace trace;
         public final CallStack stack;
         private final SourceMapping sourceMap;
 
         Mon(Simulator s) {
-            simulator = s;
+            this.simulator = s;
 
             trace = new CallTrace(s);
             stack = new CallStack();
@@ -98,7 +101,7 @@ public class BreakMonitor extends MonitorFactory {
                 Terminal.print(idstr);
                 Terminal.print("      @ ");
                 int inum = stack.getInterrupt(cntr);
-                if ( inum >= 0 ) Terminal.printRed("#"+inum + ' ');
+                if ( inum >= 0 ) Terminal.printRed("#"+inum +" ");
                 Terminal.printGreen(sourceMap.getName(stack.getTarget(cntr)));
                 Terminal.nextln();
             }
@@ -116,7 +119,7 @@ public class BreakMonitor extends MonitorFactory {
                 "trace.");
     }
 
-    public Monitor newMonitor(Simulator s) {
+    public avrora.monitors.Monitor newMonitor(Simulator s) {
         return new Mon(s);
     }
 }
