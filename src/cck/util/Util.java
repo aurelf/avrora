@@ -137,6 +137,17 @@ public class Util {
     }
 
     /**
+     * The <code>unreachable()</code> method is a utility that constructs a
+     * <code>InternalError</code> instance. This is called from states that are expected
+     * to be unreachable.
+     * @return an instance of the <code>Util.InternalError</code> class that specifies that
+     * this case is unreachable
+     */
+    public static InternalError unreachable() {
+        return new InternalError("unreachable");
+    }
+
+    /**
      * The <code>failure()</code> method is a utility that constructs a
      * <code>InternalError</code> instance with the specified message. It is useful for internal
      * error conditions and defensive programming.
