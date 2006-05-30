@@ -41,16 +41,15 @@ package cck.text;
  * @author Ben L. Titzer
  */
 public class CharUtil {
-    public static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-    public static final char[] LOW_HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    public static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     /**
      * The <code>isHexDigit()</code> method checks whether the specified character
      * represents a valid hexadecimal character. This method is case-insensitive.
-     *
      * @param c the character to check
      * @return true if the specified character is a valid hexadecimal value; false
-     *         otherwise
+     * otherwise
      */
     public static boolean isHexDigit(char c) {
         switch (c) {
@@ -81,20 +80,9 @@ public class CharUtil {
         return false;
     }
 
-    public static char toUpperHexChar(int digitValue) {
-        if ( digitValue < 10 ) return (char)(digitValue | '0');
-        return (char)('A' + digitValue - 10);
-    }
-
-    public static char toLowerHexChar(int digitValue) {
-        if ( digitValue < 10 ) return (char)(digitValue | '0');
-        return (char)('a' + digitValue - 10);
-    }
-
     /**
      * The <code>hexValueOf()</code> method converts a character into an integer
      * value according to the hexadecimal base system.
-     *
      * @param c the character to convert
      * @return the value of the character in the hexadecimal base system
      */
@@ -105,20 +93,19 @@ public class CharUtil {
     /**
      * The <code>isDecDigit()</code> method checks whether the specified character
      * represents a valid decimal character. .
-     *
      * @param c the character to check
      * @return true if the specified character is a valid decimal digit; false
-     *         otherwise
+     * otherwise
      */
     public static boolean isDecDigit(char c) {
-        if (c < '0') return false;
-        return c <= '9';
+        if ( c < '0' ) return false;
+        if ( c > '9' ) return false;
+        else return true;
     }
 
     /**
      * The <code>decValueOf()</code> method converts a character into an integer
      * value according to the decimal base system.
-     *
      * @param c the character to convert
      * @return the value of the character in the decimal base system
      */
@@ -129,20 +116,19 @@ public class CharUtil {
     /**
      * The <code>isOctDigit()</code> method checks whether the specified character
      * represents a valid octal character.
-     *
      * @param c the character to check
      * @return true if the specified character is a valid octal digit; false
-     *         otherwise
+     * otherwise
      */
     public static boolean isOctDigit(char c) {
-        if (c < '0') return false;
-        return c <= '7';
+        if ( c < '0' ) return false;
+        if ( c > '7' ) return false;
+        else return true;
     }
 
     /**
      * The <code>octValueOf()</code> method converts a character into an integer
      * value according to the octal base system.
-     *
      * @param c the character to convert
      * @return the value of the character in the octal base system
      */
@@ -153,10 +139,9 @@ public class CharUtil {
     /**
      * The <code>isBinDigit()</code> method checks whether the specified character
      * represents a valid binary character.
-     *
      * @param c the character to check
      * @return true if the specified character is a valid binary digit; false
-     *         otherwise
+     * otherwise
      */
     public static boolean isBinDigit(char c) {
         return c == '0' || c == '1';
@@ -165,7 +150,6 @@ public class CharUtil {
     /**
      * The <code>binValueOf()</code> method converts a character into an integer
      * value according to the binary base system.
-     *
      * @param c the character to convert
      * @return the value of the character in the binary base system
      */

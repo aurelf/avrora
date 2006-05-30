@@ -37,7 +37,6 @@ import cck.util.Util;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.*;
-import java.io.File;
 
 /**
  * The <code>StringUtil</code> class implements several useful functions for dealing with strings such as
@@ -46,14 +45,12 @@ import java.io.File;
  * @author Ben L. Titzer
  */
 public class StringUtil {
-    public static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-    public static final String QUOTE = "\"".intern();
-    public static final String SQUOTE = "'".intern();
-    public static final String LPAREN = "(".intern();
-    public static final String RPAREN = ")".intern();
-    public static final String COMMA = ",".intern();
-    public static final String COMMA_SPACE = ", ".intern();
+    public static final String QUOTE = "\"";
+    public static final String SQUOTE = "'";
+    public static final String LPAREN = "(";
+    public static final String RPAREN = ")";
+    public static final String COMMA = ",";
+    public static final String COMMA_SPACE = ", ";
     public static final String[] EMPTY_STRING_ARRAY = {};
     public static final int[] DENOM = { 24, 60, 60, 1000 };
     public static final int[] DAYSECS = { 60, 60 };
@@ -210,10 +207,8 @@ public class StringUtil {
     public static void skipWhiteSpace(CharacterIterator i) {
         while (true) {
             char c = i.current();
-            if (c == ' ' || c == '\n' || c == '\t')
-                i.next();
-            else
-                break;
+            if (c != ' ' && c != '\n' && c != '\t')  break;
+            i.next();
         }
     }
 
@@ -274,7 +269,7 @@ public class StringUtil {
     }
 
     /**
-     * The <code>isHex()</code> method checks whether the specifed string represents a binary
+     * The <code>isBin()</code> method checks whether the specifed string represents a binary
      * integer. This method only checks the first two characters. If they match "0b" or "0B", then
      * this method returns true, otherwise, it returns false.
      * @param s the string to check whether it begins with a hexadecimal sequence
@@ -295,55 +290,19 @@ public class StringUtil {
      * @return true if this character is a hexadecimal digit; false otherwise
      */
     public static boolean isHexDigit(char c) {
-        switch (c) {
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-            case 'a':
-            case 'b':
-            case 'c':
-            case 'd':
-            case 'e':
-            case 'f':
-            case 'A':
-            case 'B':
-            case 'C':
-            case 'D':
-            case 'E':
-            case 'F':
-                return true;
-        }
-        return false;
+        return CharUtil.isHexDigit(c);
     }
 
     public static int hexValueOf(char c) {
-        return Character.digit(c, 16);
+        return CharUtil.hexValueOf(c);
     }
 
     public static int octalValueOf(char c) {
-        return Character.digit(c, 8);
+        return CharUtil.octValueOf(c);
     }
 
     public static boolean isOctalDigit(char c) {
-        switch (c) {
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-                return true;
-        }
-        return false;
+        return CharUtil.isOctDigit(c);
     }
 
     /**
@@ -502,7 +461,7 @@ public class StringUtil {
 
         int i = start + width - 1;
         for (int cntr = 0; cntr < width; cntr++) {
-            result[i - cntr] = HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf];
+            result[i - cntr] = CharUtil.HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf];
         }
 
         return new String(result);
@@ -531,7 +490,7 @@ public class StringUtil {
         }
 
         for (int cntr = width - 1; cntr >= 0; cntr--)
-            buf.append(HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf]);
+            buf.append(CharUtil.HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf]);
     }
 
     public static String splice(String[] a, String[] b) {
