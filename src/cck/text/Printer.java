@@ -53,8 +53,8 @@ public class Printer {
 
     public void println(String s) {
         spaces();
-        if ( listdepth > 0 ) {
-            if ( !first ) o.print(", ");
+        if (listdepth > 0) {
+            if (!first) o.print(", ");
         }
         first = false;
         o.println(s);
@@ -64,8 +64,8 @@ public class Printer {
 
     public void print(String s) {
         spaces();
-        if ( listdepth > 0 ) {
-            if ( !first ) o.print(", ");
+        if (listdepth > 0) {
+            if (!first) o.print(", ");
         }
         first = false;
         o.print(s);
@@ -112,7 +112,7 @@ public class Printer {
 
     public void endblock(String s) {
         unindent();
-        println("}"+s);
+        println("}" + s);
     }
 
     public void close() {
@@ -132,24 +132,24 @@ public class Printer {
 
     public void endList(String end) {
         listdepth--;
-        if ( listdepth < 0 ) listdepth = 0;
+        if (listdepth < 0) listdepth = 0;
         print(end);
     }
 
     public void endListln(String end) {
         listdepth--;
-        if ( listdepth < 0 ) listdepth = 0;
+        if (listdepth < 0) listdepth = 0;
         println(end);
     }
 
     public void endList() {
         listdepth--;
-        if ( listdepth < 0 ) listdepth = 0;
+        if (listdepth < 0) listdepth = 0;
     }
 
     public void endListln() {
         listdepth--;
-        if ( listdepth < 0 ) listdepth = 0;
+        if (listdepth < 0) listdepth = 0;
         nextln();
     }
 }

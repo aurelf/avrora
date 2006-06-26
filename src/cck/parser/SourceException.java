@@ -56,12 +56,13 @@ public class SourceException extends SourceError {
      * point which indicates the location in a file where the error occured, a message,
      * and a list of parameters to the error (such as the name of a class or method
      * where the error occurred).
+     *
      * @param type a string that indicates the type of error that occured such as
-     * "Undefined Variable"
-     * @param p the point in the file where the error occurred
-     * @param msg a short message reported to the user that explains the error
-     * @param ps a list of parameters to the error such as the name of the variable
-     * that is undeclared, etc.
+     *             "Undefined Variable"
+     * @param p    the point in the file where the error occurred
+     * @param msg  a short message reported to the user that explains the error
+     * @param ps   a list of parameters to the error such as the name of the variable
+     *             that is undeclared, etc.
      */
     public SourceException(String type, StackTrace p, String msg, String[] ps) {
         super(type, p == null ? null : p.getSourcePoint(), msg, null);
@@ -76,13 +77,13 @@ public class SourceException extends SourceError {
     public void report() {
         Terminal.print("");
         Terminal.printRed(errorType);
-        Terminal.println(": "+message+" ");
-        for ( StackTrace tr = trace; tr != null; tr = tr.prev ) {
+        Terminal.println(": " + message + " ");
+        for (StackTrace tr = trace; tr != null; tr = tr.prev) {
             Terminal.print("\t");
             Terminal.print("in ");
-            Terminal.printGreen(tr.getMethod()+" ");
+            Terminal.printGreen(tr.getMethod() + " ");
             SourcePoint p = tr.getSourcePoint();
-            if ( p != null ) p.report();
+            if (p != null) p.report();
             Terminal.nextln();
         }
     }

@@ -48,9 +48,7 @@ public class AbstractParseException extends RuntimeException {
      * class with the empty string to force the "toString" method of parent class "Throwable" to print the
      * error message in the form: ParseException: <result of getMessage>
      */
-    public AbstractParseException(AbstractToken currentTokenVal,
-                                  int[][] expectedTokenSequencesVal,
-                                  String[] tokenImageVal) {
+    public AbstractParseException(AbstractToken currentTokenVal, int[][] expectedTokenSequencesVal, String[] tokenImageVal) {
         super("");
         specialConstructor = true;
         currentToken = currentTokenVal;

@@ -35,7 +35,10 @@
 package cck.stat;
 
 import cck.text.Terminal;
-import java.util.*;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The profiling database. Collects information about profiling and is implemented as a static class. This
@@ -70,8 +73,8 @@ public class ProfilingDatabase {
         Iterator i = datalist.iterator();
         int cntr = 1;
 
-        while ( i.hasNext() ) {
-            ProfilingData d = (ProfilingData)i.next();
+        while (i.hasNext()) {
+            ProfilingData d = (ProfilingData) i.next();
             if (d.dataCollected()) {
                 Terminal.println("\nProfilingData object " + cntr + ", instance of " + d.getClass().toString());
                 d.computeStatistics();

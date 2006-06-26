@@ -45,6 +45,7 @@ public interface HelpItem {
      * The <code>getHelp()</code> method returns a string that is suitable to being formatted into
      * a single paragraph. This string should contain a few sentences about what the option, action,
      * input format, etc represents and how to use it.
+     *
      * @return a string representation of the help for this item
      */
     public String getHelp();

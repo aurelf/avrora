@@ -33,6 +33,7 @@
 package cck.help;
 
 import cck.util.ClassMap;
+
 import java.util.List;
 
 /**
@@ -47,19 +48,21 @@ public class HelpSystem {
 
     /**
      * The <code>getCategory()</code> method gets a help category for the specified short name.
+     *
      * @param name the name of the help category
      * @return a help category for the specified name if it exists
      */
     public static HelpCategory getCategory(String name) {
-        HelpCategory helpCategory = (HelpCategory)categoryMap.getObjectOfClass(name);
-        if ( helpCategory != null ) helpCategory.setName(name);
+        HelpCategory helpCategory = (HelpCategory) categoryMap.getObjectOfClass(name);
+        if (helpCategory != null) helpCategory.setName(name);
         return helpCategory;
     }
 
     /**
      * The <code>addCategory()</code> method adds a help category to the help system.
+     *
      * @param name the short name of the help category
-     * @param cat the category
+     * @param cat  the category
      */
     public static void addCategory(String name, HelpCategory cat) {
         cat.setName(name);
@@ -68,8 +71,9 @@ public class HelpSystem {
 
     /**
      * The <code>addCategory()</code> method adds a help category to the help system.
+     *
      * @param name the short name of the help category
-     * @param cz the class for this help category
+     * @param cz   the class for this help category
      */
     public static void addCategory(String name, Class cz) {
         categoryMap.addClass(name, cz);
@@ -77,6 +81,7 @@ public class HelpSystem {
 
     /**
      * The <code>getSortedList()</code> returns a sorted list of all of the help categories.
+     *
      * @return a sorted list of all help categories
      */
     public static List getSortedList() {

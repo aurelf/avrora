@@ -111,12 +111,9 @@ public class Distribution extends MinMaxMean {
         int oldMax = observedMaximum, oldMin = observedMinimum;
         super.record(value);
 
-        if (observedMaximum > oldMax)
-            recomputeMaxDistrib(observedMaximum);
-        else if (observedMinimum < oldMin)
-            recomputeMinDistrib(observedMinimum);
-        else
-            incrementDistrib(value);
+        if (observedMaximum > oldMax) recomputeMaxDistrib(observedMaximum);
+        else if (observedMinimum < oldMin) recomputeMinDistrib(observedMinimum);
+        else incrementDistrib(value);
     }
 
     /**
@@ -161,12 +158,12 @@ public class Distribution extends MinMaxMean {
             if (data[cntr] > max) max = data[cntr];
         }
 
-        if (max > 70) scale = ((float)max) / 70;
+        if (max > 70) scale = ((float) max) / 70;
 
         // loop through occurrences and print distribution
         for (cntr = 0; cntr < num; cntr++) {
-            float fstars = ((float)data[cntr]) / scale;
-            int stars = (int)fstars;
+            float fstars = ((float) data[cntr]) / scale;
+            int stars = (int) fstars;
             if ((fstars - stars) >= 0.5) stars++;
 
             // collapse a string of redundant 0's.

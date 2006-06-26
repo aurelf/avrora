@@ -91,14 +91,12 @@ public class MinMaxMean extends DataItem {
         if (value > observedMaximum) {
             observedMaximum = value;
             countMaximum = 1;
-        } else if (value == observedMaximum)
-            countMaximum++;
+        } else if (value == observedMaximum) countMaximum++;
 
         if (value < observedMinimum) {
             observedMinimum = value;
             countMinimum = 1;
-        } else if (value == observedMinimum)
-            countMinimum++;
+        } else if (value == observedMinimum) countMinimum++;
 
         accumulation += value;
         total++;
@@ -108,7 +106,7 @@ public class MinMaxMean extends DataItem {
      * process the data so far and update internal statistics.
      */
     public void processData() {
-        mean = ((float)accumulation) / ((float)total);
+        mean = ((float) accumulation) / ((float) total);
     }
 
     /**

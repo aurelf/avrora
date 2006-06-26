@@ -91,51 +91,19 @@ public final class Terminal {
 
     private static final String CTRL_DEFAULT = "\u001b[1;00m";
 
-    private static final String[] COLORS = {
-        CTRL_BLACK,
-        CTRL_RED,
-        CTRL_GREEN,
-        CTRL_BROWN,
-        CTRL_BLUE,
-        CTRL_PURPLE,
-        CTRL_CYAN,
-        CTRL_LIGHTGRAY,
-        CTRL_DARKGRAY,
-        CTRL_BRIGHT_RED,
-        CTRL_BRIGHT_GREEN,
-        CTRL_YELLOW,
-        CTRL_BRIGHT_BLUE,
-        CTRL_MAGENTA,
-        CTRL_BRIGHT_CYAN,
-        CTRL_WHITE,
-        CTRL_DEFAULT
-    };
+    private static final String[] COLORS = {CTRL_BLACK, CTRL_RED, CTRL_GREEN, CTRL_BROWN, CTRL_BLUE, CTRL_PURPLE, CTRL_CYAN, CTRL_LIGHTGRAY, CTRL_DARKGRAY, CTRL_BRIGHT_RED, CTRL_BRIGHT_GREEN, CTRL_YELLOW, CTRL_BRIGHT_BLUE, CTRL_MAGENTA, CTRL_BRIGHT_CYAN, CTRL_WHITE, CTRL_DEFAULT};
 
-    private static final String[] HTML_COLORS = {
-        "black", /* black */
-        "red",
-        "green",
-        "brown",
-        "blue",
-        "purple",
-        "cyan", /* cyan */
-        "lightgray",
-        "gray",
-        "pink",
-        "green",
-        "yellow", /* yellow */
-        "blue",
-        "magenta",
-        "cyan",
-        "white"
-    };
+    private static final String[] HTML_COLORS = {"black", /* black */
+            "red", "green", "brown", "blue", "purple", "cyan", /* cyan */
+            "lightgray", "gray", "pink", "green", "yellow", /* yellow */
+            "blue", "magenta", "cyan", "white"};
 
     private static final String[] HTML_STRINGS;
 
     static {
         HTML_STRINGS = new String[HTML_COLORS.length];
-        for ( int cntr = 0; cntr < HTML_STRINGS.length; cntr++ )
-            HTML_STRINGS[cntr] = "<font color="+HTML_COLORS[cntr]+">";
+        for (int cntr = 0; cntr < HTML_STRINGS.length; cntr++)
+            HTML_STRINGS[cntr] = "<font color=" + HTML_COLORS[cntr] + ">";
     }
 
     public static final int ERROR_COLOR = COLOR_RED;
@@ -143,15 +111,13 @@ public final class Terminal {
 
     public static void print(int colors[], String s[]) {
         for (int cntr = 0; cntr < s.length; cntr++) {
-            if (cntr < colors.length)
-                print(colors[cntr], s[cntr]);
-            else
-                print(s[cntr]);
+            if (cntr < colors.length) print(colors[cntr], s[cntr]);
+            else print(s[cntr]);
         }
     }
 
     public static void print(int color, String s) {
-        if (color >= MAXCOLORS || color < 0 ) print(s);
+        if (color >= MAXCOLORS || color < 0) print(s);
         else outputColor(color, s);
     }
 
@@ -162,7 +128,7 @@ public final class Terminal {
 
     public static void append(int color, StringBuffer buf, String s) {
         if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
-        if ( useColors ) {
+        if (useColors) {
             if (htmlColors) {
                 buf.append(HTML_STRINGS[color]);
                 buf.append(s);
@@ -241,8 +207,7 @@ public final class Terminal {
         print(c2, s2);
     }
 
-    public static void printTriple(int c1, int c2, int c3, String s1, String sep1,
-                                   String s2, String sep2, String s3) {
+    public static void printTriple(int c1, int c2, int c3, String s1, String sep1, String s2, String sep2, String s3) {
         print(c1, s1);
         print(sep1);
         print(c2, s2);

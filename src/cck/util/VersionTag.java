@@ -46,11 +46,12 @@ public class VersionTag {
 
     /**
      * The <code>getVersionTag()</code> method gets the version tag for the specified module.
+     *
      * @param module the name of the module as a string
      * @return a reference to the version tag for the specified module if it exists; null otherwise
      */
     public static VersionTag getVersionTag(String module) {
-        return (VersionTag)tags.get(module);
+        return (VersionTag) tags.get(module);
     }
 
     /**
@@ -88,10 +89,11 @@ public class VersionTag {
     /**
      * The constructor for the <code>Version</code> class creates a new version object that represents
      * the version of the code.
+     *
      * @param prefix a string representing the release name, such as <code>"Beta"</code> for example
-     * @param maj the major version number
-     * @param min the minor version number
-     * @param comm the commit number
+     * @param maj    the major version number
+     * @param min    the minor version number
+     * @param comm   the commit number
      */
     public VersionTag(String mod, String prefix, int maj, int min, int comm) {
         this.module = mod;
@@ -99,12 +101,13 @@ public class VersionTag {
         this.major = maj;
         this.minor = min;
         this.commit = comm;
-        this.string = prefix +' ' + major + '.' + minor + '.' + commit;
+        this.string = prefix + ' ' + major + '.' + minor + '.' + commit;
         tags.put(mod, this);
     }
 
     /**
      * The <code>toString()</code> method converts this version to a string.
+     *
      * @return a string representation of this version
      */
     public String toString() {
@@ -115,6 +118,7 @@ public class VersionTag {
      * The <code>toPathSuffix()</code> method returns a representation of this version
      * number that is more natural for appending to file names and paths that use the version
      * number to distinguish between different branches of the code.
+     *
      * @return a string representation of this version number that is suitable for use in filenames
      */
     public String toPathSuffix() {
@@ -126,6 +130,7 @@ public class VersionTag {
      * The <code>isStable()</code> method returns whether this version tag corresponds to
      * a stable release of the source code. It determines this by the <code>minor</code>
      * version number; if this number is even, then the code is considered to be stable.
+     *
      * @return true if this version tag corresponds to a stable version
      */
     public boolean isStable() {

@@ -40,8 +40,9 @@ public class TermUtil {
      * The <code>reportQuantity()</code> method is a simply utility to print out a quantity's name
      * (such as "Number of instructions executed", the value (such as 2002), and the units (such as
      * cycles) in a colorized and standardized way.
-     * @param name the name of the quantity as a string
-     * @param val the value of the quantity as a long integer
+     *
+     * @param name  the name of the quantity as a string
+     * @param val   the value of the quantity as a long integer
      * @param units the name of the units as a string
      */
     public static void reportQuantity(String name, long val, String units) {
@@ -52,8 +53,9 @@ public class TermUtil {
      * The <code>reportProportion()</code> method is a simply utility to print out a quantity's name
      * (such as "Number of instructions executed", the value (such as 2002), and the units (such as
      * cycles) in a colorized and standardized way.
-     * @param name the name of the quantity as a string
-     * @param val the value of the quantity as a long integer
+     *
+     * @param name  the name of the quantity as a string
+     * @param val   the value of the quantity as a long integer
      * @param units the name of the units as a string
      */
     public static void reportProportion(String name, long val, long total, String units) {
@@ -61,11 +63,9 @@ public class TermUtil {
         Terminal.printGreen(name);
         Terminal.print(": ");
         Terminal.printBrightCyan(sval);
-        if ( units != null && units.length() > 0)
-            Terminal.print(' ' + units + ' ');
-        else
-            Terminal.print(" ");
-        float pcnt = (100 * (float)val / total);
+        if (units != null && units.length() > 0) Terminal.print(' ' + units + ' ');
+        else Terminal.print(" ");
+        float pcnt = (100 * (float) val / total);
 
         Terminal.printBrightCyan(StringUtil.toFixedFloat(pcnt, 4));
         Terminal.println(" %");
@@ -75,8 +75,9 @@ public class TermUtil {
      * The <code>reportQuantity()</code> method is a simply utility to print out a quantity's name
      * (such as "Number of instructions executed", the value (such as 2002), and the units (such as
      * cycles) in a colorized and standardized way.
-     * @param name the name of the quantity as a string
-     * @param val the value of the quantity as a floating point number
+     *
+     * @param name  the name of the quantity as a string
+     * @param val   the value of the quantity as a floating point number
      * @param units the name of the units as a string
      */
     public static void reportQuantity(String name, float val, String units) {
@@ -87,8 +88,9 @@ public class TermUtil {
      * The <code>reportQuantity()</code> method is a simply utility to print out a quantity's name
      * (such as "Number of instructions executed", the value (such as 2002), and the units (such as
      * cycles) in a colorized and standardized way.
-     * @param name the name of the quantity as a string
-     * @param val the value of the quantity as a string
+     *
+     * @param name  the name of the quantity as a string
+     * @param val   the value of the quantity as a string
      * @param units the name of the units as a string
      */
     public static void reportQuantity(String name, String val, String units) {
@@ -102,6 +104,7 @@ public class TermUtil {
      * The <code>printSeparator()</code> method prints a horizontal bar on the terminal
      * that helps to separate different sections of textual output. This implementation
      * uses the '=' character, providing a double-thick separator line.
+     *
      * @param width the width of the horizontal separator bar
      */
     public static void printSeparator(int width) {
@@ -122,6 +125,7 @@ public class TermUtil {
      * that helps to separate different sections of textual output. This implementation
      * uses the '-' character, providing a thinner separator line for separating subsections
      * of text output.
+     *
      * @param width the width of the horizontal separator bar
      */
     public static void printThinSeparator(int width) {
@@ -143,7 +147,8 @@ public class TermUtil {
      * that helps to separate different sections of textual output. This implementation
      * uses the '=' character, providing a double-thick separator line and embeds a
      * header string within the separating line.
-     * @param width the width of the horizontal separator bar
+     *
+     * @param width  the width of the horizontal separator bar
      * @param header the string to embed in the separator line
      */
     public static void printSeparator(int width, String header) {

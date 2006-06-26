@@ -57,7 +57,7 @@ abstract public class Database {
         int numitems = items.size();
 
         for (int cntr = 0; cntr < numitems; cntr++) {
-            DataItem i = (DataItem)items.get(cntr);
+            DataItem i = (DataItem) items.get(cntr);
             i.textReport();
         }
     }
@@ -69,7 +69,7 @@ abstract public class Database {
         int numitems = items.size();
 
         for (int cntr = 0; cntr < numitems; cntr++) {
-            DataItem i = (DataItem)items.get(cntr);
+            DataItem i = (DataItem) items.get(cntr);
             i.processData();
         }
     }
@@ -82,7 +82,7 @@ abstract public class Database {
         int numitems = items.size();
 
         for (int cntr = 0; cntr < numitems; cntr++) {
-            DataItem i = (DataItem)items.get(cntr);
+            DataItem i = (DataItem) items.get(cntr);
             v.visit(i);
         }
     }

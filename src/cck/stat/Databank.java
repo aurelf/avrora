@@ -33,6 +33,7 @@
 package cck.stat;
 
 import cck.text.Terminal;
+
 import java.util.Vector;
 
 /**
@@ -76,7 +77,7 @@ public class Databank {
 
         // freeze all databases and count the number that have data.
         for (int cntr = 0; cntr < numDatabases; cntr++) {
-            Database d = (Database)databases.get(cntr);
+            Database d = (Database) databases.get(cntr);
             d.freeze();
 
             if (!d.isEmpty()) {
@@ -89,7 +90,7 @@ public class Databank {
 
         // generate reports for each database
         for (int cntr = 0; cntr < numDatabases; cntr++) {
-            Database d = (Database)databases.get(cntr);
+            Database d = (Database) databases.get(cntr);
             if (!d.isEmpty()) {
                 Terminal.print("\nDatabase: " + d.toString());
                 Terminal.print("\n=======================================================================\n");
@@ -109,16 +110,16 @@ public class Databank {
 
         // freeze the databases
         for (int cntr = 0; cntr < numDatabases; cntr++) {
-            Database d = (Database)databases.get(cntr);
+            Database d = (Database) databases.get(cntr);
             d.processData();
         }
 
         // dispatch the visitors one at a time
         for (int v = 0; v < numVisitors; v++) {
-            DatabaseVisitor visitor = (DatabaseVisitor)visitors.get(v);
+            DatabaseVisitor visitor = (DatabaseVisitor) visitors.get(v);
 
             for (int cntr = 0; cntr < numDatabases; cntr++) {
-                Database d = (Database)databases.get(cntr);
+                Database d = (Database) databases.get(cntr);
                 visitor.visit(d);
             }
         }
@@ -131,7 +132,7 @@ public class Databank {
         int numDatabases = databases.size();
         // freeze the databases
         for (int cntr = 0; cntr < numDatabases; cntr++) {
-            Database d = (Database)databases.get(cntr);
+            Database d = (Database) databases.get(cntr);
             d.freeze();
         }
     }

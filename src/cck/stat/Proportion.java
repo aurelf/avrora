@@ -33,6 +33,7 @@
 package cck.stat;
 
 import cck.text.Terminal;
+
 import java.util.Vector;
 
 /**
@@ -91,7 +92,7 @@ public class Proportion extends DataItem {
         Terminal.print("\n---------------------------------------------------------------------");
 
         for (int cntr = 0; cntr < numshares; cntr++) {
-            Share s = (Share)shares.get(cntr);
+            Share s = (Share) shares.get(cntr);
             s.textReport();
         }
 
@@ -123,7 +124,7 @@ public class Proportion extends DataItem {
         int numshares = shares.size();
 
         for (int i = 0; i < numshares; i++) {
-            Share s = (Share)shares.get(i);
+            Share s = (Share) shares.get(i);
             if (name.equals(s.getName())) return s;
         }
 
@@ -139,7 +140,7 @@ public class Proportion extends DataItem {
         processData(); // make sure proportions up to date
 
         for (int i = 0; i < numshares; i++) {
-            Share s = (Share)shares.get(i);
+            Share s = (Share) shares.get(i);
             if (name.equals(s.getName())) return s.fraction;
         }
 
@@ -154,15 +155,15 @@ public class Proportion extends DataItem {
         int tmptotal = 0;
 
         for (int i = 0; i < numshares; i++) {
-            Share s = (Share)shares.get(i);
+            Share s = (Share) shares.get(i);
             tmptotal += s.getTotal();
         }
 
         total = tmptotal;
 
         for (int i = 0; i < numshares; i++) {
-            Share s = (Share)shares.get(i);
-            s.fraction = ((float)s.getTotal()) / ((float)total);
+            Share s = (Share) shares.get(i);
+            s.fraction = ((float) s.getTotal()) / ((float) total);
         }
 
     }

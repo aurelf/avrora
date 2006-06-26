@@ -43,8 +43,9 @@ package cck.text;
 public interface Printable {
     /**
      * The <code>print()</code> method prints this object to the specified printer.
+     *
      * @param p the printer to which to output the textual representation of this
-     * object.
+     *          object.
      */
     public void print(Printer p);
 }

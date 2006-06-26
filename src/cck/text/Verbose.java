@@ -61,7 +61,7 @@ public class Verbose {
             ALL = on;
             Iterator i = printerMap.values().iterator();
             while (i.hasNext()) {
-                Printer p = (Printer)i.next();
+                Printer p = (Printer) i.next();
                 p.enabled = on;
             }
             return;
@@ -75,7 +75,7 @@ public class Verbose {
     }
 
     private static Printer getPrinter(String category) {
-        Printer p = (Printer)printerMap.get(category);
+        Printer p = (Printer) printerMap.get(category);
         if (p == null) {
             p = new Printer();
             printerMap.put(category, p);

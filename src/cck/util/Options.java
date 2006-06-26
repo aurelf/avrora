@@ -32,10 +32,13 @@
 
 package cck.util;
 
-import java.util.*;
-import java.io.IOException;
-import java.io.FileInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * The <code>Options</code> class represents a collection of command line options and utility methods for
@@ -95,7 +98,7 @@ public class Options {
     }
 
     public Option getOption(String name) {
-        return (Option)knownValues.get(name);
+        return (Option) knownValues.get(name);
     }
 
     public boolean hasOption(String name) {
@@ -137,7 +140,7 @@ public class Options {
     }
 
     private void setOption(String optname, String value) {
-        Option option = (Option)knownValues.get(optname);
+        Option option = (Option) knownValues.get(optname);
 
         if (option == null) {
             option = new Option.Str(optname, value, "");
@@ -154,8 +157,8 @@ public class Options {
         Iterator i = o.knownValues.keySet().iterator();
 
         while (i.hasNext()) {
-            String name = (String)i.next();
-            String val = ((Option)o.knownValues.get(name)).stringValue();
+            String name = (String) i.next();
+            String val = ((Option) o.knownValues.get(name)).stringValue();
             setOption(name, val);
         }
     }
@@ -164,7 +167,7 @@ public class Options {
         Iterator i = p.keySet().iterator();
 
         while (i.hasNext()) {
-            String name = (String)i.next();
+            String name = (String) i.next();
             String val = p.getProperty(name);
             setOption(name, val);
         }

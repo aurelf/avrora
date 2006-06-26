@@ -33,7 +33,11 @@
 package cck.util;
 
 import cck.text.StringUtil;
-import java.util.*;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The <code>ClassMap</code> is a class that maps short names (i.e. short, lower case strings) to java classes
@@ -90,7 +94,7 @@ public class ClassMap {
      * default class names.
      *
      * @param alias the string representation of the alias of the class
-     * @param clz       the class to which the alias maps
+     * @param clz   the class to which the alias maps
      */
     public void addClass(String alias, Class clz) {
         classMap.put(alias, clz);
@@ -101,13 +105,13 @@ public class ClassMap {
      * the instance of the class represented by that short name.
      *
      * @param alias the alias for the instance
-     * @param o         the actual object that will be returned from <code>getObjectOfClass()</code> when the
-     *                  parameters is equal to the alias.
+     * @param o     the actual object that will be returned from <code>getObjectOfClass()</code> when the
+     *              parameters is equal to the alias.
      */
     public void addInstance(String alias, Object o) {
         Class cz = o.getClass();
         if (!(clazz.isAssignableFrom(cz)))
-            throw Util.failure("Object of class "+ StringUtil.quote(cz)+" is not an instance of " + clazz.getName());
+            throw Util.failure("Object of class " + StringUtil.quote(cz) + " is not an instance of " + clazz.getName());
 
         objMap.put(alias, o);
         classMap.put(alias, cz);
@@ -126,7 +130,7 @@ public class ClassMap {
     public Class getClass(String shortName) {
         Object o = objMap.get(shortName);
         if (o != null) return o.getClass();
-        return (Class)classMap.get(shortName);
+        return (Class) classMap.get(shortName);
     }
 
     /**
@@ -144,7 +148,7 @@ public class ClassMap {
 
         String clname = StringUtil.quote(name);
 
-        Class c = (Class)classMap.get(name);
+        Class c = (Class) classMap.get(name);
         if (c == null) {
             try {
                 c = Class.forName(name);
@@ -185,6 +189,7 @@ public class ClassMap {
     /**
      * The <code>getIterator()</code> method returns an interator over all of the key values (short
      * names or aliases) of this class map.
+     *
      * @return an iterator over all the short names in this map
      */
     public Iterator getIterator() {

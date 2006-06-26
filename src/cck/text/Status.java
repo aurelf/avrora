@@ -32,6 +32,7 @@
 package cck.text;
 
 import cck.util.Util;
+
 import java.util.Stack;
 
 /**
@@ -64,15 +65,16 @@ public class Status {
      * as well as recording the time at which the method was called, which can be used to recover the time
      * spent in each stage. When the operation is completed, the <code>success()</code> or <code>error()</code>
      * methods should be called.
+     *
      * @param s the current operation being performed, as a string
      */
     public static void begin(String s) {
-        if ( !ENABLED ) return;
+        if (!ENABLED) return;
 
-        if ( inside ) {
+        if (inside) {
             Terminal.nextln();
         }
-        Terminal.print(StringUtil.dup(' ', stack.size()*4));
+        Terminal.print(StringUtil.dup(' ', stack.size() * 4));
         Terminal.print(Terminal.COLOR_BROWN, s);
         Terminal.print("...");
         Terminal.flush();
@@ -85,21 +87,21 @@ public class Status {
      * the last <code>begin()</code> call.
      */
     public static void success() {
-        if ( !ENABLED ) return;
+        if (!ENABLED) return;
         print(Terminal.COLOR_GREEN, "OK");
     }
 
     private static void print(int color, String s) {
         long time = -1;
-        Item i = (Item)stack.pop();
-        if ( i != null ) {
+        Item i = (Item) stack.pop();
+        if (i != null) {
             time = System.currentTimeMillis() - i.starttime;
         }
         Terminal.print("[");
         Terminal.print(color, s);
-        if ( time >= 0 ) {
+        if (time >= 0) {
             Terminal.print(": ");
-            Terminal.print(StringUtil.milliToSecs(time)+" seconds");
+            Terminal.print(StringUtil.milliToSecs(time) + " seconds");
         }
         Terminal.print("]");
         Terminal.nextln();
@@ -109,10 +111,11 @@ public class Status {
     /**
      * The <code>success()</code> method simply prints out the success string in a stylized fashion as well as the
      * time since the last <code>begin()</code> call.
+     *
      * @param s the success string to print out (instead of the default, "OK")
      */
     public static void success(String s) {
-        if ( !ENABLED ) return;
+        if (!ENABLED) return;
         print(Terminal.COLOR_GREEN, s);
     }
 
@@ -121,37 +124,40 @@ public class Status {
      * the last <code>begin()</code> call.
      */
     public static void error() {
-        if ( !ENABLED ) return;
+        if (!ENABLED) return;
         print(Terminal.COLOR_RED, "ERROR");
     }
 
     /**
      * The <code>error()</code> method simply prints out an error string in a stylized fashion was well as the time since
      * the last <code>begin()</code> call.
+     *
      * @param s the string to report as an error instead of "ERROR", which is the default
      */
     public static void error(String s) {
-        if ( !ENABLED ) return;
+        if (!ENABLED) return;
         print(Terminal.COLOR_RED, s);
     }
 
     /**
      * The <code>error()</code> method simply prints out "ERROR" in a stylized fashion was well as the time since
      * the last <code>begin()</code> call, and then reports the exception.
+     *
      * @param t a throwable that was caught since the last begin()
      */
     public static void error(Throwable t) {
-        if ( !ENABLED ) return;
+        if (!ENABLED) return;
         print(Terminal.COLOR_RED, "UNEXPECTED EXCEPTION");
     }
 
     /**
      * The <code>error()</code> method simply prints out "ERROR" in a stylized fashion was well as the time since
      * the last <code>begin()</code> call, and then reports the exception.
+     *
      * @param e an error that was caught since the last begin()
      */
     public static void error(Util.Error e) {
-        if ( !ENABLED ) return;
+        if (!ENABLED) return;
         print(Terminal.COLOR_RED, "ERROR");
     }
 }

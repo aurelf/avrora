@@ -51,10 +51,10 @@ public class Measurements {
 
         Iterator(int start) {
             fiter = fragments.iterator();
-            frag = (int[])fiter.next();
-            while ( start >= fragSize ) {
-                if ( !fiter.hasNext() ) break;
-                frag = (int[])fiter.next();
+            frag = (int[]) fiter.next();
+            while (start >= fragSize) {
+                if (!fiter.hasNext()) break;
+                frag = (int[]) fiter.next();
                 start -= fragSize;
             }
             cursor = start;
@@ -65,15 +65,15 @@ public class Measurements {
         }
 
         public int next() {
-            if ( frag != currentFrag ) {
+            if (frag != currentFrag) {
                 // we are in an old (complete) fragment
-                if ( cursor >= fragSize ) {
-                    frag = (int[])fiter.next();
+                if (cursor >= fragSize) {
+                    frag = (int[]) fiter.next();
                     cursor = 0;
                 }
             } else {
                 // we are in the last fragment, did we run off the end?
-                if ( cursor >= offset ) {
+                if (cursor >= offset) {
                     throw new NoSuchElementException();
                 }
             }
@@ -102,6 +102,7 @@ public class Measurements {
     /**
      * This constructor for the <code>Measurements</code> class creates a new instance with the specified
      * fragment size.
+     *
      * @param fragsize the fragment size to use for internal representation
      */
     public Measurements(int fragsize) {
@@ -112,12 +113,13 @@ public class Measurements {
 
     /**
      * The <code>add()</code> method adds a new measurement to this set.
+     *
      * @param nm the new measurement to add
      */
     public void add(int nm) {
         recordMinMax(nm);
         currentFrag[offset++] = nm;
-        if ( offset >= fragSize ) {
+        if (offset >= fragSize) {
             newFragment();
             offset = 0;
         }
@@ -125,7 +127,7 @@ public class Measurements {
     }
 
     private void recordMinMax(int nm) {
-        if ( total == 0 ) {
+        if (total == 0) {
             min = max = nm;
         } else {
             max = max > nm ? max : nm;
@@ -141,6 +143,7 @@ public class Measurements {
     /**
      * The <code>iterator()</code> method returns an interator over the measurements, starting with the
      * specified measurement.
+     *
      * @param start the index of the first measurement to start from
      * @return an iterator that will start at the specified measurement and continue until the end
      */
@@ -150,6 +153,7 @@ public class Measurements {
 
     /**
      * The <code>size()</code> method returns the number of entries in this measurement data.
+     *
      * @return the number of measurements
      */
     public int size() {
@@ -159,11 +163,12 @@ public class Measurements {
     /**
      * The <code>addAll()</code> method adds all of the measurements from another measurement structure
      * to the end of this measurement structure.
+     *
      * @param m the measurements to add to the end of this list
      */
     public void addAll(Measurements m) {
         Iterator i = m.iterator(0);
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             add(i.next());
         }
     }

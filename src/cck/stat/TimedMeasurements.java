@@ -33,6 +33,7 @@
 package cck.stat;
 
 import cck.util.Util;
+
 import java.util.Arrays;
 
 /**
@@ -61,8 +62,8 @@ public class TimedMeasurements {
         }
 
         Fragment find(long time) {
-            if ( right == null || time < right.beginTime ) {
-                return left != null ? left.find(time) : (Fragment)this;
+            if (right == null || time < right.beginTime) {
+                return left != null ? left.find(time) : (Fragment) this;
             } else {
                 return right.find(time);
             }
@@ -83,7 +84,7 @@ public class TimedMeasurements {
         }
 
         public void next(Measurement m) {
-            if ( cursor >= frag.offset ) {
+            if (cursor >= frag.offset) {
                 frag = frag.next;
                 cursor = 0;
             }
@@ -109,14 +110,14 @@ public class TimedMeasurements {
     }
 
     TreeNode addNode(TreeNode tn, TreeNode parent) {
-        if ( parent == null ) {
+        if (parent == null) {
             // no parent exists, create oldest ancestor
             TreeNode np = new TreeNode(tn, tn.beginTime);
             root = np;
             tn.parent = np;
             return np;
         }
-        if ( parent.right == null ) {
+        if (parent.right == null) {
             // there is free space in this parent
             parent.right = tn;
             tn.parent = parent;
@@ -151,6 +152,7 @@ public class TimedMeasurements {
     /**
      * This constructor for the <code>Measurements</code> class creates a new instance with the specified
      * fragment size.
+     *
      * @param fragsize the fragment size to use for internal representation
      */
     public TimedMeasurements(int fragsize) {
@@ -160,11 +162,12 @@ public class TimedMeasurements {
 
     /**
      * The <code>add()</code> method adds a new measurement to this set.
+     *
      * @param time the time of the measurement
-     * @param nm the new measurement to add
+     * @param nm   the new measurement to add
      */
     public void add(long time, int nm) {
-        if ( currentTime > time ) {
+        if (currentTime > time) {
             throw Util.failure("Timed measurements must be inserted in order");
         }
 
@@ -175,13 +178,13 @@ public class TimedMeasurements {
         total++;
         currentTime = time;
         current.offset++;
-        if ( current.offset >= fragSize ) {
+        if (current.offset >= fragSize) {
             newFragment();
         }
     }
 
     private void recordMinMax(int nm) {
-        if ( total == 0 ) {
+        if (total == 0) {
             min = max = nm;
         } else {
             max = max > nm ? max : nm;
@@ -192,7 +195,7 @@ public class TimedMeasurements {
 
     void newFragment() {
         Fragment nf = new Fragment(currentTime, fragSize);
-        if ( current != null ) {
+        if (current != null) {
             current.next = nf;
             addNode(nf, current.parent);
         } else {
@@ -205,21 +208,23 @@ public class TimedMeasurements {
     /**
      * The <code>iterator()</code> method returns an interator over the measurements, starting with the
      * specified measurement.
+     *
      * @param startTime the time to start
      * @return an iterator that will start at the specified measurement and continue until the end
      */
     public Iterator iterator(long startTime) {
         Fragment f = root.find(startTime);
-        if ( startTime <= f.beginTime ) {
+        if (startTime <= f.beginTime) {
             return new Iterator(f, 0);
         }
         int ind = Arrays.binarySearch(f.times, startTime);
-        if ( ind < 0 ) return new Iterator(f, f.offset-1);
+        if (ind < 0) return new Iterator(f, f.offset - 1);
         else return new Iterator(f, ind);
     }
 
     /**
      * The <code>size()</code> method returns the number of entries in this measurement data.
+     *
      * @return the number of measurements
      */
     public int size() {
@@ -229,12 +234,13 @@ public class TimedMeasurements {
     /**
      * The <code>addAll()</code> method adds all of the measurements from another measurement structure
      * to the end of this measurement structure.
+     *
      * @param m the measurements to add to the end of this list
      */
     public void addAll(TimedMeasurements m) {
         Measurement nm = new Measurement();
         Iterator i = m.iterator(0);
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             i.next(nm);
             add(nm.time, nm.value);
         }
@@ -242,6 +248,7 @@ public class TimedMeasurements {
 
     /**
      * The <code>getLastTime()</code> method returns the time when the last measurement was recorded.
+     *
      * @return the time in clock cycles that the last measurement was recorded
      */
     public long getLastTime() {
