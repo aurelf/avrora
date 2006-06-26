@@ -34,7 +34,10 @@ package cck.help;
 
 import cck.text.StringUtil;
 import cck.text.Terminal;
-import cck.util.*;
+import cck.util.Option;
+import cck.util.Options;
+import cck.util.Util;
+
 import java.util.*;
 
 /**
@@ -53,8 +56,8 @@ public class HelpCategory implements HelpItem {
 
     public static final Comparator COMPARATOR = new Comparator() {
         public int compare(Object o1, Object o2) {
-            HelpCategory c1 = (HelpCategory)o1;
-            HelpCategory c2 = (HelpCategory)o2;
+            HelpCategory c1 = (HelpCategory) o1;
+            HelpCategory c2 = (HelpCategory) o2;
             return String.CASE_INSENSITIVE_ORDER.compare(c1.name, c2.name);
         }
     };
@@ -73,7 +76,7 @@ public class HelpCategory implements HelpItem {
         }
 
         void printHelp() {
-            if ( title != null ) {
+            if (title != null) {
                 Terminal.printBrightBlue(title);
                 Terminal.println("\n");
             }
@@ -105,7 +108,7 @@ public class HelpCategory implements HelpItem {
 
             Iterator i = l.iterator();
             while (i.hasNext()) {
-                Option opt = (Option)i.next();
+                Option opt = (Option) i.next();
                 opt.printHelp();
             }
 
@@ -125,7 +128,7 @@ public class HelpCategory implements HelpItem {
         }
 
         void printHelp() {
-            if ( title != null ) {
+            if (title != null) {
                 Terminal.printBrightBlue(title);
                 Terminal.println("\n");
             }
@@ -135,7 +138,7 @@ public class HelpCategory implements HelpItem {
 
             Iterator i = list.iterator();
             while (i.hasNext()) {
-                HelpItem hi = (HelpItem)i.next();
+                HelpItem hi = (HelpItem) i.next();
                 hi.printHelp();
             }
 
@@ -146,6 +149,7 @@ public class HelpCategory implements HelpItem {
     /**
      * The constructor for the <code>HelpCategory</code> class creates a new help category with the specified
      * short name and the specified default help.
+     *
      * @param name the short name of this category (where it is accessible from the command line)
      * @param help the help description for this category
      */
@@ -157,6 +161,7 @@ public class HelpCategory implements HelpItem {
 
     /**
      * The <code>getHelp()</code> method returns a string representing help for this help item.
+     *
      * @return a help string for this item
      */
     public String getHelp() {
@@ -166,6 +171,7 @@ public class HelpCategory implements HelpItem {
     /**
      * The <code>getName()</code> method returns the short name for this help category. This short name
      * is used to add this help category to the global help category database.
+     *
      * @return the short name of this help category
      */
     public String getName() {
@@ -174,6 +180,7 @@ public class HelpCategory implements HelpItem {
 
     /**
      * The <code>setName()</code> method is used to set the short name for this help category.
+     *
      * @param nm the new short name for this category
      */
     public void setName(String nm) {
@@ -183,7 +190,8 @@ public class HelpCategory implements HelpItem {
     /**
      * The <code>addSection()</code> method adds a new section to this help category with the specified title
      * and a paragraph that is automatically formatted when printed out.
-     * @param title the title of the new section
+     *
+     * @param title     the title of the new section
      * @param paragraph a long string representing the text for this section
      */
     public void addSection(String title, String paragraph) {
@@ -194,6 +202,7 @@ public class HelpCategory implements HelpItem {
      * The <code>addOptionSection()</code> method adds a new section to this help category with the specified
      * options. The new section will contain a paragraph description of the options and list the options in
      * alphabetical order.
+     *
      * @param para a summary of the options
      * @param opts the options for this help category
      */
@@ -204,9 +213,10 @@ public class HelpCategory implements HelpItem {
     /**
      * The <code>addListSection()</code> method adds a new section to this help category with the specified
      * list of help items.
+     *
      * @param title the title of the new sectiobn
-     * @param para a paragraph description of the section
-     * @param l a list of <code>HelpItem</code> instances that will be added to the end of the section
+     * @param para  a paragraph description of the section
+     * @param l     a list of <code>HelpItem</code> instances that will be added to the end of the section
      */
     public void addListSection(String title, String para, List l) {
         sections.addLast(new ListSection(title, para, l));
@@ -215,15 +225,16 @@ public class HelpCategory implements HelpItem {
     /**
      * The <code>addSubcategorySection</code> method adds a new section that is a list of subcategories
      * under this main category.
+     *
      * @param title the title of the section
-     * @param para a paragraph description of this section
-     * @param l a list of subcategories
+     * @param para  a paragraph description of this section
+     * @param l     a list of subcategories
      */
     public void addSubcategorySection(String title, String para, List l) {
         Iterator i = l.iterator();
         LinkedList sl = new LinkedList();
-        while ( i.hasNext() ) {
-            HelpCategory hc = (HelpCategory)i.next();
+        while (i.hasNext()) {
+            HelpCategory hc = (HelpCategory) i.next();
             sl.addLast(new SubcategoryItem(4, hc));
         }
         addListSection(title, para, sl);
@@ -232,6 +243,7 @@ public class HelpCategory implements HelpItem {
     /**
      * The <code>addCommandExample()</code> method adds a command example, properly formatted, to
      * this section.
+     *
      * @param prefix  a string that is the prefix to the command line
      * @param command the command line example to add
      */
@@ -244,8 +256,8 @@ public class HelpCategory implements HelpItem {
      */
     public void printHelp() {
         Iterator i = sections.iterator();
-        while ( i.hasNext() ) {
-            Section s = (Section)i.next();
+        while (i.hasNext()) {
+            Section s = (Section) i.next();
             s.printHelp();
         }
     }

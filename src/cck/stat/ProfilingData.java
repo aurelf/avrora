@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2005, Regents of the University of California
+ * Copyright (c) 2004-2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,24 +28,48 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * Created Jan 29, 2006
  */
-package cck.text;
+
+package cck.stat;
+
+import cck.text.Terminal;
 
 /**
- * The <code>Printable</code> interface can be implemented by classes that support
- * printing to a printer (e.g. syntax trees). This interface corresponds roughly
- * to a type of visitor pattern for printing.
- *
- * @author Ben L. Titzer
+ * @author Ben L. Titzer This class is used to record instances of profiling data from a Hashtable.
  */
-public interface Printable {
-    /**
-     * The <code>print()</code> method prints this object to the specified printer.
-     *
-     * @param p the printer to which to output the textual representation of this
-     *          object.
-     */
-    public void print(Printer p);
+public abstract class ProfilingData {
+
+    abstract void computeStatistics();
+
+    abstract void reportData();
+
+    abstract void merge(ProfilingData d);
+
+    abstract boolean dataCollected();
+
+    void printDistribution(int base, int data[]) {
+        int max, cntr;
+        float scale = 1;
+
+        if (data.length == 0) return;
+
+        for (max = data[0], cntr = 0; cntr < data.length; cntr++) {
+            if (data[cntr] > max) max = data[cntr];
+        }
+
+        if (max > 70) scale = ((float) max) / 70;
+
+        for (cntr = 0; cntr < data.length; cntr++) {
+            float fstars = ((float) data[cntr]) / scale;
+            int stars = (int) fstars;
+            if ((fstars - stars) >= 0.5) stars++;
+
+            Terminal.print("\n" + (base + cntr) + ':' + data[cntr] + '\t');
+
+            for (int scntr = 0; scntr < stars; scntr++) {
+                Terminal.print("*");
+            }
+        }
+        Terminal.print("\n");
+    }
 }

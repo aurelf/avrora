@@ -71,12 +71,13 @@ public class SourceError extends Util.Error {
      * point which indicates the location in a file where the error occured, a message,
      * and a list of parameters to the error (such as the name of a class or method
      * where the error occurred).
+     *
      * @param type a string that indicates the type of error that occured such as
-     * "Undefined Variable"
-     * @param p the point in the file where the error occurred
-     * @param msg a short message reported to the user that explains the error
-     * @param ps a list of parameters to the error such as the name of the variable
-     * that is undeclared, etc.
+     *             "Undefined Variable"
+     * @param p    the point in the file where the error occurred
+     * @param msg  a short message reported to the user that explains the error
+     * @param ps   a list of parameters to the error such as the name of the variable
+     *             that is undeclared, etc.
      */
     public SourceError(String type, SourcePoint p, String msg, String[] ps) {
         super(msg, null);
@@ -91,7 +92,7 @@ public class SourceError extends Util.Error {
      * and column number where this error occurred.
      */
     public void report() {
-        SourcePoint pt = point == null ? new SourcePoint("*unknown*",0,0,0,0) : point;
+        SourcePoint pt = point == null ? new SourcePoint("*unknown*", 0, 0, 0, 0) : point;
         pt.report();
         Terminal.print(" ");
         Terminal.printRed(errorType);
@@ -114,6 +115,7 @@ public class SourceError extends Util.Error {
     /**
      * The <code>getErrorType()</code> method returns a string representing the type of the
      * error.
+     *
      * @return a string that represents the type of the error
      */
     public String getErrorType() {
@@ -123,6 +125,7 @@ public class SourceError extends Util.Error {
     /**
      * The <code>getErrorParams()</code> method returns a reference to the parameters to
      * the error.
+     *
      * @return a reference to an array that contains the parameters to the error, if any
      */
     public String[] getErrorParams() {

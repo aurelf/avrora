@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2005, Regents of the University of California
+ * Copyright (c) 2004-2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,37 +28,68 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * Creation date: Sep 12, 2005
  */
 
-package cck;
+package cck.stat;
 
-import cck.util.VersionTag;
+import java.util.Vector;
 
-/**
- * The <code>Version</code> class records the version information for this module.
- * It has a single static method called <code>getVersion()</code> to retrieve the
- * version for this module in a <code>VersionTag</code> object.
- * <p/>
- * </p>
- * This file is automatically updated by CVS commit scripts that increment the
- * commit number each time code is committed to CVS. This guarantees that the
- * version number uniquely determines the version of the software.
- *
- * @author Ben L. Titzer
- */
-public class Version {
+abstract public class Database {
+
+    protected Vector items;
+
+    protected Database() {
+        items = new Vector(25);
+    }
 
     /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
+     * LegacyRegister a data item into this database.
      */
-    public static final int commit = 36;
+    public void registerDataItem(DataItem d) {
+        items.add(d);
+    }
 
     /**
-     * The <code>TAG</code> field stores a reference to the version tag for the current
-     * release and commit number.
+     * Generate a textual report of the information in this database. Default behavior is to traverse all
+     * items in order of registering.
      */
-    public static final VersionTag TAG = new VersionTag("cck", "Stable", 0, 1, commit);
+    public void textReport() {
+        int numitems = items.size();
+
+        for (int cntr = 0; cntr < numitems; cntr++) {
+            DataItem i = (DataItem) items.get(cntr);
+            i.textReport();
+        }
+    }
+
+    /**
+     * Process the data in the database. Default behavior is to traverse all items in order of registering.
+     */
+    public void processData() {
+        int numitems = items.size();
+
+        for (int cntr = 0; cntr < numitems; cntr++) {
+            DataItem i = (DataItem) items.get(cntr);
+            i.processData();
+        }
+    }
+
+    /**
+     * Accept a visitor into this database. Default behavior is to traverse all items in order of
+     * registering.
+     */
+    public void accept(DatabaseVisitor v) {
+        int numitems = items.size();
+
+        for (int cntr = 0; cntr < numitems; cntr++) {
+            DataItem i = (DataItem) items.get(cntr);
+            v.visit(i);
+        }
+    }
+
+    public abstract boolean isEmpty();
+
+    public abstract void freeze();
+
+    public abstract String toString();
 }

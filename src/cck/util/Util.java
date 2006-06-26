@@ -129,8 +129,9 @@ public class Util {
      * The <code>unimplemented()</code> method is a utility that constructs a
      * <code>InternalError</code> instance. This is called from methods or classes with unimplemented
      * functionality for documentation and fail-fast purposes.
+     *
      * @return an instance of the <code>Util.InternalError</code> class that specifies that this
-     * functionality is not yet implemented
+     *         functionality is not yet implemented
      */
     public static InternalError unimplemented() {
         return new InternalError("unimplemented");
@@ -140,8 +141,9 @@ public class Util {
      * The <code>unreachable()</code> method is a utility that constructs a
      * <code>InternalError</code> instance. This is called from states that are expected
      * to be unreachable.
+     *
      * @return an instance of the <code>Util.InternalError</code> class that specifies that
-     * this case is unreachable
+     *         this case is unreachable
      */
     public static InternalError unreachable() {
         return new InternalError("unreachable");
@@ -151,6 +153,7 @@ public class Util {
      * The <code>failure()</code> method is a utility that constructs a
      * <code>InternalError</code> instance with the specified message. It is useful for internal
      * error conditions and defensive programming.
+     *
      * @return an instance of the <code>Util.InternalError</code> class with the specified error message
      */
     public static InternalError failure(String s) {
@@ -160,6 +163,7 @@ public class Util {
     /**
      * The <code>warning()</code> method writes a warning to the terminal. It does not
      * produce an exception or a stack trace.
+     *
      * @param s the warning to report
      */
     public static void warning(String s) {
@@ -171,6 +175,7 @@ public class Util {
      * The <code>unexpected()</code> method is a utility method that wraps an unexpected exception
      * so that it can be throw again and reported later. This is useful for code that does IO but does
      * not want to handle IO exceptions, for example.
+     *
      * @param t the throwable that was encountered
      * @return a new instance of the <code>Unexpected</code> class that wraps up the thrown exception
      */
@@ -181,6 +186,7 @@ public class Util {
     /**
      * The <code>userError()</code> method constructs and throws an error in situations that are likely
      * due to user error. This is useful for files that are not found, an incorrect option value, etc.
+     *
      * @param s the message for the user
      */
     public static void userError(String s) {
@@ -190,6 +196,7 @@ public class Util {
     /**
      * The <code>userError()</code> method constructs and throws an error in situations that are likely
      * due to user error. This is useful for files that are not found, an incorrect option value, etc.
+     *
      * @param s the message for the user
      * @param p the parameter to the message, automatically put in quotes
      */
@@ -201,6 +208,7 @@ public class Util {
      * The <code>verifyFilesExist()</code> method verifies that each of the specified
      * files exists and is readable. If one of the files does not exist, it will report
      * an error to the user.
+     *
      * @param files the files to verify the existence of
      * @return true if all of the files exist and are readable
      */
@@ -208,7 +216,7 @@ public class Util {
         boolean success = true;
         for (int cntr = 0; cntr < files.length; cntr++) {
             String file = files[cntr];
-            if ( !verifyFileExists(file) ) success = false;
+            if (!verifyFileExists(file)) success = false;
         }
         return success;
     }
@@ -217,6 +225,7 @@ public class Util {
      * The <code>verifyFileExists()</code> method verifies that the specified file
      * exists and is readable. If the file does not exist, it will report an error
      * to the user and return <code>false</code>.
+     *
      * @param file the name of the file
      * @return true if the file exists and is readable; false otherwise
      */

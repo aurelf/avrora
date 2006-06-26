@@ -41,7 +41,7 @@ import java.io.PrintStream;
  *
  * @author Ben L. Titzer
  */
-public class Terminal {
+public final class Terminal {
 
     public static boolean useColors = true;
     public static boolean htmlColors;
@@ -103,13 +103,13 @@ public class Terminal {
     static {
         HTML_STRINGS = new String[HTML_COLORS.length];
         for (int cntr = 0; cntr < HTML_STRINGS.length; cntr++)
-            HTML_STRINGS[cntr] = "<font color=" + HTML_COLORS[cntr] + '>';
+            HTML_STRINGS[cntr] = "<font color=" + HTML_COLORS[cntr] + ">";
     }
 
     public static final int ERROR_COLOR = COLOR_RED;
     public static final int WARN_COLOR = COLOR_YELLOW;
 
-    public static void print(int[] colors, String[] s) {
+    public static void print(int colors[], String s[]) {
         for (int cntr = 0; cntr < s.length; cntr++) {
             if (cntr < colors.length) print(colors[cntr], s[cntr]);
             else print(s[cntr]);
@@ -127,7 +127,8 @@ public class Terminal {
     }
 
     public static void append(int color, StringBuffer buf, String s) {
-        if (useColors && color < MAXCOLORS && color >= 0) {
+        if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
+        if (useColors) {
             if (htmlColors) {
                 buf.append(HTML_STRINGS[color]);
                 buf.append(s);

@@ -32,11 +32,18 @@
 
 package cck.test;
 
-import cck.text.*;
+import cck.text.Status;
+import cck.text.StringUtil;
+import cck.text.Terminal;
+import cck.text.Verbose;
 import cck.util.ClassMap;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * The <code>AutomatedTester</code> is a class that is designed to be an in-program test facility. It is
@@ -54,6 +61,7 @@ import java.util.*;
 public class AutomatedTester {
 
     public static boolean LONG_REPORT;
+    public static boolean PROGRESS_REPORT;
 
     private final ClassMap harnessMap;
     private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
@@ -114,7 +122,7 @@ public class AutomatedTester {
         Terminal.println(": " + l.size() + " of " + total);
         Iterator i = l.iterator();
         while (i.hasNext()) {
-            TestCase tc = (TestCase)i.next();
+            TestCase tc = (TestCase) i.next();
             report(tc.getFileName(), tc.result);
         }
     }
@@ -129,8 +137,7 @@ public class AutomatedTester {
         Terminal.print("  ");
         Terminal.printRed(fname);
         Terminal.print(": ");
-        if ( LONG_REPORT )
-            result.longReport();
+        if (LONG_REPORT) result.longReport();
         else result.shortReport();
         Terminal.print("\n");
     }
@@ -140,10 +147,13 @@ public class AutomatedTester {
         Throwable exception = null;
 
         try {
+            if ( PROGRESS_REPORT ) Terminal.print("Running "+fname+"...");
             tc.run();
         } catch (Throwable t) {
             exception = t;
         }
+
+        if ( PROGRESS_REPORT ) Terminal.nextln();
 
         tc.result = tc.match(exception);
         return tc;
@@ -174,13 +184,11 @@ public class AutomatedTester {
         String expect = vars.getProperty("Result");
         String hname = vars.getProperty("Harness");
 
-        if (expect == null)
-            return new TestCase.Malformed(fname, "no result specified");
-        if (hname == null)
-            return new TestCase.Malformed(fname, "no test harness specified");
+        if (expect == null) return new TestCase.Malformed(fname, "no result specified");
+        if (hname == null) return new TestCase.Malformed(fname, "no test harness specified");
 
         try {
-            TestHarness harness = (TestHarness)harnessMap.getObjectOfClass(hname);
+            TestHarness harness = (TestHarness) harnessMap.getObjectOfClass(hname);
             return harness.newTestCase(fname, vars);
         } catch (Throwable t) {
             return new TestCase.InitFailure(fname, t);

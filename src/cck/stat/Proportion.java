@@ -32,10 +32,9 @@
 
 package cck.stat;
 
-import cck.text.Printer;
+import cck.text.Terminal;
 
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.Vector;
 
 /**
  * This class represents the proportion of different items with respect to one another. For example, the
@@ -43,66 +42,89 @@ import java.util.LinkedList;
  *
  * @author Ben L. Titzer
  */
-public class Proportion implements DataItem {
+public class Proportion extends DataItem {
 
-    protected final String name;
-    protected LinkedList shares;
+    protected Vector shares;
     protected int total;
+
+    /**
+     * Internal class that encapsulates both a counter and the fraction of the total that this named Share
+     * represents.
+     */
+    public class Share extends Counter {
+        float fraction;
+
+        public Share(String newname) {
+            super(newname);
+        }
+
+        public Share(String newname, int count) {
+            super(newname, count);
+        }
+
+        public float getFraction() {
+            return fraction;
+        }
+
+        public void processData() {
+            Proportion.this.processData();
+        }
+
+        public void textReport() {
+            Terminal.print("\n   " + name + ": " + count + ", " + (100 * fraction) + '%');
+        }
+    }
 
     /**
      * Public constructor that takes a string name.
      */
     public Proportion(String newname) {
         name = newname;
-        shares = new LinkedList();
-    }
-
-    public String getName() {
-        return name;
+        shares = new Vector(5);
     }
 
     /**
      * Generate a text report of the shares.
-     * @param printer
      */
-    public void print(Printer printer) {
-        Iterator i = shares.iterator();
-        printer.print("\n " + name);
-        printer.print("\n---------------------------------------------------------------------");
+    public void textReport() {
+        int numshares = shares.size();
+        Terminal.print("\n " + name);
+        Terminal.print("\n---------------------------------------------------------------------");
 
-        while ( i.hasNext() ) {
-            Counter s = (Counter) i.next();
-            // TODO: print out the fraction
-            s.print(printer);
+        for (int cntr = 0; cntr < numshares; cntr++) {
+            Share s = (Share) shares.get(cntr);
+            s.textReport();
         }
 
-        printer.print("\n");
+        Terminal.print("\n");
     }
 
     /**
      * LegacyRegister a counter object with this proportion.
      */
-    public Counter newCounter(String name) {
-        Counter s = new Counter(name);
+    public Share createShare(String name) {
+        Share s = new Share(name);
         shares.add(s);
         return s;
     }
 
     /**
-     * Register an integer count with this proportion object and return a Counter object.
+     * LegacyRegister an integer count with this proportion object and return a Counter object.
      */
-    public void addCounter(Counter c) {
-        shares.add(c);
+    public Share registerCount(String str, int count) {
+        Share s = new Share(str, count);
+        shares.add(s);
+        return s;
     }
 
     /**
      * Search for the counter with the specified string name and return it if it is registered.
      */
-    public Counter getCounter(String name) {
-        Iterator i = shares.iterator();
+    public Share getShareForName(String name) {
+        int numshares = shares.size();
 
-        while ( i.hasNext() ) {
-            Counter s = (Counter) i.next();
+        for (int i = 0; i < numshares; i++) {
+            Share s = (Share) shares.get(i);
             if (name.equals(s.getName())) return s;
         }
 
@@ -112,29 +134,44 @@ public class Proportion implements DataItem {
     /**
      * Search for the counter with the specified name and report its proportion. Return -1 if not found.
      */
-    public float getFraction(String name) {
-        process(); // make sure proportions up to date
+    public float getFractionForName(String name) {
+        int numshares = shares.size();
 
-        Counter c = getCounter(name);
-        return c == null ? -1 : c.getTotal() / (float)total;
+        processData(); // make sure proportions up to date
+
+        for (int i = 0; i < numshares; i++) {
+            Share s = (Share) shares.get(i);
+            if (name.equals(s.getName())) return s.fraction;
+        }
+
+        return -1;
     }
 
     /**
-     * Do the computations and compute the proportions of each share.
+     * Do the computations and compute the proportions of each.
      */
-    public void process() {
-        Iterator i = shares.iterator();
-        total = 0;
+    public void processData() {
+        int numshares = shares.size();
+        int tmptotal = 0;
 
-        while (i.hasNext()) {
-            total += ((Counter) i.next()).getTotal();
+        for (int i = 0; i < numshares; i++) {
+            Share s = (Share) shares.get(i);
+            tmptotal += s.getTotal();
         }
+
+        total = tmptotal;
+
+        for (int i = 0; i < numshares; i++) {
+            Share s = (Share) shares.get(i);
+            s.fraction = ((float) s.getTotal()) / ((float) total);
+        }
+
     }
 
     /**
      * Return true if this proportion has any information available.
      */
-    public boolean empty() {
-        return (shares.isEmpty());
+    public boolean hasData() {
+        return (shares.size() > 0);
     }
 }

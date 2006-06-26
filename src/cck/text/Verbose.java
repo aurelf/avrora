@@ -45,8 +45,8 @@ public class Verbose {
 
     static boolean ALL;
 
-    static final HashMap printerMap = new HashMap();
-    static final Printer verbosePrinter = getVerbosePrinter("verbose");
+    final static HashMap printerMap = new HashMap();
+    final static Printer verbosePrinter = getVerbosePrinter("verbose");
 
     public static Printer getVerbosePrinter(String category) {
         Printer p = getPrinter(category);
@@ -57,7 +57,7 @@ public class Verbose {
     }
 
     public static void setVerbose(String category, boolean on) {
-        if ("all".equals(category)) {
+        if (category.equals("all")) {
             ALL = on;
             Iterator i = printerMap.values().iterator();
             while (i.hasNext()) {

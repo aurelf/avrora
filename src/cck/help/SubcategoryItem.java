@@ -51,8 +51,9 @@ public class SubcategoryItem implements HelpItem {
     /**
      * The constructor for the <code>SubcategoryItem</code> method creates a new instance that represents
      * a help item that can be added to the end of a section in another help category.
+     *
      * @param indent the number of spaces to indent when printing to the terminal
-     * @param hc the help category that this item refers to
+     * @param hc     the help category that this item refers to
      */
     public SubcategoryItem(int indent, HelpCategory hc) {
         this.helpCat = hc;
@@ -61,6 +62,7 @@ public class SubcategoryItem implements HelpItem {
 
     /**
      * The <code>getHelp()</code> method returns the help string of the underlying help category.
+     *
      * @return a help string for this item.
      */
     public String getHelp() {
@@ -75,13 +77,13 @@ public class SubcategoryItem implements HelpItem {
         String h = getHelp();
         Terminal.print(StringUtil.dup(' ', indent));
         String name;
-        if ( Terminal.htmlColors ) {
-            name = "<a href="+helpCat.name+".html>"+helpCat.name+"</a>";
+        if (Terminal.htmlColors) {
+            name = "<a href=" + helpCat.name + ".html>" + helpCat.name + "</a>";
         } else {
             name = helpCat.name;
         }
         Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, "-help", " ", name);
         Terminal.nextln();
-        Terminal.println(StringUtil.formatParagraphs(h, indent+4, 0, Terminal.MAXLINE));
+        Terminal.println(StringUtil.formatParagraphs(h, indent + 4, 0, Terminal.MAXLINE));
     }
 }

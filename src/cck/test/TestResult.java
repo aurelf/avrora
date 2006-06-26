@@ -155,7 +155,7 @@ public abstract class TestResult {
         }
 
         public void shortReport() {
-            Terminal.print("encountered internal error: "+encountered.getMessage());
+            Terminal.print("encountered internal error: " + encountered.getMessage());
         }
 
         public void longReport() {

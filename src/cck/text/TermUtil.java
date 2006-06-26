@@ -159,8 +159,5 @@ public class TermUtil {
         Terminal.nextln();
     }
 
-    public static void printSeparator(String header) {
-        printSeparator(Terminal.MAXLINE, header);
-    }
 
 }

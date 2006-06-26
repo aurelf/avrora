@@ -34,6 +34,7 @@ package cck.util;
 
 import cck.text.StringUtil;
 import cck.text.Terminal;
+
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Comparator;
@@ -64,8 +65,8 @@ public abstract class Option {
      */
     public static final Comparator COMPARATOR = new Comparator() {
         public int compare(Object o1, Object o2) {
-            Option opt1 = (Option)o1;
-            Option opt2 = (Option)o2;
+            Option opt1 = (Option) o1;
+            Option opt2 = (Option) o2;
             return String.CASE_INSENSITIVE_ORDER.compare(opt1.getName(), opt2.getName());
         }
     };
@@ -149,8 +150,7 @@ public abstract class Option {
      * @param val  the (invalid) value passed
      */
     protected void parseError(String name, String type, String val) {
-        Util.userError("Option Error", "invalid value for " + type + " option " +
-                StringUtil.quote(name) + " = " + StringUtil.quote(val));
+        Util.userError("Option Error", "invalid value for " + type + " option " + StringUtil.quote(name) + " = " + StringUtil.quote(val));
     }
 
     /**
@@ -332,22 +332,19 @@ public abstract class Option {
             CharacterIterator iter = new StringCharacterIterator(val);
             try {
                 // check for leading [
-                if (!StringUtil.peekAndEat(iter, '['))
-                    parseError(name, "interval", val);
+                if (!StringUtil.peekAndEat(iter, '[')) parseError(name, "interval", val);
 
                 String lstr = StringUtil.readDecimalString(iter, 12);
                 low = java.lang.Long.parseLong(lstr);
 
                 // check for ',' separator
-                if (!StringUtil.peekAndEat(iter, ','))
-                    parseError(name, "interval", val);
+                if (!StringUtil.peekAndEat(iter, ',')) parseError(name, "interval", val);
 
                 String hstr = StringUtil.readDecimalString(iter, 12);
                 high = java.lang.Long.parseLong(hstr);
 
                 // check for trailing ]
-                if (!StringUtil.peekAndEat(iter, ']'))
-                    parseError(name, "interval", val);
+                if (!StringUtil.peekAndEat(iter, ']')) parseError(name, "interval", val);
 
             } catch (NumberFormatException e) {
                 // in case of NumberFormatException
@@ -433,6 +430,7 @@ public abstract class Option {
          * The <code>setNewDefault()</code> method sets a new default value for this option. This is useful
          * for inherited options that might have a different default value for different actions or different
          * simulations.
+         *
          * @param val the new default value for this option
          */
         public void setNewDefault(String val) {
@@ -589,8 +587,7 @@ public abstract class Option {
                 value = true;
             } else if (val.equals("false")) {
                 value = false;
-            } else
-                parseError(name, "boolean", val);
+            } else parseError(name, "boolean", val);
         }
 
         /**

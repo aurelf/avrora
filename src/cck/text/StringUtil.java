@@ -34,9 +34,13 @@ package cck.text;
 
 import cck.util.Arithmetic;
 import cck.util.Util;
+
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * The <code>StringUtil</code> class implements several useful functions for dealing with strings such as
@@ -52,8 +56,8 @@ public class StringUtil {
     public static final String COMMA = ",";
     public static final String COMMA_SPACE = ", ";
     public static final String[] EMPTY_STRING_ARRAY = {};
-    public static final int[] DENOM = { 24, 60, 60, 1000 };
-    public static final int[] DAYSECS = { 60, 60 };
+    public static final int[] DENOM = {24, 60, 60, 1000};
+    public static final int[] DAYSECS = {60, 60};
     public static final char SQUOTE_CHAR = '\'';
     public static final char BACKSLASH = '\\';
     public static final char QUOTE_CHAR = '"';
@@ -73,9 +77,9 @@ public class StringUtil {
 
     public static String baseFileName(String f) {
         int sind = f.lastIndexOf('/');
-        if ( sind >= 0 ) f = f.substring(sind+1);
+        if (sind >= 0) f = f.substring(sind + 1);
         int dind = f.lastIndexOf('.');
-        if ( dind >= 0 ) f = f.substring(0, dind);
+        if (dind >= 0) f = f.substring(0, dind);
         return f;
     }
 
@@ -190,24 +194,23 @@ public class StringUtil {
 
     public static int readIntegerValue(CharacterIterator i) {
         char ch = i.current();
-        if ( ch == '-' ) return readDecimalValue(i, 10);
-        if ( ch == '0' ) {
+        if (ch == '-') return readDecimalValue(i, 10);
+        if (ch == '0') {
             ch = i.next();
-            if ( ch == 'x' || ch == 'X' ) {
+            if (ch == 'x' || ch == 'X') {
                 i.next();
                 return readHexValue(i, 8);
-            } else if ( ch == 'b' || ch == 'B' ) {
+            } else if (ch == 'b' || ch == 'B') {
                 i.next();
                 return readBinaryValue(i, 32);
-            }
-            else return readOctalValue(i, 11);
+            } else return readOctalValue(i, 11);
         } else return readDecimalValue(i, 10);
     }
 
     public static void skipWhiteSpace(CharacterIterator i) {
         while (true) {
             char c = i.current();
-            if (c != ' ' && c != '\n' && c != '\t')  break;
+            if (c != ' ' && c != '\n' && c != '\t') break;
             i.next();
         }
     }
@@ -227,8 +230,8 @@ public class StringUtil {
 
     public static boolean peekAndEat(CharacterIterator i, String s) {
         int ind = i.getIndex();
-        for ( int cntr = 0; cntr < s.length(); cntr++ ) {
-            if ( i.current() == s.charAt(cntr) ) i.next();
+        for (int cntr = 0; cntr < s.length(); cntr++) {
+            if (i.current() == s.charAt(cntr)) i.next();
             else {
                 i.setIndex(ind);
                 return false;
@@ -240,18 +243,17 @@ public class StringUtil {
     public static void expectChar(CharacterIterator i, char c) throws Exception {
         char r = i.current();
         i.next();
-        if (r != c)
-            Util.failure("parse error at "+i.getIndex()+", expected character "+squote(c));
+        if (r != c) Util.failure("parse error at " + i.getIndex() + ", expected character " + squote(c));
     }
 
     public static void expectChars(CharacterIterator i, String s) throws Exception {
-        for ( int cntr = 0; cntr < s.length(); cntr++ ) expectChar(i, s.charAt(cntr));
+        for (int cntr = 0; cntr < s.length(); cntr++) expectChar(i, s.charAt(cntr));
     }
 
     public static void expectKeyword(CharacterIterator i, String kw) {
         String str = StringUtil.readIdentifier(i);
-        if ( !str.equals(kw) )
-            Util.failure("parse error at "+i.getIndex()+", expected keyword "+StringUtil.quote(kw));
+        if (!str.equals(kw))
+            Util.failure("parse error at " + i.getIndex() + ", expected keyword " + StringUtil.quote(kw));
     }
 
 
@@ -259,11 +261,12 @@ public class StringUtil {
      * The <code>isHex()</code> method checks whether the specifed string represents a hexadecimal
      * integer. This method only checks the first two characters. If they match "0x" or "0X", then
      * this method returns true, otherwise, it returns false.
+     *
      * @param s the string to check whether it begins with a hexadecimal sequence
      * @return true if the string begins with "0x" or "0X"; false otherwise
      */
     public static boolean isHex(String s) {
-        if ( s.length() < 2 ) return false;
+        if (s.length() < 2) return false;
         char c = s.charAt(1);
         return s.charAt(0) == '0' && (c == 'x' || c == 'X');
     }
@@ -272,11 +275,12 @@ public class StringUtil {
      * The <code>isBin()</code> method checks whether the specifed string represents a binary
      * integer. This method only checks the first two characters. If they match "0b" or "0B", then
      * this method returns true, otherwise, it returns false.
+     *
      * @param s the string to check whether it begins with a hexadecimal sequence
      * @return true if the string begins with "0b" or "0B"; false otherwise
      */
     public static boolean isBin(String s) {
-        if ( s.length() < 2 ) return false;
+        if (s.length() < 2) return false;
         char c = s.charAt(1);
         return s.charAt(0) == '0' && (c == 'b' || c == 'B');
     }
@@ -452,23 +456,23 @@ public class StringUtil {
     }
 
     private static String convertToHex(long value, int width, int start, char[] result) {
-        if (value > (long)1 << width * 4) {
+        if (value > (long) 1 << width * 4) {
             StringBuffer buf = new StringBuffer();
-            for ( int cntr = 0; cntr < start; cntr++ ) buf.append(result[cntr]);
+            for (int cntr = 0; cntr < start; cntr++) buf.append(result[cntr]);
             buf.append(Long.toHexString(value).toUpperCase());
             return buf.toString();
         }
 
         int i = start + width - 1;
         for (int cntr = 0; cntr < width; cntr++) {
-            result[i - cntr] = CharUtil.HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf];
+            result[i - cntr] = CharUtil.HEX_CHARS[(int) (value >> (cntr * 4)) & 0xf];
         }
 
         return new String(result);
     }
 
     public static String to0xHex(long value, int width) {
-        char[] result = new char[width+2];
+        char[] result = new char[width + 2];
         result[0] = '0';
         result[1] = 'x';
         return convertToHex(value, width, 2, result);
@@ -484,13 +488,13 @@ public class StringUtil {
     }
 
     public static void toHex(StringBuffer buf, long value, int width) {
-        if (value > (long)1 << width * 4) {
+        if (value > (long) 1 << width * 4) {
             buf.append(Long.toHexString(value).toUpperCase());
             return;
         }
 
         for (int cntr = width - 1; cntr >= 0; cntr--)
-            buf.append(CharUtil.HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf]);
+            buf.append(CharUtil.HEX_CHARS[(int) (value >> (cntr * 4)) & 0xf]);
     }
 
     public static String splice(String[] a, String[] b) {
@@ -597,7 +601,7 @@ public class StringUtil {
     }
 
     public static char alpha(int num) {
-        return (char)('a' + num - 1);
+        return (char) ('a' + num - 1);
     }
 
     public static String qembed(String s1, String s2, String s3) {
@@ -614,7 +618,7 @@ public class StringUtil {
 
         expectChar(i, QUOTE_CHAR);
         while (true) {
-            if ( peekAndEat(i, QUOTE_CHAR) ) break;
+            if (peekAndEat(i, QUOTE_CHAR)) break;
             char c = i.current();
             i.next();
 
@@ -635,7 +639,7 @@ public class StringUtil {
         expectChar(i, SQUOTE_CHAR);
 
         char ch;
-        if ( peekAndEat(i, BACKSLASH) ) {
+        if (peekAndEat(i, BACKSLASH)) {
             ch = escapeChar(i);
         } else {
             ch = i.current();
@@ -651,15 +655,32 @@ public class StringUtil {
     private static char escapeChar(CharacterIterator i) {
         char c = i.current();
         switch (c) {
-            case 'f': i.next(); return '\f';
-            case 'b': i.next(); return '\b';
-            case 'n': i.next(); return '\n';
-            case 'r': i.next(); return '\r';
-            case BACKSLASH: i.next(); return BACKSLASH;
-            case SQUOTE_CHAR: i.next(); return SQUOTE_CHAR;
-            case QUOTE_CHAR: i.next(); return QUOTE_CHAR;
-            case 't': i.next(); return '\t';
-            case 'x':  return (char)readHexValue(i, 4);
+            case 'f':
+                i.next();
+                return '\f';
+            case 'b':
+                i.next();
+                return '\b';
+            case 'n':
+                i.next();
+                return '\n';
+            case 'r':
+                i.next();
+                return '\r';
+            case BACKSLASH:
+                i.next();
+                return BACKSLASH;
+            case SQUOTE_CHAR:
+                i.next();
+                return SQUOTE_CHAR;
+            case QUOTE_CHAR:
+                i.next();
+                return QUOTE_CHAR;
+            case 't':
+                i.next();
+                return '\t';
+            case 'x':
+                return (char) readHexValue(i, 4);
             case '0': // fall through
             case '1': // fall through
             case '2': // fall through
@@ -667,7 +688,8 @@ public class StringUtil {
             case '4': // fall through
             case '5': // fall through
             case '6': // fall through
-            case '7': return (char)readOctalValue(i, 3);
+            case '7':
+                return (char) readOctalValue(i, 3);
 
         }
         return c;
@@ -684,10 +706,8 @@ public class StringUtil {
         if (s.charAt(start) == '\"') start++;
         if (s.charAt(end - 1) == '\"') end--;
 
-        if (start < end)
-            return s.substring(start, end);
-        else
-            return "";
+        if (start < end) return s.substring(start, end);
+        else return "";
     }
 
     public static String formatParagraphs(String s, int leftJust, int indent, int width) {
@@ -744,14 +764,14 @@ public class StringUtil {
 
             if (consumed > width) {
                 if (lastSp >= 0) {
-                    String leftover = buf.substring(lastSp+1); // get leftover already in the buffer
+                    String leftover = buf.substring(lastSp + 1); // get leftover already in the buffer
                     buf.setLength(lastSp); // trim off any stuff after the last space
                     buf = newBuffer(leftover, buf, list); // create new buffer and add last to list
                     consumed = buf.length();
                 }
             }
         }
-        if ( buf.length() > 0 ) list.add(buf.toString());
+        if (buf.length() > 0) list.add(buf.toString());
         return list;
     }
 
@@ -778,9 +798,9 @@ public class StringUtil {
 
     // TODO: test this routine with negative numbers!
     public static String toFixedFloat(float fval, int places) {
-        StringBuffer buf = new StringBuffer(places+5);
+        StringBuffer buf = new StringBuffer(places + 5);
         // append the whole part
-        long val = (long)fval;
+        long val = (long) fval;
         buf.append(val);
         // append the fractional part
         float fract = fval >= 0 ? fval - val : val - fval;
@@ -790,15 +810,15 @@ public class StringUtil {
     }
 
     public static String toDecimal(long val, int places) {
-        StringBuffer buf = new StringBuffer(10+places);
-        while ( places > 0 ) {
+        StringBuffer buf = new StringBuffer(10 + places);
+        while (places > 0) {
             buf.append(val % 10);
             places--;
             val = val / 10;
-            if ( places == 0 ) buf.append('.');
+            if (places == 0) buf.append('.');
         }
         buf.reverse();
-        return val+buf.toString();
+        return val + buf.toString();
 
     }
 
@@ -811,20 +831,20 @@ public class StringUtil {
 
         buf.append(" [");
         // append each of the bits
-        for ( int bit = bits - 1; bit >= 0; bit-- )
+        for (int bit = bits - 1; bit >= 0; bit--)
             buf.append(Arithmetic.getBit(value, bit) ? '1' : '0');
 
         buf.append("] (");
         buf.append(value);
         buf.append(") ");
-        if ( bits < 9 ) {
+        if (bits < 9) {
             appendChar(value, buf);
         }
         return buf.toString();
     }
 
     private static void appendChar(int value, StringBuffer buf) {
-        switch ( value ) {
+        switch (value) {
             case '\n':
                 buf.append("'\\n'");
                 break;
@@ -837,10 +857,10 @@ public class StringUtil {
             case '\t':
                 buf.append("'\\t'");
                 break;
-           default:
-                if ( value >= 32 ) {
+            default:
+                if (value >= 32) {
                     buf.append(SQUOTE);
-                    buf.append((char)value);
+                    buf.append((char) value);
                     buf.append(SQUOTE);
                 }
         }
@@ -857,11 +877,10 @@ public class StringUtil {
 
     public static void appendSecs(StringBuffer buf2, long seconds) {
         long[] res = Arithmetic.modulus(seconds, DAYSECS);
-        for ( int cntr = 0; cntr < res.length; cntr++ ) {
-            if ( cntr > 0 ) {
+        for (int cntr = 0; cntr < res.length; cntr++) {
+            if (cntr > 0) {
                 buf2.append(':');
-                if ( res[cntr] < 10 )
-                    buf2.append('0');
+                if (res[cntr] < 10) buf2.append('0');
             }
             buf2.append(res[cntr]);
         }
@@ -869,10 +888,10 @@ public class StringUtil {
 
     public static void appendFract(StringBuffer buf, double val, int digits) {
         int cntr = 0;
-        for ( int radix = 10; cntr < digits; radix = radix*10, cntr++ ) {
-            if ( cntr == 0 ) buf.append('.');
-            int digit = (int)(val*radix) % 10;
-            buf.append((char)(digit + '0'));
+        for (int radix = 10; cntr < digits; radix = radix * 10, cntr++) {
+            if (cntr == 0) buf.append('.');
+            int digit = (int) (val * radix) % 10;
+            buf.append((char) (digit + '0'));
         }
     }
 
@@ -897,11 +916,11 @@ public class StringUtil {
     public static String stringReplace(String template, Properties p) {
         int max = template.length();
         StringBuffer buf = new StringBuffer(max);
-        for ( int pos = 0; pos < max; pos++ ) {
+        for (int pos = 0; pos < max; pos++) {
             char ch = template.charAt(pos);
-            if ( ch == '$' ) {
+            if (ch == '$') {
                 pos = replaceVar(pos, max, template, buf, p);
-            } else if ( ch == '%' ) {
+            } else if (ch == '%') {
                 pos = replaceVarQuote(pos, max, template, buf, p);
             } else {
                 buf.append(ch);
@@ -919,10 +938,16 @@ public class StringUtil {
     }
 
     private static int scanAhead(int pos, char ch, int max, String template, StringBuffer buf, StringBuffer var) {
-        for ( pos++; pos < max; pos++) {
+        for (pos++; pos < max; pos++) {
             char vch = template.charAt(pos);
-            if ( !Character.isLetterOrDigit(vch) ) { pos--; break; }
-            if ( vch == ch ) { buf.append(ch); break; }
+            if (!Character.isLetterOrDigit(vch)) {
+                pos--;
+                break;
+            }
+            if (vch == ch) {
+                buf.append(ch);
+                break;
+            }
             var.append(vch);
         }
         return pos;
@@ -931,7 +956,7 @@ public class StringUtil {
     private static String getProperty(StringBuffer var, Properties p) {
         String varname = var.toString();
         String result = p.getProperty(varname);
-        if ( result == null ) throw Util.failure("stringReplace(): unknown variable "+quote(varname));
+        if (result == null) throw Util.failure("stringReplace(): unknown variable " + quote(varname));
         return result;
     }
 

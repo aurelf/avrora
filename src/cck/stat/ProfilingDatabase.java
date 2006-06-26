@@ -29,23 +29,58 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Created Jan 29, 2006
+ * Creation date: Sep 12, 2005
  */
-package cck.text;
+
+package cck.stat;
+
+import cck.text.Terminal;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * The <code>Printable</code> interface can be implemented by classes that support
- * printing to a printer (e.g. syntax trees). This interface corresponds roughly
- * to a type of visitor pattern for printing.
+ * The profiling database. Collects information about profiling and is implemented as a static class. This
+ * allows other tools to register subclasses of ProfilingData and the Database will collect them and report
+ * their statistics.
  *
  * @author Ben L. Titzer
  */
-public interface Printable {
+public class ProfilingDatabase {
+
+    static List datalist = new LinkedList();
+    static boolean created = false;
+
     /**
-     * The <code>print()</code> method prints this object to the specified printer.
-     *
-     * @param p the printer to which to output the textual representation of this
-     *          object.
+     * LegacyRegister a ProfilingData object
      */
-    public void print(Printer p);
+    public static void register(ProfilingData d) {
+        datalist.add(d);
+    }
+
+    /**
+     * Generate report of the profiling statistics.
+     */
+    public static void reportData() {
+        if (datalist == null) {
+            Terminal.println("Profiling Database has no information.");
+            return;
+        }
+
+        Terminal.println("Profiling Database collected " + datalist.size() + " entries");
+
+        Iterator i = datalist.iterator();
+        int cntr = 1;
+
+        while (i.hasNext()) {
+            ProfilingData d = (ProfilingData) i.next();
+            if (d.dataCollected()) {
+                Terminal.println("\nProfilingData object " + cntr + ", instance of " + d.getClass().toString());
+                d.computeStatistics();
+                d.reportData();
+            }
+            cntr++;
+        }
+    }
 }

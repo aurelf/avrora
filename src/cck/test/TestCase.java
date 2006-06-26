@@ -35,6 +35,7 @@ package cck.test;
 import cck.parser.SourceError;
 import cck.text.StringUtil;
 import cck.util.Util;
+
 import java.util.Properties;
 
 /**
@@ -55,6 +56,7 @@ public abstract class TestCase {
     /**
      * The default constructor for the <code>TestCase</code> class creates a new test case corresponding
      * to the specified file with the specified properties.
+     *
      * @param fname the name of the file that contains the test case
      * @param props the testing properties extracted automatically from the text of the test case
      */
@@ -65,6 +67,7 @@ public abstract class TestCase {
 
     /**
      * The <code>getFileName()</code> method returns the filename corresponding to this test case.
+     *
      * @return the name of the file that contains this test case
      */
     public String getFileName() {
@@ -75,6 +78,7 @@ public abstract class TestCase {
      * The <code>run()</code> method executes the test case and may generate an exception.
      * When completed, this method's result is compared agains the expected result by calling
      * the <code>match()</code> method.
+     *
      * @throws Exception of any kind during the execution of the test case
      */
     public abstract void run() throws Exception;
@@ -85,17 +89,16 @@ public abstract class TestCase {
      * the exception that was generated. If no exception was generated, then the exception passed
      * will be null. This method should return a new instance of the <code>TestResult</code> class
      * that represents the results of the test case.
+     *
      * @param t the exception (if any) that was thrown while running the test case
      * @return a new <code>TestResult</code> indicating success or error
      */
     public TestResult match(Throwable t) {
         // default behavior: no exception = pass
-        if (t == null)
-            return new TestResult.TestSuccess();
+        if (t == null) return new TestResult.TestSuccess();
 
         // internal error encountered.
-        if (t instanceof Util.InternalError)
-            return new TestResult.InternalError((Util.InternalError)t);
+        if (t instanceof Util.InternalError) return new TestResult.InternalError((Util.InternalError) t);
 
         // default: unexpected exception
         return new TestResult.UnexpectedException(t);
@@ -103,8 +106,7 @@ public abstract class TestCase {
 
     protected String expectProperty(String prop) {
         String value = properties.getProperty(prop);
-        if ( value == null )
-            Util.userError("Property "+ StringUtil.quote(prop)+" not found in testcase");
+        if (value == null) Util.userError("Property " + StringUtil.quote(prop) + " not found in testcase");
         return trimString(value);
     }
 
@@ -126,15 +128,12 @@ public abstract class TestCase {
         public ExpectSourceError(String fname, Properties props) {
             super(fname, props);
             String result = StringUtil.trimquotes(props.getProperty("Result"));
-            if (result.equals("PASS"))
-                shouldPass = true;
+            if (result.equals("PASS")) shouldPass = true;
             else {
                 // format = "$id @ $num:$num"
                 int i = result.indexOf("@");
-                if (i >= 0)
-                    error = result.substring(0, i).trim();
-                else
-                    error = result;
+                if (i >= 0) error = result.substring(0, i).trim();
+                else error = result;
             }
         }
 
@@ -144,6 +143,7 @@ public abstract class TestCase {
          * the exception that was generated. If no exception was generated, then the exception passed
          * will be null. This method should return a new instance of the <code>TestResult</code> class
          * that represents the results of the test case.
+         *
          * @param t the exception (if any) that was thrown while running the test case
          * @return a new <code>TestResult</code> indicating success or error
          */
@@ -154,6 +154,7 @@ public abstract class TestCase {
         /**
          * The <code>expectPass()</code> method is called by the <code>match()</code> method
          * when the test case is expected to pass.
+         *
          * @param t the exception (if any) thrown during the test case
          * @return the result of the test case
          */
@@ -168,11 +169,12 @@ public abstract class TestCase {
         /**
          * The <code>expectError()</code> method is called by the <code>match()</code> method
          * when the test case is expected to generate an error.
+         *
          * @param t the exception (if any) thrown during the test case
          * @return the result of the test case
          */
         protected TestResult expectError(Throwable t) {
-            if ( t == null ) {
+            if (t == null) {
                 return new TestResult.ExpectedError(error);
             } else {
                 return matchError(t);
@@ -183,6 +185,7 @@ public abstract class TestCase {
          * The <code>checkPass()</code> method is called by the <code>match()</code> method
          * when the test case is expected to pass (without generating exceptions) and no
          * exception was thrown during the execution of the test case.
+         *
          * @return the result of the test case
          */
         protected TestResult checkPass() {
@@ -194,15 +197,16 @@ public abstract class TestCase {
          * when the test case is expected to pass and an exception was
          * generated. This always results in failure; this method simply checks what type of
          * failure it was.
+         *
          * @param t the exception generated (non-null)
          * @return a failure result based on the type of the error
          */
         protected TestResult checkError(Throwable t) {
             if (t instanceof SourceError) { // encountered compilation (or runtime) error.
-                SourceError ce = (SourceError)t;
+                SourceError ce = (SourceError) t;
                 return new TestResult.ExpectedPass(ce);
             } else if (t instanceof Util.InternalError) {
-                return new TestResult.InternalError((Util.InternalError)t);
+                return new TestResult.InternalError((Util.InternalError) t);
             }
             // default: unexpected exception
             return new TestResult.UnexpectedException(t);
@@ -213,18 +217,19 @@ public abstract class TestCase {
          * when the test case is expected to generate an error and some type of exception is
          * thrown. This method checks the exception thrown against the exception type expected
          * and returns success or failure.
+         *
          * @param t the exception thrown during the run of the test case
          * @return a test result depending on the type of the exception
          */
         protected TestResult matchError(Throwable t) {
             if (t instanceof SourceError) {
-                SourceError ce = (SourceError)t;
+                SourceError ce = (SourceError) t;
                 if (ce.getErrorType().equals(error)) // correct error encountered.
                     return new TestResult.TestSuccess();
                 else // incorrect compilation error.
                     return new TestResult.IncorrectError(error, ce);
             } else if (t instanceof Util.InternalError) {
-                return new TestResult.InternalError((Util.InternalError)t);
+                return new TestResult.InternalError((Util.InternalError) t);
             }
             // default: unexpected exception
             return new TestResult.UnexpectedException(t);

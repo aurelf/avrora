@@ -60,10 +60,11 @@ public class ClassMapValueItem implements HelpItem {
      * a help item for the specified option and value. The classmap passed is used to
      * get an instance of the object corresponding to that value so that any help that it has
      * can be added underneath the option.
-     * @param indent the number of spaces to indent when printing the help
-     * @param optname the name of the option
+     *
+     * @param indent   the number of spaces to indent when printing the help
+     * @param optname  the name of the option
      * @param optvalue the string value of the option
-     * @param map the classmap which is used to get instances for this value
+     * @param map      the classmap which is used to get instances for this value
      */
     public ClassMapValueItem(int indent, String optname, String optvalue, ClassMap map) {
         this.optname = optname;
@@ -74,11 +75,11 @@ public class ClassMapValueItem implements HelpItem {
 
     /**
      * The <code>getHelp()</code> method returns a help string for this help item.
+     *
      * @return a string representing the help for this item
      */
     public String getHelp() {
-        if ( help != null )
-            return help;
+        if (help != null) return help;
         else return computeHelp();
     }
 
@@ -91,31 +92,31 @@ public class ClassMapValueItem implements HelpItem {
         String h = getHelp();
         Terminal.print(StringUtil.dup(' ', indent));
         String name;
-        if ( isHelpCategory && Terminal.htmlColors ) {
-            name = "<a href="+optvalue+".html>"+optvalue+"</a>";
+        if (isHelpCategory && Terminal.htmlColors) {
+            name = "<a href=" + optvalue + ".html>" + optvalue + "</a>";
         } else {
             name = optvalue;
         }
         Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, optname, "=", name);
         Terminal.nextln();
-        Terminal.println(StringUtil.formatParagraphs(h, indent+4, 0, Terminal.MAXLINE));
+        Terminal.println(StringUtil.formatParagraphs(h, indent + 4, 0, Terminal.MAXLINE));
     }
 
     /**
      * The <code>computeHelp()</code> method looks up this value in the specified class map,
      * and if the object is a help item itself, will return its help. If it is not a help item,
      * then it will return a default string.
+     *
      * @return help for this item
      */
     private String computeHelp() {
         try {
-            HelpItem item = (HelpItem)map.getObjectOfClass(optvalue);
+            HelpItem item = (HelpItem) map.getObjectOfClass(optvalue);
             help = item.getHelp();
-            if ( item instanceof HelpCategory ) isHelpCategory = true;
-        } catch ( Throwable t ) {
+            if (item instanceof HelpCategory) isHelpCategory = true;
+        } catch (Throwable t) {
             return "(No help available for this item.)";
         }
         return help;
     }
-
 }
