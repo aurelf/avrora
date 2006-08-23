@@ -37,8 +37,8 @@ import cck.text.StringUtil;
 import cck.util.Arithmetic;
 
 /**
- * The <code>ADC</code> class represents an on-chip device on the ATMega series of microcontroller
- * that is capable of converting an analog voltage value into a 10-bit digital value.
+ * The <code>ADC</code> class represents an on-chip device on the ATMega series of microcontroller that is
+ * capable of converting an analog voltage value into a 10-bit digital value.
  *
  * @author Daniel Lee
  */
@@ -81,6 +81,7 @@ public class ADC extends AtmelInternalDevice {
 
         /**
          * Report the current voltage level of the input.
+         *
          * @return an integer value representing the voltage level of the input
          */
         public int getLevel();
@@ -112,10 +113,8 @@ public class ADC extends AtmelInternalDevice {
 
         if (ADMUX_reg.singleEndedInput) {
             //return 1;// VIN * 102/ VREG
-            if (connectedDevices[channel] != null)
-                return connectedDevices[channel].getLevel();
-            else
-                return 0;
+            if (connectedDevices[channel] != null) return connectedDevices[channel].getLevel();
+            else return 0;
         } else {
             return 2; // (VPOS - VNEG) * GAIN * 512 / VREF
         }
@@ -126,7 +125,7 @@ public class ADC extends AtmelInternalDevice {
      * input port on the ADC chip.
      *
      * @param input the <code>ADCInput</code> object to attach to the input
-     * @param num the input port number to attach the device to
+     * @param num   the input port number to attach the device to
      */
     public void connectADCInput(ADCInput input, int num) {
         connectedDevices[num] = input;
@@ -137,6 +136,7 @@ public class ADC extends AtmelInternalDevice {
      */
     // TODO: is this class necessary?
     protected abstract class ADCRegister extends RWRegister {
+
         public void write(byte val) {
             super.write(val);
             decode(val);
@@ -159,25 +159,17 @@ public class ADC extends AtmelInternalDevice {
         }
     }
 
-    static final int[] SINGLE_ENDED_INPUT = {0, 1, 2, 3, 4, 5, 6, 7,
-                                      -1, -1, -1, -1, -1, -1, -1, -1,
-                                      -1, -1, -1, -1, -1, -1, -1, -1,
-                                      -1, -1, -1, -1, -1, -1, 8, 9};
+    static final int[] SINGLE_ENDED_INPUT = { 0, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9 };
 
-    static final int[] GAIN = {-1, -1, -1, -1, -1, -1, -1, -1,
-                        10, 10, 200, 200, 10, 10, 200, 200,
-                        1, 1, 1, 1, 1, 1, 1, 1,
-                        1, 1, 1, 1, 1, 1, -1, -1};
+    static final int[] GAIN = { -1, -1, -1, -1, -1, -1, -1, -1, 10, 10, 200, 200, 10, 10, 200, 200, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1 };
 
-    static final int[] POS_INPUT = {-1, -1, -1, -1, -1, -1, -1, -1,
-                             0, 1, 0, 1, 2, 3, 2, 3,
-                             0, 1, 2, 3, 4, 5, 6, 7,
-                             0, 1, 2, 3, 4, 5, -1, -1};
+    static final int[] POS_INPUT = { -1, -1, -1, -1, -1, -1, -1, -1, 0, 1, 0, 1, 2, 3, 2, 3, 0, 1, 2, 3, 4, 5,
+            6, 7, 0, 1, 2, 3, 4, 5, -1, -1 };
 
-    static final int[] NEG_INPUT = {-1, -1, -1, -1, -1, -1, -1, -1,
-                             0, 0, 0, 0, 2, 2, 2, 2,
-                             1, 1, 1, 1, 1, 1, 1, 1,
-                             2, 2, 2, 2, 2, 2, -1, 1};
+    static final int[] NEG_INPUT = { -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1,
+            1, 1, 2, 2, 2, 2, 2, 2, -1, 1 };
 
     /**
      * <code>MUXRegister</code> defines the behavior of the ADMUX register.
@@ -223,11 +215,12 @@ public class ADC extends AtmelInternalDevice {
      * <code>DataRegister</code> defines the behavior of the ADC's 10-bit data register.
      */
     protected class DataRegister {
+
         public final RWRegister high = new RWRegister();
         public final RWRegister low = new RWRegister();
     }
 
-    static final int[] PRESCALER = {2, 2, 4, 8, 16, 32, 64, 128};
+    static final int[] PRESCALER = { 2, 2, 4, 8, 16, 32, 64, 128 };
 
     /**
      * <code>ControlRegister</code> defines the behavior of the ADC control register,
@@ -254,9 +247,17 @@ public class ADC extends AtmelInternalDevice {
         final ControlRegister.Conversion conversion;
 
         byte oldVal;
+        boolean firing;
 
         ControlRegister() {
             conversion = new ControlRegister.Conversion();
+        }
+
+        private void unpostADCInterrupt() {
+            value = Arithmetic.setBit(value, ADIF, false);
+            adif = false;
+            interpreter.setPosted(interruptNum, false);
+            // TODO: firing = false?
         }
 
         public void write(byte nval) {
@@ -276,10 +277,8 @@ public class ADC extends AtmelInternalDevice {
             oldVal = nval;
 
             // if the ADIF bit is set, we need to unpost the interrupt
-            if ( Arithmetic.getBit(nval, ADIF)) {
-                adif = false;
-                value = Arithmetic.setBit(nval, ADIF, false);
-                interpreter.setPosted(interruptNum, false);
+            if (Arithmetic.getBit(nval, ADIF)) {
+                unpostADCInterrupt();
             } else {
                 value = Arithmetic.setBit(nval, ADIF, Arithmetic.getBit(value, ADIF));
             }
@@ -307,13 +306,12 @@ public class ADC extends AtmelInternalDevice {
             devicePrinter.println(buf.toString());
         }
 
-        boolean firing;
-
         /**
-         * The conversion event for the ADC. It is first at a certain interval after the start
-         * conversion bit in the control register is set.
+         * The conversion event for the ADC. It is first at a certain interval after the start conversion bit
+         * in the control register is set.
          */
         private class Conversion implements Simulator.Event {
+
             public void fire() {
 
                 value = Arithmetic.setBit(value, ADSC, false);
@@ -322,7 +320,7 @@ public class ADC extends AtmelInternalDevice {
                     int channel = ADMUX_reg.singleInputIndex;
                     int val = calculateADC(channel);
                     if (devicePrinter.enabled) {
-                        devicePrinter.println("ADC: Conversion completed on channel "+channel+": "+StringUtil.to0xHex(val, 3));
+                        devicePrinter.println("ADC: Conversion completed on channel " + channel + ": " + StringUtil.to0xHex(val, 3));
                     }
                     write16(val, ADC_reg.high, ADC_reg.low);
                     value = Arithmetic.setBit(value, ADIF, true);
@@ -341,6 +339,7 @@ public class ADC extends AtmelInternalDevice {
         }
 
         public void invoke(int inum) {
+            unpostADCInterrupt();
             firing = false;
         }
 
