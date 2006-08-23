@@ -33,44 +33,46 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
-import avrora.sim.state.*;
+import cck.text.StringUtil;
+import cck.util.Arithmetic;
 
 /**
  * The <code>ADC</code> class represents an on-chip device on the ATMega series of microcontroller that is
  * capable of converting an analog voltage value into a 10-bit digital value.
  *
  * @author Daniel Lee
- * @author Ben L. Titzer
  */
 public class ADC extends AtmelInternalDevice {
 
+    public static final int VBG_LEVEL = 0x3ff;
+    public static final int GND_LEVEL = 0x000;
 
-    public static final float VBG_LEVEL = 1.0f;
-    public static final float GND_LEVEL = 0.0f;
+    public static final int ACSR = 0x08;
+    public static final int ADMUX = 0x07;
+    public static final int ADCSRA = 0x06;
+    public static final int ADCH = 0x05;
+    public static final int ADCL = 0x04;
 
-    private final ADCInput VBG_INPUT = new ADCInput() {
-        public float getVoltage() {
-            return voltageRef;
+    private static final ADCInput VBG_INPUT = new ADCInput() {
+        public int getLevel() {
+            return VBG_LEVEL; // figure out correct value for this eventually
         }
     };
 
     private static final ADCInput GND_INPUT = new ADCInput() {
-        public float getVoltage() {
-            return GND_LEVEL;
+        public int getLevel() {
+            return GND_LEVEL; // figure out correct value for this eventually
         }
     };
 
     final MUXRegister ADMUX_reg = new MUXRegister();
+    final DataRegister ADC_reg = new DataRegister();
     final ControlRegister ADCSRA_reg = new ControlRegister();
-    final RWRegister ADCH_reg = new RWRegister();
-    final RWRegister ADCL_reg = new RWRegister();
 
     final int channels;
     final int interruptNum;
 
     final ADCInput[] connectedDevices;
-
-    float voltageRef = VBG_LEVEL;
 
     /**
      * The <code>ADCInput</code> interface is used by inputs into the analog to digital converter.
@@ -80,9 +82,9 @@ public class ADC extends AtmelInternalDevice {
         /**
          * Report the current voltage level of the input.
          *
-         * @return an integer value representing the voltage level of the input, in millivolts
+         * @return an integer value representing the voltage level of the input
          */
-        public float getVoltage();
+        public int getLevel();
     }
 
 
@@ -100,28 +102,22 @@ public class ADC extends AtmelInternalDevice {
         interruptNum = m.getProperties().getInterrupt("ADC");
 
         installIOReg("ADMUX", ADMUX_reg);
-        installIOReg("ADCH", ADCH_reg);
-        installIOReg("ADCL", ADCL_reg);
+        installIOReg("ADCH", ADC_reg.high);
+        installIOReg("ADCL", ADC_reg.low);
         installIOReg("ADCSRA", ADCSRA_reg);
 
         interpreter.getInterruptTable().registerInternalNotification(ADCSRA_reg, interruptNum);
     }
 
-    /**
-     * The <code>setVoltageRef()</code> method sets the external (Vref) voltage for the ADC converter.
-     * @param vref the voltage reference in volts
-     */
-    public void setVoltageRef(float vref) {
-        voltageRef = vref;
-    }
+    private int calculateADC(int channel) {
 
-    /**
-     * The <code>getVoltageRef()</code> method returns the external (Vref) voltage that is currently
-     * being used by the ADC converter.
-     * @return the voltage reference in volts
-     */
-    public float getVoltageRef() {
-        return voltageRef;
+        if (ADMUX_reg.singleEndedInput) {
+            //return 1;// VIN * 102/ VREG
+            if (connectedDevices[channel] != null) return connectedDevices[channel].getLevel();
+            else return 0;
+        } else {
+            return 2; // (VPOS - VNEG) * GAIN * 512 / VREF
+        }
     }
 
     /**
@@ -135,194 +131,217 @@ public class ADC extends AtmelInternalDevice {
         connectedDevices[num] = input;
     }
 
-    static final byte[] SINGLE_ENDED_INPUT = {
-             0,  1,  2,  3,  4,  5,  6,  7,
-            -1, -1, -1, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1,  8,  9
-    };
+    /**
+     * Abstract class grouping together registers related to the ADC.
+     */
+    // TODO: is this class necessary?
+    protected abstract class ADCRegister extends RWRegister {
 
-    static final short[] GAIN = {
-             -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,
-             10, 10, 200, 200,  10,  10, 200, 200,
-             1,   1,   1,   1,   1,   1,   1,   1,
-             1,   1,   1,   1,   1,   1,  -1,  -1
-    };
+        public void write(byte val) {
+            super.write(val);
+            decode(val);
+            if (devicePrinter.enabled) {
+                printStatus();
+            }
+        }
 
-    static final byte[] POS_INPUT = {
-            -1, -1, -1, -1, -1, -1, -1, -1,
-             0,  1,  0,  1,  2,  3,  2,  3,
-             0,  1,  2,  3,  4,  5,  6,  7,
-             0,  1,  2,  3,  4,  5, -1, -1
-    };
+        public void writeBit(int bit, boolean val) {
+            super.writeBit(bit, val);
+            decode(value);
+            if (devicePrinter.enabled) {
+                printStatus();
+            }
+        }
 
-    static final byte[] NEG_INPUT = {
-            -1, -1, -1, -1, -1, -1, -1, -1,
-             0,  0,  0,  0,  2,  2,  2,  2,
-             1,  1,  1,  1,  1,  1,  1,  1,
-             2,  2,  2,  2,  2,  2, -1, -1
-    };
+        protected abstract void decode(byte val);
+
+        protected void printStatus() {
+        }
+    }
+
+    static final int[] SINGLE_ENDED_INPUT = { 0, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9 };
+
+    static final int[] GAIN = { -1, -1, -1, -1, -1, -1, -1, -1, 10, 10, 200, 200, 10, 10, 200, 200, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1 };
+
+    static final int[] POS_INPUT = { -1, -1, -1, -1, -1, -1, -1, -1, 0, 1, 0, 1, 2, 3, 2, 3, 0, 1, 2, 3, 4, 5,
+            6, 7, 0, 1, 2, 3, 4, 5, -1, -1 };
+
+    static final int[] NEG_INPUT = { -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1,
+            1, 1, 2, 2, 2, 2, 2, 2, -1, 1 };
 
     /**
      * <code>MUXRegister</code> defines the behavior of the ADMUX register.
      */
-    protected class MUXRegister extends RWRegister {
+    protected class MUXRegister extends ADCRegister {
 
-        final RegisterView _mux = RegisterUtil.bitRangeView(this, 0, 4);
+        static final int REFS_AREF = 0;
+        static final int REFS_AVCC = 1;
+        // 2 reserved
+        static final int REFS_INTERNAL = 3;
 
-        boolean isSingleEnded() {
-            return getSingleIndex() >= 0;
+
+        int singleInputIndex = 0;
+        int gain = -1;
+        int positiveInputIndex = -1;
+        int negativeInputIndex = -1;
+
+        boolean singleEndedInput = true;
+
+        int refs;
+        boolean adlar;
+        int mux;
+
+        protected void decode(byte val) {
+            refs = (val & 0xc0) >> 6;
+            adlar = Arithmetic.getBit(val, 5);
+            mux = (val & 0x1f);
+
+            singleInputIndex = SINGLE_ENDED_INPUT[mux];
+            positiveInputIndex = POS_INPUT[mux];
+            negativeInputIndex = NEG_INPUT[mux];
+
+            singleEndedInput = (val < 8 || val == 0x1e || val == 0x1f);
         }
 
-        int getSingleIndex() {
-            return SINGLE_ENDED_INPUT[_mux.getValue()];
-        }
-
-        int getPosIndex() {
-            return POS_INPUT[_mux.getValue()];
-        }
-
-        int getNegIndex() {
-            return NEG_INPUT[_mux.getValue()];
-        }
-
-        int getGain() {
-            return GAIN[_mux.getValue()];
+        protected void printStatus() {
+            devicePrinter.println("ADC: refs " + refs + ", adlar " + StringUtil.toBit(adlar) + ", mux: " + mux);
         }
     }
 
 
-    static final short[] PRESCALER = { 2, 2, 4, 8, 16, 32, 64, 128 };
+    /**
+     * <code>DataRegister</code> defines the behavior of the ADC's 10-bit data register.
+     */
+    protected class DataRegister {
+
+        public final RWRegister high = new RWRegister();
+        public final RWRegister low = new RWRegister();
+    }
+
+    static final int[] PRESCALER = { 2, 2, 4, 8, 16, 32, 64, 128 };
 
     /**
      * <code>ControlRegister</code> defines the behavior of the ADC control register,
      */
     protected class ControlRegister extends RWRegister implements InterruptTable.Notification {
 
-        final ConversionEvent conversion = new ConversionEvent();
+        static final int ADEN = 7;
+        static final int ADSC = 6;
+        static final int ADFR = 5;
+        static final int ADIF = 4;
+        static final int ADIE = 3;
+        static final int ADPS2 = 2;
+        static final int ADPS1 = 1;
+        static final int ADPS0 = 0;
 
-        final BooleanView _aden = RegisterUtil.booleanView(this, 7);
-        final BooleanView _adsc = RegisterUtil.booleanView(this, 6);
-        final BooleanView _adfr = RegisterUtil.booleanView(this, 5);
-        final BooleanView _adif = RegisterUtil.booleanView(this, 4);
-        final BooleanView _adie = RegisterUtil.booleanView(this, 3);
-        final RegisterView _prescaler = RegisterUtil.bitRangeView(this, 0, 2);
+        boolean aden;
+        boolean adsc;
+        boolean adfr;
+        boolean adif;
+        boolean adie;
 
-        int cycles = 25;
+        int prescalerDivider = 2;
 
-        boolean converting;
+        final ControlRegister.Conversion conversion;
+
+        byte oldVal;
+        boolean firing;
+
+        ControlRegister() {
+            conversion = new ControlRegister.Conversion();
+        }
 
         private void unpostADCInterrupt() {
-            _adif.setValue(false);
+            value = Arithmetic.setBit(value, ADIF, false);
+            adif = false;
             interpreter.setPosted(interruptNum, false);
+            // TODO: firing = false?
         }
 
         public void write(byte nval) {
 
-            value = nval;
+            aden = Arithmetic.getBit(nval, ADEN);
+            adsc = Arithmetic.getBit(nval, ADSC);
+            adfr = Arithmetic.getBit(nval, ADFR);
+            adie = Arithmetic.getBit(nval, ADIE);
+            prescalerDivider = PRESCALER[(nval & 0x7)];
 
-            if (_aden.getValue()) {
-                // if enabled and start conversion
-                if (_adsc.getValue()) startConversion();
-            } else {
-                // else, stop conversion
-                stopConversion();
-            }
-
-            // reset the flag bit if written by the user
-            if ( _adif.getValue() ) unpostADCInterrupt();
-
-            // enable the interrupt if the flag is set
-            interpreter.setEnabled(interruptNum, _adie.getValue());
-        }
-
-        private void startConversion() {
-            if ( !converting ) {
+            if (aden && adsc && !Arithmetic.getBit(oldVal, ADSC) && !firing) {
                 // queue event for converting
-                converting = true;
-                insertConversion();
+                firing = true;
+                mainClock.insertEvent(conversion, prescalerDivider * 13);
             }
-        }
 
-        private void insertConversion() {
-            mainClock.insertEvent(conversion, getPrescaler() * cycles);
-            if (ADMUX_reg.isSingleEnded()) {
-                event.gen("ADC: beginning sample of channel %i", ADMUX_reg.getSingleIndex());
+            oldVal = nval;
+
+            // if the ADIF bit is set, we need to unpost the interrupt
+            if (Arithmetic.getBit(nval, ADIF)) {
+                unpostADCInterrupt();
             } else {
-                event.gen("ADC: beginning sample of channels %i - %i", ADMUX_reg.getPosIndex(), ADMUX_reg.getNegIndex());
+                value = Arithmetic.setBit(nval, ADIF, Arithmetic.getBit(value, ADIF));
             }
-            cycles = 13;
+
+            interpreter.setEnabled(interruptNum, adie);
+
         }
 
-        private void stopConversion() {
-            _adsc.setValue(false);
-            if ( converting ) {
-                converting = false;
-                mainClock.removeEvent(conversion);
-            }
+        public void writeBit(int bit, boolean val) {
+            write(Arithmetic.setBit(value, bit, val));
         }
 
-        private int getPrescaler() {
-            return PRESCALER[_prescaler.getValue()];
+        protected void printStatus() {
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("ADC: enabled ");
+            buf.append(StringUtil.toBit(aden));
+            buf.append(", start ");
+            buf.append(StringUtil.toBit(adsc));
+            buf.append(", freerun ");
+            buf.append(StringUtil.toBit(adfr));
+            buf.append(", iflag ");
+            buf.append(StringUtil.toBit(adif));
+            buf.append(", divider ");
+            buf.append(prescalerDivider);
+            devicePrinter.println(buf.toString());
         }
-        
+
         /**
-         * The conversion event for the ADC. It is fired at a certain delay after the start conversion bit
+         * The conversion event for the ADC. It is first at a certain interval after the start conversion bit
          * in the control register is set.
          */
-        private class ConversionEvent implements Simulator.Event {
+        private class Conversion implements Simulator.Event {
 
             public void fire() {
 
-                int val = convertVoltage();
-                write16(val, ADCH_reg, ADCL_reg);
-                event.gen("ADC: conversion completed -> %i", val);
-                _adif.setValue(true);
-                //value = Arithmetic.setBit(value, ADIF, adif = true);
-                interpreter.setPosted(interruptNum, true);
+                value = Arithmetic.setBit(value, ADSC, false);
 
-                if ( _adfr.getValue() ) {
-                    // in free running mode, start the next conversion
-                    insertConversion();
+                if (aden) {
+                    int channel = ADMUX_reg.singleInputIndex;
+                    int val = calculateADC(channel);
+                    if (devicePrinter.enabled) {
+                        devicePrinter.println("ADC: Conversion completed on channel " + channel + ": " + StringUtil.to0xHex(val, 3));
+                    }
+                    write16(val, ADC_reg.high, ADC_reg.low);
+                    value = Arithmetic.setBit(value, ADIF, true);
+                    interpreter.setPosted(interruptNum, true);
                 } else {
-                    // otherwise, stop conversion
-                    stopConversion();
+                    if (devicePrinter.enabled) {
+                        devicePrinter.println("ADC: Conversion completed, ADEN = false");
+                    }
                 }
             }
         }
 
-        private int convertVoltage() {
-            if (ADMUX_reg.isSingleEnded()) {
-                // single ended conversions don't require amplification
-                ADCInput dev = connectedDevices[ADMUX_reg.getSingleIndex()];
-                float vin = dev != null ? dev.getVoltage() : 0;
-                // TODO: select correct voltage reference from ADMUX register.
-                float vref = voltageRef;
-                if ( vin >= vref ) return 0x3ff;
-                return 0x3ff & (int)(vin * 1024 / vref);
-            } else {
-                // use the differential gain amplifier.
-                ADCInput pos = connectedDevices[ADMUX_reg.getPosIndex()];
-                ADCInput neg = connectedDevices[ADMUX_reg.getNegIndex()];
-                float vpos = pos != null ? pos.getVoltage() : 0;
-                float vneg = neg != null ? neg.getVoltage() : 0;
-                // TODO: select correct voltage reference from ADMUX register.
-                float vref = voltageRef;
-                float val = ((vpos - vneg) * ADMUX_reg.getGain() * 512 / vref);
-                if ( val < -512 ) return 0x3ff;
-                if ( val > 511 ) return 0x1ff;
-                return 0x3ff & (int)val;
-            }
-        }
-
-
         public void force(int inum) {
             // set the interrupt flag accordingly
-            _adif.setValue(true);
+            value = Arithmetic.setBit(value, ADIF, true);
         }
 
         public void invoke(int inum) {
             unpostADCInterrupt();
+            firing = false;
         }
+
     }
 }
