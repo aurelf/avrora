@@ -115,7 +115,7 @@ public class TripTimeMonitor extends MonitorFactory {
                 count++;
             }
 
-            void report() {
+            void report(Printer printer) {
                 if ( distrib == null ) {
                 float avg = (float)cumul / count;
                 double std = Math.sqrt(((double)cumul_sqr / count) - (avg * avg));
@@ -128,8 +128,8 @@ public class TripTimeMonitor extends MonitorFactory {
                         +StringUtil.rightJustify((float)min, 9)
                         );
                 } else {
-                    distrib.processData();
-                    distrib.textReport();
+                    distrib.process();
+                    distrib.print(printer);
                 }
             }
         }
@@ -246,7 +246,7 @@ public class TripTimeMonitor extends MonitorFactory {
             TermUtil.printThinSeparator(Terminal.MAXLINE);
             for ( int cntr = 0; cntr < lastEnter.length; cntr++ )
                 for ( Pair p = startArray[cntr]; p != null; p = p.startLink ) {
-                    if ( p.count > 0 ) p.report();
+                    if ( p.count > 0 ) p.report(Printer.STDOUT);
                 }
         }
     }

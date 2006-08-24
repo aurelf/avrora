@@ -255,9 +255,7 @@ public class Arithmetic {
     public static long mult(long[] vals, int[] denom) {
         long accum = 0;
         int radix = 1;
-        if (vals.length - 1 != denom.length) {
-            throw Util.failure("Expected value array of length 1 greater than denom");
-        }
+        assert (vals.length - 1 == denom.length);
         for (int cntr = 0; cntr < vals.length - 1; cntr++) {
             accum += vals[cntr] * radix;
             radix = radix * denom[cntr];
@@ -267,9 +265,7 @@ public class Arithmetic {
     }
 
     public static void inc(long[] vals, int[] denom, int pos) {
-        if (vals.length - 1 != denom.length) {
-            throw Util.failure("Expected value array of length 1 greater than denom");
-        }
+        assert (vals.length - 1 == denom.length);
 
         for (int cntr = pos; cntr < vals.length; cntr++) {
             vals[cntr]++;
@@ -279,12 +275,10 @@ public class Arithmetic {
     }
 
     public static int max(int m1, int m2) {
-        if (m1 > m2) return m1;
-        return m2;
+        return m1 > m2 ? m1 : m2;
     }
 
     public static int min(int m1, int m2) {
-        if (m1 < m2) return m1;
-        return m2;
+        return m1 < m2 ? m1 : m2;
     }
 }

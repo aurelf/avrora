@@ -32,13 +32,14 @@
 
 package avrora.monitors;
 
-import avrora.arch.legacy.LegacyInstr;
 import avrora.arch.AbstractInstr;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import cck.text.*;
 import cck.util.Option;
+import cck.stat.StatUtil;
+
 import java.util.*;
 
 /**
@@ -67,8 +68,6 @@ public class ProfileMonitor extends MonitorFactory {
     public class Mon implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Program program;
-        public final CCProbe ccprobe;
-        public final CProbe cprobe;
 
         public final long[] icount;
         public final long[] itime;
@@ -76,28 +75,23 @@ public class ProfileMonitor extends MonitorFactory {
         Mon(Simulator s) {
             simulator = s;
             program = s.getProgram();
+
+            // allocate a global array for the count of each instruction
             icount = new long[program.program_end];
+            // allocate a global array for the cycles of each instruction
             itime = new long[program.program_end];
 
-            ccprobe = new CCProbe(icount, itime);
-            cprobe = new CProbe(icount);
-
-            // insert the global probe
-            insertInstrumentation(s);
-        }
-
-        private void insertInstrumentation(Simulator s) {
             long period = PERIOD.get();
             if ( period > 0 ) {
+                // insert the periodic probe
                 s.insertEvent(new PeriodicProfile(period), period);
-                return;
+            } else if ( CYCLES.get() ) {
+                // insert the count and cycles probe
+                s.insertProbe(new CCProbe());
+            } else {
+                // insert just the count probe
+                s.insertProbe(new CProbe());
             }
-
-            if ( CYCLES.get() )
-                s.insertProbe(ccprobe);
-            else
-                s.insertProbe(cprobe);
-
         }
 
         /**
@@ -124,23 +118,15 @@ public class ProfileMonitor extends MonitorFactory {
          * it has consumed.
          */
         public class CCProbe implements Simulator.Probe {
-            public final long[] count;
-            public final long[] time;
-
             protected long timeBegan;
 
-            public CCProbe(long[] ic, long[] it) {
-                count = ic;
-                time = it;
-            }
-
             public void fireBefore(State state, int pc) {
-                count[pc]++;
+                icount[pc]++;
                 timeBegan = state.getCycles();
             }
 
             public void fireAfter(State state, int pc) {
-                time[pc] += state.getCycles() - timeBegan;
+                itime[pc] += state.getCycles() - timeBegan;
             }
         }
 
@@ -150,14 +136,8 @@ public class ProfileMonitor extends MonitorFactory {
          */
         public class CProbe extends Simulator.Probe.Empty {
 
-            public final long[] count;
-
-            public CProbe(long[] ic) {
-                count = ic;
-            }
-
             public void fireBefore(State state, int pc) {
-                count[pc]++;
+                icount[pc]++;
             }
         }
 
@@ -172,7 +152,7 @@ public class ProfileMonitor extends MonitorFactory {
         }
 
         long totalcount;
-        double totalcycles;
+        long totalcycles;
 
         private void reportProfile() {
             int imax = icount.length;
@@ -225,17 +205,15 @@ public class ProfileMonitor extends MonitorFactory {
 
         private void computeTotals() {
             // compute the total cycle count
-            for (int cntr = 0; cntr < itime.length; cntr++) {
-                totalcycles += itime[cntr];
-                totalcount += icount[cntr];
-            }
+            totalcycles = StatUtil.sum(itime);
+            totalcount = StatUtil.sum(icount);
         }
 
         private float computePercent(long count, long cycles) {
             if ( CYCLES.get() )
-                return (float)(100 * cycles / totalcycles);
+                return 100.0f * cycles / totalcycles;
             else
-                return (float)(100 * count / (double)totalcount);
+                return 100.0f * count / totalcount;
         }
 
         class InstrProfileEntry implements Comparable {

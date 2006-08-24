@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2006, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,12 +28,51 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Created Aug 24, 2006
  */
-
 package cck.stat;
 
-abstract public class DatabaseVisitor {
-    abstract public void visit(Database d);
+/**
+ * The <code>StatUtil</code> class implements a number of statistical and numerical
+ * utility functions that simplify computations of averages, percentages, median, etc.
+ *
+ * @author Ben L. Titzer
+ */
+public class StatUtil {
 
-    abstract public void visit(DataItem i);
+    public static double percent(long n, long d) {
+        return 100.0 * n / d;
+    }
+
+    public static double percent(double n, double d) {
+        return 100.0 * n / d;
+    }
+
+    public static long sum(Sequence q) {
+        long s = 0;
+        Sequence.Iterator i = q.iterator(0);
+        while ( i.hasNext() ) s += i.next();
+        return s;
+    }
+
+    public static long sum(long[] a) {
+        long s = 0;
+        for ( int cntr = 0; cntr < a.length; cntr++ ) s += a[cntr];
+        return s;
+    }
+
+    public static long sum(int[] a) {
+        long s = 0;
+        for ( int cntr = 0; cntr < a.length; cntr++ ) s += a[cntr];
+        return s;
+    }
+
+    public static double average(long[] a) {
+        return sum(a) / (double)a.length;
+    }
+
+    public static double average(int[] a) {
+        return sum(a) / (double)a.length;
+    }
 }

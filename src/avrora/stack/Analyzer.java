@@ -163,8 +163,8 @@ public class Analyzer {
             int size = stateSet == null ? 0 : stateSet.size();
             sizeDist.record(size);
         }
-        sizeDist.processData();
-        sizeDist.textReport();
+        sizeDist.process();
+        sizeDist.print(printer);
     }
 
     private void analyzeStates() {
@@ -175,8 +175,8 @@ public class Analyzer {
             pcDist.record(s.getPC());
 
         }
-        pcDist.processData();
-        pcDist.textReport();
+        pcDist.process();
+        pcDist.print(printer);
     }
 
     /**

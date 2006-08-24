@@ -207,8 +207,8 @@ public class InterruptMonitor extends MonitorFactory {
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
             for ( int cntr = 1; cntr < invocations.length; cntr++ ) {
-                meanInvoke[cntr].processData();
-                meanLatency[cntr].processData();
+                meanInvoke[cntr].process();
+                meanLatency[cntr].process();
                 Terminal.printBrightCyan(StringUtil.rightJustify(cntr, 3));
                 Terminal.print("  ");
                 Terminal.printGreen(StringUtil.leftJustify(props.getInterruptName(cntr), 15));

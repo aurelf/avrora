@@ -38,16 +38,17 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.sim.clock.Clock;
-import avrora.sim.energy.Energy;
-import avrora.sim.energy.EnergyControl;
+import avrora.sim.energy.*;
 import avrora.sim.platform.Platform;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
 import avrora.sim.util.SimUtil;
 import cck.text.Terminal;
-import cck.util.Option;
+import cck.util.*;
 import java.util.Iterator;
+import java.io.*;
 
 /**
  * energy monitor implementation this class handles logging and
@@ -64,6 +65,11 @@ public class EnergyMonitor extends MonitorFactory {
             "simulation, the energy consumption of each node is tracked, and if the node " +
             "runs out of battery, it will be shut down and removed from the " +
             "simulation.");
+    protected final Option.Str LOG = options.newOption("logfile", "",
+            "This option specifies whether the energy monitor should log changes to each " +
+            "node's energy state. If this option is specified, then each node's energy " +
+            "state transitions will be written to <option>.#, where '#' represents the " +
+            "node ID.");
 
     /**
      * @author Olaf Landsiedel
@@ -73,14 +79,16 @@ public class EnergyMonitor extends MonitorFactory {
      * the node when an energy limit is exceeded.
      *
      */
-    public class Monitor implements avrora.monitors.Monitor{
+    public class Monitor implements avrora.monitors.Monitor {
 
         // the simulator
         protected Simulator simulator;
         protected Platform platform;
-        EnergyControl.Instance instance;
-        //energy a node is allowed to consume (in joule)
+        protected EnergyControl.Instance instance;
+        // energy a node is allowed to consume (in joules)
         private double energy;
+        protected BatteryCheck batteryCheck;
+        protected Logger logger;
 
         /**
          * Create a new energy monitor. Creates a file with logging information: temp.log that contains the
@@ -98,13 +106,13 @@ public class EnergyMonitor extends MonitorFactory {
             instance = EnergyControl.getCurrentInstance();
             EnergyControl.nextInstance();
 
-            energy = BATTERY.get();
-            if ( energy > 0 ) {
-                new BatteryCheck();
+            if ( (energy = BATTERY.get()) > 0 ) {
+                batteryCheck = new BatteryCheck();
             }
-
+            if ( !LOG.isBlank() ) {
+                logger = new Logger();
+            }
         }
-
 
         /**
          * implemenation of report of Monitor class. Called when the simulation ends and reports summaries for
@@ -133,10 +141,12 @@ public class EnergyMonitor extends MonitorFactory {
                         Terminal.println("   " + en.getModeName(j) + ": " + en.getConsumedEnergy(j) + " Joule, " + en.getCycles(j) + " cycles");
                 Terminal.nextln();
             }
+            // make sure the logger flushes the files and logs the last state
+            if ( logger != null ) logger.finish();
         }
 
 
-        public class BatteryCheck implements Simulator.Event{
+        public class BatteryCheck implements Simulator.Event {
             //check 10 times per second
             private static final int interval = 737280;
 
@@ -174,6 +184,154 @@ public class EnergyMonitor extends MonitorFactory {
 
             }
         }
+
+        /**
+         * The <code>EnergyMonitorLog</code>
+         * energy monitor implementation
+         * Creates a file with logging information: energyNODEIS.log that contains the
+         * current draw of all devices, and the state changes can be loaded into
+         * Matlab, Gnuplot, Excel... for further processing and visualization.
+         *
+         * @author Olaf Landsiedel
+         */
+        public class Logger implements EnergyObserver {
+
+            // file for data logging
+            private BufferedWriter file;
+            // the simulator state
+            protected State state;
+
+            /**
+             * Create a new logger monitor. Creates a file with logging information: temp.log that contains the
+             * current draw of all devices, and the state changes can be loaded into Matlab, Gnuplot, Excel... for
+             * further processing and visualization.
+             */
+            Logger() {
+                this.state = simulator.getState();
+                // subscribe the monitor to the energy  control
+                instance.subscribe(this);
+
+                //open file for logging, currently with fixed path and file name
+                String fileName = LOG.get() + simulator.getID();
+                try {
+                    this.file = new BufferedWriter(new FileWriter(fileName));
+                } catch (IOException e) {
+                    throw Util.unexpected(e);
+                }
+
+                //write headlines
+                //first: cycle
+                write("cycle ");
+                //and than all consumers names
+                Iterator it = instance.consumer.iterator();
+                while( it.hasNext() ){
+                    //for (int i = 0; i < consumer.size(); ++i) {
+                    Energy en = (Energy)it.next();
+                    write(en.getName() + " ");
+                }
+                write("total");
+                newLine();
+
+                //log the startup state
+                logCurrentState();
+            }
+
+            /**
+             * write text or data to the log file
+             *
+             * @param text data or text to write
+             */
+            private void write(String text) {
+                try {
+                    file.write(text);
+                } catch (IOException e) {
+                    throw Util.unexpected(e);
+                }
+            }
+
+            /**
+             * add new line to the log file
+             */
+            private void newLine() {
+                try {
+                    file.newLine();
+                } catch (IOException e) {
+                    throw Util.unexpected(e);
+                }
+            }
+
+            public void finish() {
+
+                //simulation will end
+                //update log file
+                logCurrentState();
+
+                //close log file
+                try {
+                    file.flush();
+                    file.close();
+                } catch (IOException e) {
+                    throw Util.unexpected(e);
+                }
+            }
+
+
+            /**
+             * called when the state of the device changes this component logs these state changes
+             *
+             * @see avrora.sim.energy.EnergyObserver#stateChange(avrora.sim.energy.Energy)
+             */
+            public void stateChange(Energy energy) {
+                logOldState(energy);
+                logCurrentState();
+            }
+
+
+            /**
+             * log the current state
+             */
+            private void logCurrentState() {
+                //write new state
+                //first: current cycles
+                write(state.getCycles() + " ");
+                //and than all consumers
+                double total = 0.0f;
+                Iterator it = instance.consumer.iterator();
+                while(it.hasNext()){
+                    Energy en = (Energy)it.next();
+                    double ampere = en.getCurrentAmpere();
+                    total += ampere;
+                    write(ampere + " ");
+                }
+                write(total + "");
+                newLine();
+            }
+
+
+            /**
+             * log the old state
+             *
+             * @param energy device, which state changed
+             */
+            private void logOldState(Energy energy) {
+                //write old state
+                //first: old cycles
+                write((state.getCycles() - 1) + " ");
+                //and than all consumers
+                double total = 0.0f;
+                Iterator it = instance.consumer.iterator();
+                //for (int i = 0; i < consumer.size(); ++i) {
+                while( it.hasNext() ){
+                    Energy en = (Energy)it.next();
+                    double ampere = (en != energy) ? en.getCurrentAmpere() : en.getOldAmpere();
+
+                    total += ampere;
+                    write(ampere + " ");
+                }
+                write(total + "");
+                newLine();
+            }
+        }
     }
 
 
@@ -196,5 +354,6 @@ public class EnergyMonitor extends MonitorFactory {
     public avrora.monitors.Monitor newMonitor(Simulator s) {
         return new Monitor(s);
     }
+
 }
 

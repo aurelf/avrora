@@ -32,18 +32,16 @@
 
 package cck.stat;
 
-import cck.util.Util;
-
 import java.util.Arrays;
 
 /**
- * The <code>TimedMeasurements</code> class implements a simple array-like data structure that collects
+ * The <code>TimeSequence</code> class implements a simple array-like data structure that collects
  * a large list of integers and supports iterating over that list. For memory-efficient storage, it
  * uses a set of arrays where each array represents a fragment of the measurements obtained.
  *
  * @author Ben L. Titzer
  */
-public class TimedMeasurements {
+public class TimeSequence {
 
     public static class Measurement {
         public long time;
@@ -145,7 +143,7 @@ public class TimedMeasurements {
      * The default constructor for the <code>Measurements</code> class creates a new instance where the
      * fragment size is 500.
      */
-    public TimedMeasurements() {
+    public TimeSequence() {
         this(500);
     }
 
@@ -155,7 +153,7 @@ public class TimedMeasurements {
      *
      * @param fragsize the fragment size to use for internal representation
      */
-    public TimedMeasurements(int fragsize) {
+    public TimeSequence(int fragsize) {
         fragSize = fragsize;
         newFragment();
     }
@@ -167,9 +165,7 @@ public class TimedMeasurements {
      * @param nm   the new measurement to add
      */
     public void add(long time, int nm) {
-        if (currentTime > time) {
-            throw Util.failure("Timed measurements must be inserted in order");
-        }
+        assert (currentTime > time);
 
         recordMinMax(nm);
         int off = current.offset;
@@ -181,28 +177,6 @@ public class TimedMeasurements {
         if (current.offset >= fragSize) {
             newFragment();
         }
-    }
-
-    private void recordMinMax(int nm) {
-        if (total == 0) {
-            min = max = nm;
-        } else {
-            max = max > nm ? max : nm;
-            min = min < nm ? min : nm;
-        }
-    }
-
-
-    void newFragment() {
-        Fragment nf = new Fragment(currentTime, fragSize);
-        if (current != null) {
-            current.next = nf;
-            addNode(nf, current.parent);
-        } else {
-            addNode(nf, null);
-        }
-        prev = current;
-        current = nf;
     }
 
     /**
@@ -237,7 +211,7 @@ public class TimedMeasurements {
      *
      * @param m the measurements to add to the end of this list
      */
-    public void addAll(TimedMeasurements m) {
+    public void addAll(TimeSequence m) {
         Measurement nm = new Measurement();
         Iterator i = m.iterator(0);
         while (i.hasNext()) {
@@ -262,4 +236,27 @@ public class TimedMeasurements {
     public int max() {
         return max;
     }
+
+    private void recordMinMax(int nm) {
+        if (total == 0) {
+            min = max = nm;
+        } else {
+            max = max > nm ? max : nm;
+            min = min < nm ? min : nm;
+        }
+    }
+
+
+    private void newFragment() {
+        Fragment nf = new Fragment(currentTime, fragSize);
+        if (current != null) {
+            current.next = nf;
+            addNode(nf, current.parent);
+        } else {
+            addNode(nf, null);
+        }
+        prev = current;
+        current = nf;
+    }
+
 }

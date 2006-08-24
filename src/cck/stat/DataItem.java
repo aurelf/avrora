@@ -32,6 +32,9 @@
 
 package cck.stat;
 
+import cck.text.Printer;
+import cck.text.Printable;
+
 
 /**
  * This class represents a data item that can be placed inside a database. Things like Proportion,
@@ -39,20 +42,13 @@ package cck.stat;
  *
  * @author Ben L. Titzer
  */
-abstract public class DataItem {
-    protected String name;
+public interface DataItem extends Printable {
 
-    public abstract void textReport();
+    public void print(Printer printer);
 
-    public abstract void processData();
+    public void process();
 
-    public abstract boolean hasData();
+    public boolean empty();
 
-    public String getName() {
-        return name;
-    }
-
-    public String toString() {
-        return name;
-    }
+    public String getName();
 }

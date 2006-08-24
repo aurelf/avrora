@@ -36,13 +36,13 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 /**
- * The <code>Measurements</code> class implements a simple array-like data structure that collects
+ * The <code>Sequence</code> class implements a simple array-like data structure that collects
  * a large list of integers and supports iterating over that list. For memory-efficient storage, it
  * uses a set of arrays where each array represents a fragment of the measurements obtained.
  *
  * @author Ben L. Titzer
  */
-public class Measurements {
+public class Sequence {
 
     public class Iterator {
         int cursor;
@@ -95,7 +95,7 @@ public class Measurements {
      * The default constructor for the <code>Measurements</code> class creates a new instance where the
      * fragment size is 500.
      */
-    public Measurements() {
+    public Sequence() {
         this(500);
     }
 
@@ -105,44 +105,41 @@ public class Measurements {
      *
      * @param fragsize the fragment size to use for internal representation
      */
-    public Measurements(int fragsize) {
+    public Sequence(int fragsize) {
         fragSize = fragsize;
         fragments = new LinkedList();
         newFragment();
     }
 
     /**
-     * The <code>add()</code> method adds a new measurement to this set.
+     * The <code>add()</code> method adds a new number to this sequence.
      *
      * @param nm the new measurement to add
      */
     public void add(int nm) {
-        recordMinMax(nm);
+        // add the number to the current fragment
         currentFrag[offset++] = nm;
+
+        if (total == 0) {
+            // if it is the first one, it is both the minimum and maximum
+            min = max = nm;
+        } else if ( nm > max ) {
+            // if it is greater than max, record a new max
+            max = nm;
+        } else if ( nm < min ) {
+            // if it is less than min, record a new min
+            min = nm;
+        }
         if (offset >= fragSize) {
+            // if the fragment is full, allocate a new one
             newFragment();
-            offset = 0;
         }
         total++;
     }
 
-    private void recordMinMax(int nm) {
-        if (total == 0) {
-            min = max = nm;
-        } else {
-            max = max > nm ? max : nm;
-            min = min < nm ? min : nm;
-        }
-    }
-
-    void newFragment() {
-        currentFrag = new int[fragSize];
-        fragments.add(currentFrag);
-    }
-
     /**
      * The <code>iterator()</code> method returns an interator over the measurements, starting with the
-     * specified measurement.
+     * specified measurement index.
      *
      * @param start the index of the first measurement to start from
      * @return an iterator that will start at the specified measurement and continue until the end
@@ -166,7 +163,7 @@ public class Measurements {
      *
      * @param m the measurements to add to the end of this list
      */
-    public void addAll(Measurements m) {
+    public void addAll(Sequence m) {
         Iterator i = m.iterator(0);
         while (i.hasNext()) {
             add(i.next());
@@ -180,4 +177,11 @@ public class Measurements {
     public int max() {
         return max;
     }
+
+    private void newFragment() {
+        currentFrag = new int[fragSize];
+        fragments.add(currentFrag);
+        offset = 0;
+    }
+
 }

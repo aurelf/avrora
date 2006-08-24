@@ -32,7 +32,7 @@
 
 package cck.stat;
 
-import cck.text.Terminal;
+import cck.text.Printer;
 
 
 /**
@@ -40,7 +40,9 @@ import cck.text.Terminal;
  *
  * @author Ben L. Titzer
  */
-public class Counter extends DataItem {
+public class Counter implements DataItem {
+    protected final String name;
+
     protected int count;
 
     public Counter(String newname) {
@@ -50,6 +52,10 @@ public class Counter extends DataItem {
     public Counter(String newname, int newcount) {
         name = newname;
         count = newcount;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public int getTotal() {
@@ -68,14 +74,14 @@ public class Counter extends DataItem {
         count += num;
     }
 
-    public void textReport() {
-        Terminal.print("\n " + name + ": " + count);
+    public void print(Printer printer) {
+        printer.print("\n " + name + ": " + count);
     }
 
-    public void processData() {
+    public void process() {
     }
 
-    public boolean hasData() {
-        return true;
+    public boolean empty() {
+        return false;
     }
 }

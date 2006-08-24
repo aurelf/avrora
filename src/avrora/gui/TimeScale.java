@@ -147,7 +147,7 @@ public class TimeScale {
         int medy = (int)(y + height * 0.4);
         g.fillRect(0, y, dim.width, dim.height);
 
-        g.setFont(g.getFont().deriveFont((float)9));
+        g.setFont(g.getFont().deriveFont(9.0f));
 
         ZoomLevel zl = getZoomLevel();
         long startNsecs = (long)getNS(startTime);

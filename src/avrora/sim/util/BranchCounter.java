@@ -70,7 +70,7 @@ public class BranchCounter extends Simulator.Probe.Empty {
      * @param pc the address at which this instruction resides
      */
     public void fireAfter(State state, int pc) {
-        int nextaddr = pc + ((LegacyState)state).getInstr(pc).getSize();
+        int nextaddr = pc + state.getInstr(pc).getSize();
         if (state.getPC() == nextaddr)
             nottakenCount++;
         else

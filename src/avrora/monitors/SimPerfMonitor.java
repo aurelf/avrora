@@ -33,7 +33,7 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
-import cck.stat.TimedMeasurements;
+import cck.stat.TimeSequence;
 import cck.text.*;
 import cck.util.Option;
 
@@ -53,13 +53,13 @@ public class SimPerfMonitor extends MonitorFactory {
 
     public class Mon implements Monitor {
         final Simulator simulator;
-        final TimedMeasurements data;
+        final TimeSequence data;
         long start;
         long interval;
 
         Mon(Simulator s) {
             simulator = s;
-            data = new TimedMeasurements();
+            data = new TimeSequence();
             start = System.currentTimeMillis();
             interval = (long)(simulator.getClock().getHZ() / FREQUENCY.get());
             simulator.insertEvent(new Event(), interval);
@@ -72,8 +72,8 @@ public class SimPerfMonitor extends MonitorFactory {
             Terminal.nextln();
             TermUtil.printSeparator();
 
-            TimedMeasurements.Measurement m = new TimedMeasurements.Measurement();
-            TimedMeasurements.Iterator i = data.iterator(0);
+            TimeSequence.Measurement m = new TimeSequence.Measurement();
+            TimeSequence.Iterator i = data.iterator(0);
             int cntr = 0;
             long pcycles = 0;
             long pmillis = 0;

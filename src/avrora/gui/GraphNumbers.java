@@ -32,7 +32,7 @@
 
 package avrora.gui;
 
-import cck.stat.Measurements;
+import cck.stat.Sequence;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -46,8 +46,8 @@ import java.awt.event.AdjustmentListener;
  */
 public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentListener {
 
-    private Measurements publicNumbers; //access by monitors to add stuff
-    private Measurements privateNumbers; //only accessed by paint
+    private Sequence publicNumbers; //access by monitors to add stuff
+    private Sequence privateNumbers; //only accessed by paint
     private final JPanel parentPanel;
 
     private static final int valueMargin = 5;
@@ -95,8 +95,8 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
 
         parentPanel = parent;
 
-        publicNumbers = new Measurements();
-        privateNumbers = new Measurements();
+        publicNumbers = new Sequence();
+        privateNumbers = new Sequence();
 
         //Set option defaults
         lineColor = Color.GREEN; //default line color is green
@@ -256,12 +256,12 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
      * It might also be called by paint thread
      */
     public boolean internalUpdate() {
-        Measurements newNumbers = publicNumbers;
+        Sequence newNumbers = publicNumbers;
         synchronized ( this ) {
             if ( newNumbers.size() == 0 ) {
                 return false;
             }
-            publicNumbers = new Measurements();
+            publicNumbers = new Sequence();
         }
 
         // add all the new numbers
@@ -305,7 +305,7 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         boolean firstone = true;  //the first line is a special case
 
         //we have to look up the starting value for the x-axis
-        Measurements.Iterator mi = privateNumbers.iterator((int)startTime);
+        Sequence.Iterator mi = privateNumbers.iterator((int)startTime);
         g.setColor(lineColor);
         for (long i = startTime; mi.hasNext() ; i++) {
             double currentValue = mi.next();
@@ -355,7 +355,7 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         if ( minvalue < 0 ) value -= majorTick;
 
         g.setColor(Color.DARK_GRAY);
-        g.setFont(g.getFont().deriveFont((float)9));
+        g.setFont(g.getFont().deriveFont(9.0f));
 
         for ( ; ; value += vtick) {
             int y = (int)(startY - (value - minvalue) * scale);

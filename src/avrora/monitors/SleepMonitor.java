@@ -77,9 +77,9 @@ public class SleepMonitor extends MonitorFactory {
             for ( int cntr = 0; cntr < times.length; cntr++ ) {
                 String state = fsm.getStateName(cntr);
                 Terminal.printGreen(StringUtil.leftJustify(state, 23));
-                Terminal.printBrightCyan(StringUtil.rightJustify(times[cntr],10));
-                float pcnt = (100*times[cntr])/(float)total;
-                Terminal.printBrightCyan(StringUtil.rightJustify(StringUtil.toFixedFloat(pcnt, 4),9));
+                Terminal.printBrightCyan(StringUtil.rightJustify(times[cntr], 10));
+                float pcnt = (100.0f * times[cntr]) / total;
+                Terminal.printBrightCyan(StringUtil.rightJustify(StringUtil.toFixedFloat(pcnt, 4), 9));
                 Terminal.print(" %");
                 Terminal.nextln();
             }

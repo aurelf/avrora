@@ -32,7 +32,7 @@
 
 package cck.stat;
 
-import cck.text.Terminal;
+import cck.text.Printer;
 import cck.util.Util;
 
 /**
@@ -53,7 +53,7 @@ public class Distribution extends MinMaxMean {
 
     /**
      * The <code>median</code> field stores the median value of the distribution. This field is not computed
-     * until the <code>processData()</code> method has been called after data has been collected.
+     * until the <code>process()</code> method has been called after data has been collected.
      */
     public int median;
 
@@ -66,7 +66,7 @@ public class Distribution extends MinMaxMean {
     /**
      * The <code>distribname</code> field stores the string that should be reported as the name of the
      * distribution, e.g. "Distribution of hashcodes". When this string is non-null, a textual table of the
-     * distribution will be printed to the terminal when the <code>textReport()</code> method is called.
+     * distribution will be printed to the terminal when the <code>report()</code> method is called.
      */
     protected String distribname;
 
@@ -118,39 +118,40 @@ public class Distribution extends MinMaxMean {
 
     /**
      * Generate a textual report of the data gathered.
+     * @param printer
      */
-    public void textReport() {
-        Terminal.print("\n " + name);
-        Terminal.print("\n---------------------------------------------------------------------\n");
+    public void print(Printer printer) {
+        printer.print("\n " + name);
+        printer.print("\n---------------------------------------------------------------------\n");
 
         if (totalname != null) {
-            Terminal.print("   " + totalname + ": " + total);
+            printer.print("   " + totalname + ": " + total);
         }
         if (cumulname != null) {
-            Terminal.print("   " + cumulname + ": " + accumulation);
+            printer.print("   " + cumulname + ": " + accumulation);
         }
 
-        Terminal.print("\n Statistics: ");
-        Terminal.print("\n   Minimum: " + observedMinimum + ", " + countMinimum + " occurences of min.");
-        Terminal.print("\n   Maximum: " + observedMaximum + ", " + countMaximum + " occurences of max.");
-        Terminal.print("\n   Mean: " + mean + ", Median: " + median + '\n');
+        printer.print("\n Statistics: ");
+        printer.print("\n   Minimum: " + observedMinimum + ", " + countMinimum + " occurences of min.");
+        printer.print("\n   Maximum: " + observedMaximum + ", " + countMaximum + " occurences of max.");
+        printer.print("\n   Mean: " + mean + ", Median: " + median + '\n');
 
         if (distribname != null) {
-            Terminal.print("\n Distribution: ");
-            printDistribution(distribMin, distrib);
+            printer.print("\n Distribution: ");
+            printDistribution(printer, distribMin, distrib);
         }
     }
 
     /**
      * PrintVST the distribution using stars
      */
-    protected void printDistribution(int base, int data[]) {
+    protected void printDistribution(Printer printer, int base, int data[]) {
         int cntr, max;
         float scale = 1;
         int num = data.length;
 
         if (num == 0) {
-            Terminal.print("\n");
+            printer.print("\n");
             return;
         }
 
@@ -170,19 +171,19 @@ public class Distribution extends MinMaxMean {
             if (data[cntr] == 0) {
                 if (cntr > 0 && cntr < num - 1) {
                     if ((data[cntr - 1] == 0) && (data[cntr + 1] == 0)) {
-                        Terminal.print("\n   . . .");
+                        printer.print("\n   . . .");
                         while ((data[cntr + 1] == 0) && (cntr < data.length - 1)) cntr++;
                     }
                 }
             }
 
-            Terminal.print("\n   " + (base + cntr) + ": " + data[cntr] + " \t");
+            printer.print("\n   " + (base + cntr) + ": " + data[cntr] + " \t");
 
             for (int scntr = 0; scntr < stars; scntr++) {
-                Terminal.print("*");
+                printer.print("*");
             }
         }
-        Terminal.print("\n");
+        printer.print("\n");
     }
 
     public void expandInterval(int min, int max) {
@@ -240,8 +241,8 @@ public class Distribution extends MinMaxMean {
         distribMin = newMin;
     }
 
-    public void processData() {
-        super.processData();
+    public void process() {
+        super.process();
         int mid = total / 2;
         if ((distrib == null)) {
             median = 0;
