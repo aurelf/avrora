@@ -42,13 +42,13 @@ import avrora.sim.State;
 import avrora.sim.clock.Clock;
 import avrora.sim.energy.*;
 import avrora.sim.platform.Platform;
+import avrora.sim.radio.Radio;
+import avrora.sim.radio.RadioAir;
 import avrora.sim.util.SimUtil;
 import cck.text.Terminal;
-import cck.text.TermUtil;
-import cck.util.Option;
-import cck.util.Util;
-import java.io.*;
+import cck.util.*;
 import java.util.Iterator;
+import java.io.*;
 
 /**
  * energy monitor implementation this class handles logging and
@@ -60,12 +60,12 @@ import java.util.Iterator;
  */
 public class EnergyMonitor extends MonitorFactory {
 
-    protected final Option.Double BATTERY = newOption("battery", 0.0,
+    protected final Option.Double BATTERY = options.newOption("battery", 0.0,
             "This option specifies the number of joules in each node's battery. During " +
             "simulation, the energy consumption of each node is tracked, and if the node " +
             "runs out of battery, it will be shut down and removed from the " +
             "simulation.");
-    protected final Option.Str LOG = newOption("logfile", "",
+    protected final Option.Str LOG = options.newOption("logfile", "",
             "This option specifies whether the energy monitor should log changes to each " +
             "node's energy state. If this option is specified, then each node's energy " +
             "state transitions will be written to <option>.#, where '#' represents the " +
@@ -123,7 +123,7 @@ public class EnergyMonitor extends MonitorFactory {
         public void report() {
             //simulation will end
             //provide component energy breakdown
-            TermUtil.printSeparator("Energy consumption results for node "+simulator.getID());
+            Terminal.printCyan("\nEnergy Consumption Component Breakdown:\n\n");
             Clock clock = simulator.getClock();
             long cycles = clock.getCount();
             Terminal.println("Node lifetime: " + cycles + " cycles,  " + clock.cyclesToMillis(cycles) / 1000.0+ " seconds\n");
@@ -174,13 +174,10 @@ public class EnergyMonitor extends MonitorFactory {
                     Terminal.nextln();
 
                     //remove radio
-                    /*
                     Radio radio = (Radio)platform.getDevice("radio");
                     RadioAir air = radio.getAir();
                     if ( air != null )
                         air.removeRadio(radio);
-                    */
-                    // TODO: remove the node from simulation.
                     //stop loop
                     simulator.stop();
                 }
@@ -282,7 +279,7 @@ public class EnergyMonitor extends MonitorFactory {
             /**
              * called when the state of the device changes this component logs these state changes
              *
-             * @see EnergyObserver#stateChange(Energy)
+             * @see avrora.sim.energy.EnergyObserver#stateChange(avrora.sim.energy.Energy)
              */
             public void stateChange(Energy energy) {
                 logOldState(energy);
@@ -326,7 +323,7 @@ public class EnergyMonitor extends MonitorFactory {
                 //for (int i = 0; i < consumer.size(); ++i) {
                 while( it.hasNext() ){
                     Energy en = (Energy)it.next();
-                    double ampere = (en == energy) ? en.getOldAmpere() : en.getCurrentAmpere();
+                    double ampere = (en != energy) ? en.getCurrentAmpere() : en.getOldAmpere();
 
                     total += ampere;
                     write(ampere + " ");
@@ -352,7 +349,7 @@ public class EnergyMonitor extends MonitorFactory {
     /**
      * create a new monitor, calls the constructor
      *
-     * @see MonitorFactory#newMonitor(Simulator)
+     * @see avrora.monitors.MonitorFactory#newMonitor(avrora.sim.Simulator)
      */
     public avrora.monitors.Monitor newMonitor(Simulator s) {
         return new Monitor(s);

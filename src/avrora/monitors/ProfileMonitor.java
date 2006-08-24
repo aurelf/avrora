@@ -36,9 +36,10 @@ import avrora.arch.AbstractInstr;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import cck.stat.StatUtil;
 import cck.text.*;
 import cck.util.Option;
+import cck.stat.StatUtil;
+
 import java.util.*;
 
 /**
@@ -49,14 +50,14 @@ import java.util.*;
  */
 public class ProfileMonitor extends MonitorFactory {
 
-    public final Option.Bool CYCLES = newOption("record-cycles", true,
+    public final Option.Bool CYCLES = options.newOption("record-cycles", true,
             "This option controls whether this monitor will record " +
             "the cycles consumed by each instruction or basic block. ");
-    public final Option.Long PERIOD = newOption("period", 0,
+    public final Option.Long PERIOD = options.newOption("period", 0,
             "This option specifies whether the profiling will be exact or periodic. When " +
             "this option is set to non-zero, then a sample of the program counter is taken at " +
             "the specified period in clock cycles, rather than through probes at each instruction.");
-    public final Option.Bool CLASSES = newOption("instr-classes", false,
+    public final Option.Bool CLASSES = options.newOption("instr-classes", false,
             "This option selects whether the profiling monitor will generate a report of the " +
             "types of instructions that were executed most frequently by the program.");
 
@@ -64,7 +65,7 @@ public class ProfileMonitor extends MonitorFactory {
      * The <code>Monitor</code> inner class contains the probes and formatting code that
      * can report the profile for the program after it has finished executing.
      */
-    public class Mon implements Monitor {
+    public class Mon implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Program program;
 
@@ -148,7 +149,6 @@ public class ProfileMonitor extends MonitorFactory {
             if ( CLASSES.get() ) {
                 reportInstrProfile();
             }
-            Terminal.nextln();
         }
 
         long totalcount;
@@ -157,7 +157,7 @@ public class ProfileMonitor extends MonitorFactory {
         private void reportProfile() {
             int imax = icount.length;
 
-            TermUtil.printSeparator("Profiling results for node "+simulator.getID());
+            TermUtil.printSeparator(Terminal.MAXLINE, "Profiling results");
             Terminal.printGreen("       Address     Count  Run     Cycles     Cumulative");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
@@ -289,7 +289,7 @@ public class ProfileMonitor extends MonitorFactory {
                 "of the execution frequency for all instructions.");
     }
 
-    public Monitor newMonitor(Simulator s) {
+    public avrora.monitors.Monitor newMonitor(Simulator s) {
         return new Mon(s);
     }
 }

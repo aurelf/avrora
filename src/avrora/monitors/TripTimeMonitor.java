@@ -52,16 +52,16 @@ import java.util.Iterator;
  */
 public class TripTimeMonitor extends MonitorFactory {
 
-    final Option.List PAIRS = newOptionList("pairs", "",
+    final Option.List PAIRS = options.newOptionList("pairs", "",
             "The \"pairs\" option specifies the list of program point pairs for which " +
             "to measure the point-to-point trip time. ");
-    final Option.List FROM = newOptionList("from", "",
+    final Option.List FROM = options.newOptionList("from", "",
             "The \"from\" option specifies the list of program points for which " +
             "to measure to every other instruction in the program. ");
-    final Option.List TO = newOptionList("to", "",
+    final Option.List TO = options.newOptionList("to", "",
             "The \"from\" option specifies the list of program points for which " +
             "to measure from every other instruction in the program. ");
-    final Option.Bool DISTRIBUTION = newOption("distribution", false,
+    final Option.Bool DISTRIBUTION = options.newOption("distribution", false,
             "This option, when specified, causes the trip time monitor to print a complete distribution of the " +
             "trip times for each pair of program points. WARNING: this option can consume large amounts of memory " +
             "and generate a large amount of output.");
@@ -93,10 +93,10 @@ public class TripTimeMonitor extends MonitorFactory {
                 this.start = start;
                 this.end = end;
 
-                cumul = 0;
-                cumul_sqr = 0;
-                max = 0;
-                min = Long.MAX_VALUE;
+                this.cumul = 0;
+                this.cumul_sqr = 0;
+                this.max = 0;
+                this.min = Long.MAX_VALUE;
                 if ( DISTRIBUTION.get() )
                     distrib = new Distribution("trip time "
                             +StringUtil.addrToString(start)+" -to- "
@@ -160,25 +160,25 @@ public class TripTimeMonitor extends MonitorFactory {
             Iterator i = PAIRS.get().iterator();
             while (i.hasNext()) {
                 String str = (String)i.next();
-                int ind = str.indexOf(':');
+                int ind = str.indexOf(":");
                 if (ind <= 0)
                     throw Util.failure("invalid address format: " + StringUtil.quote(str));
                 String src = str.substring(0, ind);
                 String dst = str.substring(ind + 1);
 
-                SourceMapping.Location loc = getLocation(src);
-                SourceMapping.Location tar = getLocation(dst);
+                LabelMapping.Location loc = getLocation(src);
+                LabelMapping.Location tar = getLocation(dst);
 
-                addPair(loc.lma_addr, tar.lma_addr);
+                addPair(loc.address, tar.address);
             }
         }
 
-        private SourceMapping.Location getLocation(String src) {
+        private LabelMapping.Location getLocation(String src) {
             SourceMapping lm = program.getSourceMapping();
             SourceMapping.Location loc = lm.getLocation(src);
             if ( loc == null )
                 Util.userError("Invalid program address: ", src);
-            if ( program.readInstr(loc.lma_addr) == null )
+            if ( program.readInstr(loc.address) == null )
                 Util.userError("Invalid program address: ", src);
             return loc;
         }
@@ -190,7 +190,7 @@ public class TripTimeMonitor extends MonitorFactory {
                 String str = (String)i.next();
                 SourceMapping.Location loc = sm.getLocation(str);
                 for ( int cntr = 0; cntr < program.program_end; cntr = program.getNextPC(cntr) )
-                    addPair(loc.lma_addr, cntr);
+                    addPair(loc.address, cntr);
             }
         }
 
@@ -201,7 +201,7 @@ public class TripTimeMonitor extends MonitorFactory {
                 String str = (String)i.next();
                 SourceMapping.Location loc = sm.getLocation(str);
                 for ( int cntr = 0; cntr < program.program_end; cntr = program.getNextPC(cntr) )
-                    addPair(cntr, loc.lma_addr);
+                    addPair(cntr, loc.address);
             }
         }
 
@@ -241,7 +241,6 @@ public class TripTimeMonitor extends MonitorFactory {
         }
 
         public void report() {
-            TermUtil.printSeparator("Trip time results for node "+simulator.getID());
             Terminal.printGreen("  start      end     count         avg         std        max        min");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
@@ -249,7 +248,6 @@ public class TripTimeMonitor extends MonitorFactory {
                 for ( Pair p = startArray[cntr]; p != null; p = p.startLink ) {
                     if ( p.count > 0 ) p.report(Printer.STDOUT);
                 }
-            Terminal.nextln();
         }
     }
 

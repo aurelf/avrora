@@ -32,7 +32,7 @@
 
 package cck.stat;
 
-import cck.text.Terminal;
+import cck.text.Printer;
 
 
 /**
@@ -41,7 +41,9 @@ import cck.text.Terminal;
  *
  * @author Ben L. Titzer
  */
-public class MinMaxMean extends DataItem {
+public class MinMaxMean implements DataItem {
+    protected final String name;
+
     public float mean;
     public int observedMaximum;
     public int observedMinimum;
@@ -71,6 +73,10 @@ public class MinMaxMean extends DataItem {
         totalname = tn;
         cumulname = cn;
         someData = false;
+    }
+
+    public String getName() {
+        return name;
     }
 
     /**
@@ -105,28 +111,29 @@ public class MinMaxMean extends DataItem {
     /**
      * process the data so far and update internal statistics.
      */
-    public void processData() {
+    public void process() {
         mean = ((float) accumulation) / ((float) total);
     }
 
     /**
      * Generate a textual report of the data gathered.
+     * @param printer
      */
-    public void textReport() {
-        Terminal.print("\n " + name);
-        Terminal.print("\n---------------------------------------------------------------------\n");
+    public void print(Printer printer) {
+        printer.print("\n " + name);
+        printer.print("\n---------------------------------------------------------------------\n");
 
         if (totalname != null) {
-            Terminal.print("   " + totalname + ": " + total);
+            printer.print("   " + totalname + ": " + total);
         }
         if (cumulname != null) {
-            Terminal.print("   " + cumulname + ": " + accumulation);
+            printer.print("   " + cumulname + ": " + accumulation);
         }
 
-        Terminal.print("\n Statistics: ");
-        Terminal.print("\n   Minimum: " + observedMinimum + ", " + countMinimum + " occurences of min.");
-        Terminal.print("\n   Maximum: " + observedMaximum + ", " + countMaximum + " occurences of max.");
-        Terminal.print("\n   Mean: " + mean + '\n');
+        printer.print("\n Statistics: ");
+        printer.print("\n   Minimum: " + observedMinimum + ", " + countMinimum + " occurences of min.");
+        printer.print("\n   Maximum: " + observedMaximum + ", " + countMaximum + " occurences of max.");
+        printer.print("\n   Mean: " + mean + '\n');
     }
 
     /**
@@ -163,8 +170,8 @@ public class MinMaxMean extends DataItem {
         return result;
     }
 
-    public boolean hasData() {
-        return someData;
+    public boolean empty() {
+        return !someData;
     }
 
     public String toString() {

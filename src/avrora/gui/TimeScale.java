@@ -151,7 +151,7 @@ public class TimeScale {
 
         ZoomLevel zl = getZoomLevel();
         long startNsecs = (long)getNS(startTime);
-        long ns = startNsecs - startNsecs % zl.nsecs;
+        long ns = startNsecs - (startNsecs % zl.nsecs);
         double startPos = (getCycles(ns) - startTime) / zl.scale;
         int count = (int)((ns / zl.nsecs) % 1000);
 
@@ -194,11 +194,11 @@ public class TimeScale {
     }
 
     private double getNS(long cycles) {
-        return cycles * nsPerCycle;
+        return (cycles * nsPerCycle);
     }
 
     private static double getCycles(long nsecs) {
-        return nsecs / nsPerCycle;
+        return (nsecs / nsPerCycle);
     }
 
     private void drawTickLabel(ZoomLevel zl, int tick, Graphics g, int cntr, int y) {

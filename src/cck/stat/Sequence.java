@@ -65,16 +65,16 @@ public class Sequence {
         }
 
         public int next() {
-            if (frag == currentFrag) {
-                // we are in the last fragment, did we run off the end?
-                if (cursor >= offset) {
-                    throw new NoSuchElementException();
-                }
-            } else {
+            if (frag != currentFrag) {
                 // we are in an old (complete) fragment
                 if (cursor >= fragSize) {
                     frag = (int[]) fiter.next();
                     cursor = 0;
+                }
+            } else {
+                // we are in the last fragment, did we run off the end?
+                if (cursor >= offset) {
+                    throw new NoSuchElementException();
                 }
             }
             return frag[cursor++];

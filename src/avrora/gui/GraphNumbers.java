@@ -299,7 +299,7 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
 
         int height = panelDimen.height - timeScale.height;
         int maxY = height - valueMargin;
-        double scalingfactor = (maxY - valueMargin) / (double)(maxvalue - minvalue);
+        double scalingfactor = (maxY - valueMargin) / ((double) (maxvalue - minvalue));
         int eofpx = 0; //holds coorinates of last line we drew
         int eofpy = 0;
         boolean firstone = true;  //the first line is a special case
@@ -345,7 +345,7 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         g.setColor(Color.GRAY);
         g.fillRect(0, 0, VALUE_SCALE_WIDTH, height);
         int startY = height - valueMargin;
-        double scale = (startY - valueMargin) / (double)(maxvalue - minvalue);
+        double scale = (startY - valueMargin) / ((double) (maxvalue - minvalue));
         int vtick = 1;
         for ( ; vtick < 1000000000; vtick *= 10 ) {
             if ( scale * vtick > MIN__VALUE__TICK ) break;

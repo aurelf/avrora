@@ -47,7 +47,7 @@ import cck.util.Option;
  */
 public class SimPerfMonitor extends MonitorFactory {
 
-    public final Option.Double FREQUENCY = newOption("frequency", 100.0,
+    public final Option.Double FREQUENCY = options.newOption("frequency", 100.0,
             "This option is used in the simulator profiling monitor to determine how many " +
             "times per simulated second to sample the simulator's performance.");
 
@@ -67,7 +67,7 @@ public class SimPerfMonitor extends MonitorFactory {
 
         public void report() {
 
-            TermUtil.printSeparator("Simulator performance results for node "+simulator.getID());
+            TermUtil.printSeparator(Terminal.MAXLINE, "Simulator performance results");
             Terminal.printGreen("  Time    Millis  Instant     Cumulative");
             Terminal.nextln();
             TermUtil.printSeparator();
@@ -104,7 +104,6 @@ public class SimPerfMonitor extends MonitorFactory {
                 pmillis = millis;
                 pcycles = cycles;
             }
-            Terminal.nextln();
         }
 
         class Event implements Simulator.Event {

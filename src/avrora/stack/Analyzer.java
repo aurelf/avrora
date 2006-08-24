@@ -39,7 +39,6 @@ import avrora.stack.isea.*;
 import cck.stat.Distribution;
 import cck.text.*;
 import cck.util.Util;
-import cck.util.TimeUtil;
 import java.util.*;
 
 /**
@@ -560,14 +559,14 @@ public class Analyzer {
         printStatHeader();
         printStats();
 
-        printQuantity("Time to build graph   ", TimeUtil.milliToSecs(buildTime));
+        printQuantity("Time to build graph   ", StringUtil.milliToSecs(buildTime));
         if (maximalPath == null) {
             Terminal.printRed("No maximal path data.");
             Terminal.nextln();
             return;
         }
 
-        printQuantity("Time to traverse graph", TimeUtil.milliToSecs(traverseTime));
+        printQuantity("Time to traverse graph", StringUtil.milliToSecs(traverseTime));
         if (unbounded)
             printQuantity("Maximum stack depth   ", "unbounded");
         else

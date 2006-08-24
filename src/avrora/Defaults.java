@@ -97,7 +97,6 @@ public class Defaults {
             monitorMap.addClass("sleep", SleepMonitor.class);
             monitorMap.addClass("stack", StackMonitor.class);
             monitorMap.addClass("energy", EnergyMonitor.class);
-            monitorMap.addClass("energy-log", EnergyMonitorLog.class);
             monitorMap.addClass("interrupts", InterruptMonitor.class);
             monitorMap.addClass("interactive", InteractiveMonitor.class);
             monitorMap.addClass("trace", TraceMonitor.class);

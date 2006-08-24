@@ -55,8 +55,6 @@ import cck.text.Terminal;
  */
 public class IcallMonitor extends MonitorFactory {
 
-    public static final int MAX_STACK_DEPTH = 1000;
-
     public class Mon implements avrora.monitors.Monitor {
         public final Simulator simulator;
         private final SourceMapping sourceMap;

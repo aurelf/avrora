@@ -32,8 +32,8 @@
 
 package cck.stat;
 
-import cck.text.Printable;
 import cck.text.Printer;
+import cck.text.Printable;
 
 
 /**

@@ -50,10 +50,10 @@ import java.util.Arrays;
  */
 public class InterruptMonitor extends MonitorFactory {
 
-    protected final Option.Bool SHOW = newOption("show-interrupts", false,
+    protected final Option.Bool SHOW = options.newOption("show-interrupts", false,
             "This option, when specified, will cause the interrupt monitor to bring out changes " +
             "to the state of each interrupt.");
-    protected final Option.Bool INV_ONLY = newOption("invocations-only", true,
+    protected final Option.Bool INV_ONLY = options.newOption("invocations-only", true,
             "This option, when specified, will cause the interrupt to print only invocations " +
             "of the specified interrupts, and not enablings, disablings, postings, and unpostings.");
 
@@ -202,7 +202,7 @@ public class InterruptMonitor extends MonitorFactory {
         }
 
         public void report() {
-            TermUtil.printSeparator("Interrupt monitor results for node "+simulator.getID());
+            TermUtil.printSeparator(Terminal.MAXLINE, "Interrupt monitor results");
             Terminal.printGreen("Num  Name        Invocations  Separation  Latency     Wakeup");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
@@ -221,28 +221,27 @@ public class InterruptMonitor extends MonitorFactory {
                 Terminal.print(invocationWakeup(cntr));
                 Terminal.nextln();
             }
-            Terminal.nextln();
         }
 
         private String invocationLatency(int cntr) {
             if ( invocations[cntr] > 0 )
                 return StringUtil.leftJustify(meanLatency[cntr].mean, 10);
             else
-                return StringUtil.space(10);
+                return StringUtil.dup(' ', 10);
         }
 
         private String invocationSeparation(int cntr) {
             if ( invocations[cntr] > 0 )
                 return StringUtil.leftJustify(meanInvoke[cntr].mean, 10);
             else
-                return StringUtil.space(10);
+                return StringUtil.dup(' ', 10);
         }
 
         private String invocationWakeup(int cntr) {
             if ( invocations[cntr] > 0 )
                 return StringUtil.leftJustify(meanWake[cntr].mean, 10);
             else
-                return StringUtil.space(10);
+                return StringUtil.dup(' ', 10);
         }
     }
 

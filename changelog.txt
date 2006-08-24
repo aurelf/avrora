@@ -29,9 +29,13 @@
     1     devs  USART frame sizes
     1      sim  RAMPZ usage for with more than 128k of flash
     1  jintgen  DisassemblerGenerator: split fields that span word boundaries
-    1     devs  Check auto-unpost behavior of ADC interrupt
+    1   sensor  update-node-id with ELF must use flash, not RAM address
+    1    input  Grammar for new objdump version
+    2    radio  Detect receives of radio bytes and notify radio probes
 
 ----------------------------------- Completed -----------------------------------------
+    1   energy  Energy monitor log                                            1.7.61
+    1     devs  Check auto-unpost behavior of ADC interrupt                   1.7.60
     1      sim  ATMega128 sleep mode codes                                    1.7.56
     1    flash  Fixes to external flash implementation                        1.7.56
     1    input  Objdump fixes for binutils incompatibility                    1.7.56
@@ -88,6 +92,8 @@
     1     devs  WARN: ADC input not connected
     1   sensor  ADC value / light intensity conversion tables
     1   energy  Report energy counts in amp-hours
+    2     core  Reverse mapping (instr -> addresses) to simplify monitors
+    2    probe  Event profiler that collects min, max, mean statistics
 
 ----------------------------------- Completed -----------------------------------------
     2    probe  Implemented CallTrace and CallStack utilities for probes     1.7.57
