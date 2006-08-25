@@ -64,7 +64,6 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         }
     }
 
-    protected int RAMPZ; // location of the RAMPZ IO register
     protected final RegisterSet registers;
     protected final MSP430Instr[] shared_instr;
     protected final STOP_instr STOP;

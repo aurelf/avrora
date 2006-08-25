@@ -240,32 +240,31 @@ public class ReprogrammableCodeSegment extends CodeSegment {
         int Z = interpreter.getRegisterWord(LegacyRegister.Z);
         int pageoffset = (Z & addressMask);
         int pagenum = Z >> (pagesize + 1);
+        // for models with more than 128k flash, we need to use RAMPZ
+        if (interpreter.RAMPZ > 0) {
+            pagenum += interpreter.getIORegisterByte(interpreter.RAMPZ) << (16 - pagesize - 1);
+        }
         // do not update the ReprogrammableCodeSegment register yet
         int state = SPMCSR.getState();
-        switch ( state ) {
+        switch (state) {
             case STATE_PGERASE:
-                if ( flashPrinter.enabled )
-                    flashPrinter.println("FLASH: page erase of page "+pagenum);
+                if (flashPrinter.enabled) flashPrinter.println("FLASH: page erase of page " + pagenum);
                 pageErase(pagenum, pageoffset);
                 break;
             case STATE_RWWSRE:
-                if ( flashPrinter.enabled )
-                    flashPrinter.println("FLASH: reset RWW section ");
+                if (flashPrinter.enabled) flashPrinter.println("FLASH: reset RWW section ");
                 resetRWW();
                 break;
             case STATE_BLBSET:
-                if ( flashPrinter.enabled )
-                    flashPrinter.println("FLASH: boot lock bits set");
+                if (flashPrinter.enabled) flashPrinter.println("FLASH: boot lock bits set");
                 mainClock.removeEvent(SPMCSR.reset);
                 break;
             case STATE_FILL:
-                if ( flashPrinter.enabled )
-                    flashPrinter.println("FLASH: fill buffer @ "+pageoffset);
+                if (flashPrinter.enabled) flashPrinter.println("FLASH: fill buffer @ " + pageoffset);
                 fillBuffer(pagenum, pageoffset);
                 break;
             case STATE_PGWRITE:
-                if ( flashPrinter.enabled )
-                    flashPrinter.println("FLASH: page write to page "+pagenum);
+                if (flashPrinter.enabled) flashPrinter.println("FLASH: page write to page " + pagenum);
                 pageWrite(pagenum, pageoffset);
                 break;
             default:

@@ -36,6 +36,7 @@ import avrora.Defaults;
 import avrora.monitors.Monitor;
 import avrora.sim.Simulation;
 import avrora.sim.Simulator;
+import avrora.sim.util.SimUtil;
 import cck.text.*;
 import cck.util.Util;
 import java.util.Iterator;
@@ -67,8 +68,8 @@ public class SimulateAction extends SimAction {
      *                             simulation
      */
     public void run(String[] args) throws Exception {
-        StringUtil.REPORT_SECONDS = REPORT_SECONDS.get();
-        StringUtil.SECONDS_PRECISION = (int)SECONDS_PRECISION.get();
+        SimUtil.REPORT_SECONDS = REPORT_SECONDS.get();
+        SimUtil.SECONDS_PRECISION = (int)SECONDS_PRECISION.get();
 
         Simulation sim = Defaults.getSimulation(SIMULATION.get());
         sim.process(options, args);

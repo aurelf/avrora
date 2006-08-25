@@ -6,10 +6,10 @@
 all: cck avrora jintgen
 
 cck:
-	javac -d bin `find src/cck -name '*.java'`
+	javac -source 1.4 -d bin `find src/cck -name '*.java'`
 
 avrora:
-	javac -d bin `find src/avrora src/cck -name '*.java'`
+	javac -source 1.4 -d bin `find src/avrora src/cck -name '*.java'`
 	cp -r src/avrora/gui/images bin/avrora/gui
 
 jintgen:

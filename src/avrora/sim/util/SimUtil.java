@@ -47,6 +47,11 @@ import cck.util.Util;
  */
 public class SimUtil {
 
+    public static int ID_LENGTH = 4;
+    public static int TIME_LENGTH = 12;
+    public static int SECONDS_PRECISION = 6;
+    public static boolean REPORT_SECONDS = false;
+
     public static void readError(Simulator sim, String segment, int address) {
         String msg = "illegal read from " + segment + " at address " + StringUtil.addrToString(address);
         int npc = sim.getState().getPC();
@@ -107,21 +112,24 @@ public class SimUtil {
     }
 
     public static void toIDTimeString(StringBuffer buf, int id, Clock clk) {
-        buf.append(StringUtil.rightJustify(id, StringUtil.ID_LENGTH));
+        boolean R = true;
+        StringUtil.justify(R, buf, id, ID_LENGTH);
         buf.append("  ");
 
-        if ( StringUtil.REPORT_SECONDS ) {
-            StringBuffer buf2 = new StringBuffer(StringUtil.TIME_LENGTH +1);
+        if ( REPORT_SECONDS ) {
+            StringBuffer buf2 = new StringBuffer(TIME_LENGTH +1);
             long hz = clk.getHZ();
             long count = clk.getCount();
             long seconds = count / hz;
             long fract = count % hz;
             double f = (double)fract / hz;
             StringUtil.appendSecs(buf2, seconds);
-            StringUtil.appendFract(buf2, f, StringUtil.SECONDS_PRECISION);
-            buf.append(StringUtil.rightJustify(buf2.toString(), StringUtil.TIME_LENGTH));
+            StringUtil.appendFract(buf2, f, SECONDS_PRECISION);
+            StringUtil.justify(R, buf, buf2.toString(), TIME_LENGTH);
+            //buf.append(StringUtil.rightJustify(buf2.toString(), TIME_LENGTH));
         } else {
-            buf.append(StringUtil.rightJustify(clk.getCount(), StringUtil.TIME_LENGTH));
+            StringUtil.justify(R, buf, clk.getCount(), TIME_LENGTH);
+            //buf.append(StringUtil.rightJustify(clk.getCount(), TIME_LENGTH));
         }
         buf.append("  ");
     }
@@ -148,7 +156,4 @@ public class SimUtil {
         buf.append(m);
         Terminal.println(buf.toString());
     }
-
-
-
 }

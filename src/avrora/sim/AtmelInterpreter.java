@@ -50,7 +50,7 @@ import cck.util.Util;
 public abstract class AtmelInterpreter extends Interpreter implements LegacyInstrVisitor {
 
     protected final int SREG; // location of the SREG IO register
-    protected final int RAMPZ; // location of the RAMPZ IO register
+    public final int RAMPZ; // location of the RAMPZ IO register
     protected int bootPC; // start up address
     protected int interruptBase; // base of interrupt vector table
 

@@ -26,13 +26,13 @@
     1      sim  Out of bound accesses to SRAM, flash, EEPROM
     1     devs  USART baud rates
     1     devs  USART frame sizes
-    1      sim  RAMPZ usage for with more than 128k of flash
     1  jintgen  DisassemblerGenerator: split fields that span word boundaries
     1   sensor  update-node-id with ELF must use flash, not RAM address
     1    input  Grammar for new objdump version
     2    radio  Detect receives of radio bytes and notify radio probes
 
 ----------------------------------- Completed -----------------------------------------
+    1      sim  RAMPZ usage for with more than 128k of flash                  1.7.63
     1   energy  Energy monitor log                                            1.7.61
     1     devs  Check auto-unpost behavior of ADC interrupt                   1.7.60
     1      sim  ATMega128 sleep mode codes                                    1.7.56
