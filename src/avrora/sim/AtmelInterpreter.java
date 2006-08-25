@@ -33,12 +33,11 @@
 package avrora.sim;
 
 import avrora.arch.AbstractInstr;
-import avrora.arch.avr.AVRProperties;
 import avrora.arch.legacy.*;
 import avrora.core.Program;
+import avrora.arch.avr.AVRProperties;
 import avrora.sim.mcu.RegisterSet;
 import avrora.sim.util.*;
-import avrora.sim.state.VolatileBehavior;
 import cck.util.Arithmetic;
 import cck.util.Util;
 
@@ -50,57 +49,87 @@ import cck.util.Util;
  */
 public abstract class AtmelInterpreter extends Interpreter implements LegacyInstrVisitor {
 
-    public static final boolean INSTRUMENTED = true;
-    public static final boolean UNINSTRUMENTED = false;
-    public static final int NUM_REGS = 32;
-
-    // fields (ordered roughly by their frequency of use)
-    protected LegacyInstr[] shared_instr; // shared for performance reasons only
-
-    protected int pc;
-    protected int nextPC;
-    protected int cyclesConsumed;
-    protected boolean I;
-    protected boolean T;
-    protected boolean H;
-    protected boolean S;
-    protected boolean V;
-    protected boolean N;
-    protected boolean Z;
-    protected boolean C;
-
-    protected byte[] sram;
-    protected final int sram_start;
-    protected final int sram_max;
-    protected MulticastWatch[] sram_watches;
-    protected final VolatileBehavior[] sram_volatile;
-
-    protected final ActiveRegister[] ioregs;
-
-    protected final CodeSegment flash;
-    protected final RWRegister SPL_reg;
-    protected final RWRegister SPH_reg;
-
+    protected final int SREG; // location of the SREG IO register
     public final int RAMPZ; // location of the RAMPZ IO register
-    public final int SREG; // location of the SREG IO register
-
-    protected final RegisterSet registers;
-    protected final StateImpl state;
-
     protected int bootPC; // start up address
     protected int interruptBase; // base of interrupt vector table
 
-    protected MulticastWatch error_watch;
+    protected int pc;
+    protected final ActiveRegister[] ioregs;
+    public byte[] sram;
+    protected MulticastWatch[] sram_watches;
+    protected final int sram_start;
+    protected final int sram_max;
+    public boolean I;
+    public boolean T;
+    public boolean H;
+    public boolean S;
+    public boolean V;
+    public boolean N;
+    public boolean Z;
+    public boolean C;
+    public ActiveRegister SREG_reg;
+    protected RWRegister SPL_reg;
+    protected RWRegister SPH_reg;
 
+    protected final CodeSegment flash;
+    protected LegacyInstr[] shared_instr; // shared for performance reasons only
+
+    protected final RegisterSet registers;
+
+    protected final StateImpl state;
+
+    /**
+     * The <code>globalProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains
+     * all of the probes to be fired before and after the main execution runLoop--i.e. before and after every
+     * instruction.
+     */
     protected final MulticastProbe globalProbe;
 
+    /**
+     * The <code>exceptionWatch</code> stores a reference to a <code>MulticastExceptionWatch</code>
+     * that contains all of the exception watches currently registered.
+     */
+    protected MulticastExceptionWatch exceptionWatch;
+
+    /**
+     * The <code>nextPC</code> field is used internally in maintaining the correct execution order of the
+     * instructions.
+     */
+    public int nextPC;
+
+    /**
+     * The <code>cyclesConsumed</code> field stores the number of cycles consumed in doing a part of the
+     * simulation (e.g. executing an instruction or processing an interrupt).
+     */
+    public int cyclesConsumed;
+
+    /**
+     * The <code>delayCycles</code> field tracks the number of cycles that the microcontroller is delayed.
+     * Delay is needed because some devices pause execution of the program for some number of cycles, and also
+     * to implement random delay at the beginning of startup in multiple node scenarios to prevent artificial
+     * cycle-level synchronization.
+     */
     protected long delayCycles;
 
+    /**
+     * The <code>shouldRun</code> flag is used internally in the main execution runLoop to implement the
+     * correct semantics of <code>start()</code> and <code>stop()</code> to the clients.
+     */
     protected boolean shouldRun;
 
+    /**
+     * The <code>sleeping</code> flag is used internally in the simulator when the microcontroller enters the
+     * sleep mode.
+     */
     protected boolean sleeping;
 
-    protected boolean justReturnedFromInterrupt;
+    /**
+     * The <code>justReturnedFromInterrupt</code> field is used internally in maintaining the invariant stated
+     * in the hardware manual that at least one instruction following a return from an interrupt is executed
+     * before another interrupt can be processed.
+     */
+    public boolean justReturnedFromInterrupt;
 
     public class StateImpl implements LegacyState {
 
@@ -165,23 +194,89 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
          * @return the value of the status register as a byte.
          */
         public byte getSREG() {
-            int value = 0;
-            if (I) value |= LegacyState.SREG_I_MASK;
-            if (T) value |= LegacyState.SREG_T_MASK;
-            if (H) value |= LegacyState.SREG_H_MASK;
-            if (S) value |= LegacyState.SREG_S_MASK;
-            if (V) value |= LegacyState.SREG_V_MASK;
-            if (N) value |= LegacyState.SREG_N_MASK;
-            if (Z) value |= LegacyState.SREG_Z_MASK;
-            if (C) value |= LegacyState.SREG_C_MASK;
-            return (byte) value;
+            return SREG_reg.read();
         }
 
 
-        public boolean getFlag(int bit) {
-            return AtmelInterpreter.this.getFlag(bit);
+        /**
+         * The <code>getFlag_I()</code> method returns the current value of the I bit in the status register as a
+         * boolean.
+         *
+         * @return the value of the flag
+         */
+        public boolean getFlag_I() {
+            return I;
         }
 
+        /**
+         * The <code>getFlag_T()</code> method returns the current value of the T bit in the status register as a
+         * boolean.
+         *
+         * @return the value of the flag
+         */
+        public boolean getFlag_T()  {
+            return T;
+        }
+
+        /**
+         * The <code>getFlag_H()</code> method returns the current value of the H bit in the status register as a
+         * boolean.
+         *
+         * @return the value of the flag
+         */
+        public boolean getFlag_H()  {
+            return H;
+        }
+
+        /**
+         * The <code>getFlag_S()</code> method returns the current value of the S bit in the status register as a
+         * boolean.
+         *
+         * @return the value of the flag
+         */
+        public boolean getFlag_S() {
+            return S;
+        }
+
+        /**
+         * The <code>getFlag_V()</code> method returns the current value of the V bit in the status register as a
+         * boolean.
+         *
+         * @return the value of the flag
+         */
+        public boolean getFlag_V() {
+            return V;
+        }
+
+        /**
+         * The <code>getFlag_N()</code> method returns the current value of the N bit in the status register as a
+         * boolean.
+         *
+         * @return the value of the flag
+         */
+        public boolean getFlag_N() {
+            return N;
+        }
+
+        /**
+         * The <code>getFlag_Z()</code> method returns the current value of the Z bit in the status register as a
+         * boolean.
+         *
+         * @return the value of the flag
+         */
+        public boolean getFlag_Z() {
+            return Z;
+        }
+
+        /**
+         * The <code>getFlag_C()</code> method returns the current value of the C bit in the status register as a
+         * boolean.
+         *
+         * @return the value of the flag
+         */
+        public boolean getFlag_C() {
+            return C;
+        }
 
         /**
          * The <code>getStackByte()</code> method reads a byte from the address specified by SP+1. This method
@@ -241,7 +336,11 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
          * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid memory range
          */
         public byte getDataByte(int address) {
-            return readSRAM(UNINSTRUMENTED, address);
+            if (address >= sram_start)
+                return sram[address];
+            if (address >= NUM_REGS)
+                return getAR(address - NUM_REGS).read();
+            return sram[address];
         }
 
         /**
@@ -284,7 +383,11 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         }
 
         private ActiveRegister getAR(int ioreg) {
-            return ioregs[ioreg];
+            ActiveRegister ar = ioregs[ioreg];
+            if ( ar instanceof ProbedActiveRegister ) {
+                ar = ((ProbedActiveRegister)ar).ioreg;
+            }
+            return ar;
         }
 
         /**
@@ -317,15 +420,16 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      * @param p the program to load onto this interpreter instance
      * @param pr the properties of the microcontroller being simulated
      */
-    protected AtmelInterpreter(Simulator simulator, Program p, AVRProperties pr) {
+    public AtmelInterpreter(Simulator simulator, Program p, AVRProperties pr) {
         super(simulator);
         // this class and its methods are performance critical
         // observed speedup with this call on Hotspot
-        Compiler.compileClass(getClass());
+        Compiler.compileClass(this.getClass());
 
         state = new StateImpl();
 
         globalProbe = new MulticastProbe();
+        exceptionWatch = new MulticastExceptionWatch();
 
         SREG = pr.getIOReg("SREG");
 
@@ -340,10 +444,10 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
             throw Util.failure("program will not fit into " + pr.flash_size + " bytes");
 
         // beginning address of SRAM array
-        sram_start = toSRAM(pr.ioreg_size);
+        sram_start = pr.ioreg_size + LegacyState.NUM_REGS;
 
         // maximum data address
-        sram_max = NUM_REGS + pr.ioreg_size + pr.sram_size;
+        sram_max = LegacyState.NUM_REGS + pr.ioreg_size + pr.sram_size;
 
         // allocate SRAM
         sram = new byte[sram_max];
@@ -351,21 +455,14 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         // initialize IO registers to default values
         registers = simulator.getMicrocontroller().getRegisterSet();
 
-        // create the behavior for the volatile region
-        sram_volatile = new VolatileBehavior[sram_start];
-        VolatileBehavior b = new VolatileBehavior();
-        for ( int i = 0; i < sram_volatile.length; i++ )
-            sram_volatile[i] = b;
-        // support the old ActiveRegisters with wrappers
+        // for performance, we share a refernce to the ActiveRegister[] array
         ioregs = registers.share();
-        for ( int i = 0; i < ioregs.length; i++ )
-            sram_volatile[toSRAM(i)] = new IORegBehavior(ioregs[i]);
-
-        // set up the status register volatile
-        sram_volatile[toSRAM(SREG)] = new SREGBehavior();
+        SREG_reg = ioregs[SREG] = new SREG_reg();
 
         // allocate FLASH
-        flash = pr.codeSegmentFactory.newCodeSegment("flash", this, p);
+        ErrorReporter reporter = new ErrorReporter();
+        flash = pr.codeSegmentFactory.newCodeSegment("flash", this, reporter, p);
+        reporter.segment = flash;
         // for performance, we share a reference to the LegacyInstr[] array representing flash
         // TODO: implement share() method
         shared_instr = flash.shareCode(null);
@@ -445,9 +542,8 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      *
      * @param watch The <code>ExceptionWatch</code> instance to add.
      */
-    protected void insertErrorWatch(Simulator.Watch watch) {
-        if ( error_watch == null ) error_watch = new MulticastWatch();
-        error_watch.add(watch);
+    protected void insertExceptionWatch(Simulator.ExceptionWatch watch) {
+        exceptionWatch.add(watch);
     }
 
     /**
@@ -510,6 +606,39 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         MulticastWatch w = sram_watches[data_addr];
         if (w == null) return;
         w.remove(p);
+    }
+
+    /**
+     * The <code>insertIORWatch()</code> method is used internally to insert a watch on an IO register.
+     * @param p the watch to add to the IO register
+     * @param ioreg_num the number of the IO register for which to insert the watch
+     */
+    protected void insertIORWatch(Simulator.IORWatch p, int ioreg_num) {
+        ActiveRegister ar = ioregs[ioreg_num];
+        ProbedActiveRegister par;
+        if (ar instanceof ProbedActiveRegister) {
+            par = (ProbedActiveRegister) ar;
+        } else {
+            par = new ProbedActiveRegister(this, ar, ioreg_num);
+            ioregs[ioreg_num] = par;
+        }
+        par.add(p);
+    }
+
+    /**
+     * The <code>removeIORWatch()</code> method is used internally to remove a watch on an IO register.
+     * @param p the watch to remove from the IO register
+     * @param ioreg_num the number of the IO register for which to remove the watch
+     */
+    protected void removeIORWatch(Simulator.IORWatch p, int ioreg_num) {
+        ActiveRegister ar = ioregs[ioreg_num];
+        ProbedActiveRegister par;
+        if (ar instanceof ProbedActiveRegister) {
+            par = (ProbedActiveRegister) ar;
+            par.remove(p);
+            if (par.isEmpty())
+                ioregs[ioreg_num] = par.ioreg;
+        }
     }
 
     /**
@@ -605,44 +734,14 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         return Arithmetic.uword(low, high);
     }
 
-    public boolean getFlag(int bit) {
-        switch (bit) {
-            case LegacyState.SREG_I: return I;
-            case LegacyState.SREG_T: return T;
-            case LegacyState.SREG_H: return H;
-            case LegacyState.SREG_S: return S;
-            case LegacyState.SREG_V: return V;
-            case LegacyState.SREG_N: return N;
-            case LegacyState.SREG_Z: return Z;
-            case LegacyState.SREG_C: return C;
-        }
-        return false;
-    }
-
-    public void setFlag(int bit, boolean on) {
-        switch (bit) {
-            case LegacyState.SREG_I:
-                if (on) enableInterrupts();
-                else disableInterrupts();
-                break;
-            case LegacyState.SREG_T: T = on; break;
-            case LegacyState.SREG_H: H = on; break;
-            case LegacyState.SREG_S: S = on; break;
-            case LegacyState.SREG_V: V = on; break;
-            case LegacyState.SREG_N: N = on; break;
-            case LegacyState.SREG_Z: Z = on; break;
-            case LegacyState.SREG_C: C = on; break;
-        }
-    }
-
-    protected void setIORegBit(int ior, int bit, boolean on) {
-        byte curv = readSRAM(INSTRUMENTED, toSRAM(ior));
-        curv = Arithmetic.setBit(curv, bit, on);
-        writeSRAM(INSTRUMENTED, toSRAM(ior), curv);
-    }
-
-    protected boolean getIORegBit(int ior, int bit) {
-        return Arithmetic.getBit(readSRAM(INSTRUMENTED, toSRAM(ior)), bit);
+    /**
+     * The <code>getSREG()</code> method reads the value of the status register. The status register contains
+     * the I, T, H, S, V, N, Z, and C flags, in order from highest-order to lowest-order.
+     *
+     * @return the value of the status register as a byte.
+     */
+    public byte getSREG() {
+        return SREG_reg.read();
     }
 
     /**
@@ -651,136 +750,60 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      *
      * @param address the byte address to read
      * @return the value of the data memory at the specified address
-     * @throws ArrayIndexOutOfBoundsException
+     * @throws java.lang.ArrayIndexOutOfBoundsException
      *          if the specified address is not the valid memory range
      */
     public byte getDataByte(int address) {
-        return readSRAM(INSTRUMENTED, address);
+        Simulator.Watch p;
+        try {
+            // FAST PATH 1: no watches
+            if (sram_watches == null)
+                return getSRAM(address);
+
+            // FAST PATH 2: no watches for this address
+            p = sram_watches[address];
+            if (p == null)
+                return getSRAM(address);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // ERROR: program tried to read memory that is not present
+            SimUtil.readError(simulator, "sram", address);
+            return 0;
+        }
+
+        // SLOW PATH: consult with memory watches
+        p.fireBeforeRead(state, address);
+        byte val = getSRAM(address);
+        p.fireAfterRead(state, address, val);
+
+        return val;
     }
 
-    private byte readSRAM(boolean w, int addr) {
-        if ( addr < 0 ) {
-            // an error.
-            return fireReadError(w, addr);
-        } else if ( addr < sram.length ) {
-            // a valid RAM access.
-            // PERFORMANCE: consider wrapping in if(sram_watches)
-            byte val;
-            fireBeforeRead(w, addr);
-            if ( addr < sram_start ) val = sram[addr] = readVolatile(addr);
-            else val = sram[addr];
-            fireAfterRead(w, addr, val);
-            return val;
-        } else {
-            // an error.
-            return fireReadError(w, addr);
+    /**
+     * The <code>ErrorReporter</code> class is used to report errors accessing segments.
+     * @see Segment.ErrorReporter
+     */
+    protected class ErrorReporter implements Segment.ErrorReporter {
+        Segment segment;
+
+        public byte readError(int address) {
+            SimUtil.readError(simulator, segment.name, address);
+            exceptionWatch.invalidRead(segment.name, address);
+            return segment.value;
+        }
+
+        public void writeError(int address, byte value) {
+            SimUtil.writeError(simulator, segment.name, address, value);
+            exceptionWatch.invalidWrite(segment.name, address, value);
         }
     }
 
-    private void writeSRAM(boolean w, int addr, byte val) {
-        if ( addr < 0 ) {
-            // an error.
-            fireWriteError(w, addr, val);
-        } else if ( addr < sram.length ) {
-            // a valid RAM access.
-            // PERFORMANCE: consider wrapping in if(sram_watches)
-            fireBeforeWrite(w, addr, val);
-            if ( addr < sram_start ) sram[addr] = writeVolatile(addr, val);
-            else sram[addr] = val;
-            fireAfterWrite(w, addr, val);
-        } else {
-            // an error.
-            fireWriteError(w, addr, val);
-        }
-    }
+    private byte getSRAM(int address) {
+        if (address >= sram_start)
+            return sram[address];
+        if (address >= LegacyState.NUM_REGS)
+            return ioregs[address - LegacyState.NUM_REGS].read();
+        return sram[address];
 
-    private void fireWriteError(boolean w, int addr, byte val) {
-        if ( w && error_watch != null ) error_watch.fireBeforeWrite(state, addr, val);
-    }
-
-    private byte fireReadError(boolean w, int addr) {
-        if ( w && error_watch != null ) error_watch.fireBeforeRead(state, addr);
-        return 0;
-    }
-
-    private static class IORegBehavior extends VolatileBehavior {
-        final ActiveRegister reg;
-        IORegBehavior(ActiveRegister r) {
-            reg = r;
-        }
-        public int read(int cur) {
-            return reg.read();
-        }
-        public int write(int cur, int nv) {
-            reg.write((byte)nv);
-            return nv;
-        }
-    }
-
-    private class SREGBehavior extends VolatileBehavior {
-        public int read(int cur) {
-            int val = 0;
-            if (I) val |= LegacyState.SREG_I_MASK;
-            if (T) val |= LegacyState.SREG_T_MASK;
-            if (H) val |= LegacyState.SREG_H_MASK;
-            if (S) val |= LegacyState.SREG_S_MASK;
-            if (V) val |= LegacyState.SREG_V_MASK;
-            if (N) val |= LegacyState.SREG_N_MASK;
-            if (Z) val |= LegacyState.SREG_Z_MASK;
-            if (C) val |= LegacyState.SREG_C_MASK;
-            return (byte) val;
-        }
-        public int write(int cur, int nv) {
-            boolean enabled = (nv & LegacyState.SREG_I_MASK) != 0;
-            if (enabled) enableInterrupts();
-            else disableInterrupts();
-            T = (nv & LegacyState.SREG_T_MASK) != 0;
-            H = (nv & LegacyState.SREG_H_MASK) != 0;
-            S = (nv & LegacyState.SREG_S_MASK) != 0;
-            V = (nv & LegacyState.SREG_V_MASK) != 0;
-            N = (nv & LegacyState.SREG_N_MASK) != 0;
-            Z = (nv & LegacyState.SREG_Z_MASK) != 0;
-            C = (nv & LegacyState.SREG_C_MASK) != 0;
-            return nv;
-        }
-    }
-
-    private byte readVolatile(int addr) {
-        VolatileBehavior behavior = sram_volatile[addr];
-        return (byte) behavior.read(sram[addr] & 0xff);
-    }
-
-    private byte writeVolatile(int addr, byte val) {
-        VolatileBehavior behavior = sram_volatile[addr];
-        return (byte) behavior.write(sram[addr] & 0xff, val & 0xff);
-    }
-
-    private void fireBeforeRead(boolean w, int addr) {
-        if ( w && sram_watches != null ) {
-            Simulator.Watch p = sram_watches[addr];
-            if ( p != null ) p.fireBeforeRead(state, addr);
-        }
-    }
-
-    private void fireAfterRead(boolean w, int addr, byte val) {
-        if ( w && sram_watches != null ) {
-            Simulator.Watch p = sram_watches[addr];
-            if ( p != null ) p.fireAfterRead(state, addr, val);
-        }
-    }
-
-    private void fireBeforeWrite(boolean w, int addr, byte val) {
-        if ( w && sram_watches != null ) {
-            Simulator.Watch p = sram_watches[addr];
-            if ( p != null ) p.fireBeforeWrite(state, addr, val);
-        }
-    }
-
-    private void fireAfterWrite(boolean w, int addr, byte val) {
-        if ( w && sram_watches != null ) {
-            Simulator.Watch p = sram_watches[addr];
-            if ( p != null ) p.fireAfterWrite(state, addr, val);
-        }
     }
 
     /**
@@ -804,7 +827,7 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      * @return the value of the IO register
      */
     public byte getIORegisterByte(int ioreg) {
-        return readSRAM(INSTRUMENTED, toSRAM(ioreg));
+        return ioregs[ioreg].read();
     }
 
     /**
@@ -816,10 +839,22 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      *
      * @param address the byte address at which to read
      * @return the byte value of the program memory at the specified address
-     * @throws InterpreterError.AddressOutOfBoundsException if the specified address is not the valid program memory range
+     * @throws avrora.sim.InterpreterError.AddressOutOfBoundsException if the specified address is not the valid program memory range
      */
     public byte getFlashByte(int address) {
         return flash.read(address);
+    }
+
+    /**
+     * The <code>getIOReg()</code> method is used to retrieve a reference to the actual <code>IOReg</code>
+     * instance stored internally in the state. This is generally only used in the simulator and device
+     * implementations, and clients should probably not call this memory directly.
+     *
+     * @param ioreg the IO register number to retrieve
+     * @return a reference to the <code>IOReg</code> instance of the specified IO register
+     */
+    public ActiveRegister getIOReg(int ioreg) {
+        return ioregs[ioreg];
     }
 
     /**
@@ -879,6 +914,16 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
     }
 
     /**
+     * The <code>writeSREG()</code> method writes the value of the status register. This method should only be
+     * called from the appropriate places in the simulator.
+     *
+     * @param val
+     */
+    protected void writeSREG(byte val) {
+        SREG_reg.write(val);
+    }
+
+    /**
      * The <code>writeDataByte()</code> method writes a value to the data memory (SRAM) of the state. This is
      * generally meant for the simulator, related classes, and device implementations to use, but could also
      * be used by debuggers and other tools.
@@ -887,7 +932,30 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      * @param val     the value to write
      */
     public void writeDataByte(int address, byte val) {
-        writeSRAM(INSTRUMENTED, address, val);
+        MulticastWatch p;
+
+        try {
+            // FAST PATH 1: no watches
+            if (sram_watches == null) {
+                setSRAM(address, val);
+                return;
+            }
+
+            // FAST PATH 2: no watches for this address
+            p = sram_watches[address];
+            if (p == null) {
+                setSRAM(address, val);
+                return;
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            SimUtil.writeError(simulator, "sram", address, val);
+            return;
+        }
+
+        // SLOW PATH: consult with memory watches
+        p.fireBeforeWrite(state, address, val);
+        setSRAM(address, val);
+        p.fireAfterWrite(state, address, val);
     }
 
     /**
@@ -903,6 +971,15 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         flash.set(address, val);
     }
 
+    private void setSRAM(int address, byte val) {
+        if (address >= sram_start)
+            sram[address] = val;
+        else if (address >= LegacyState.NUM_REGS)
+            ioregs[address - LegacyState.NUM_REGS].write(val);
+        else
+            sram[address] = val;
+    }
+
     /**
      * The <code>installIOReg()</code> method installs the specified <code>IOReg</code> object to the specified IO
      * register number. This method is generally only used in the simulator and in device implementations to
@@ -912,20 +989,7 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      * @param reg   the <code>IOReg<code> object to install
      */
     public void installIOReg(int ioreg, ActiveRegister reg) {
-        sram_volatile[toSRAM(ioreg)] = new IORegBehavior(reg);
         ioregs[ioreg] = reg;
-    }
-
-    public ActiveRegister getIOReg(int ioreg) {
-        return ioregs[ioreg];
-    }
-
-    private static int toSRAM(int ioreg) {
-        return ioreg + NUM_REGS;
-    }
-
-    public void installVolatileBehavior(int addr, VolatileBehavior b) {
-        sram_volatile[addr] = b;
     }
 
     /**
@@ -937,7 +1001,7 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      * @param val   the value to write to the IO register
      */
     public void writeIORegisterByte(int ioreg, byte val) {
-        writeSRAM(INSTRUMENTED, toSRAM(ioreg), val);
+        ioregs[ioreg].write(val);
     }
 
     /**
@@ -972,11 +1036,11 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      * stored in two IO registers <code>SPL</code> and <code>SPH</code>. This method should generally only be
      * used within the simulator.
      *
-     * @param val the new value of the stack pointer
+     * @param val
      */
     public void setSP(int val) {
-        SPL_reg.value = Arithmetic.low(val);
-        SPH_reg.value = Arithmetic.high(val);
+        SPL_reg.value = (Arithmetic.low(val));
+        SPH_reg.value = (Arithmetic.high(val));
     }
 
     /**
@@ -1059,4 +1123,104 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         cyclesConsumed = 0;
     }
 
+    private class SREG_reg implements ActiveRegister {
+
+        /**
+         * The <code>read()</code> method reads the 8-bit value of the IO register as a byte. For simple
+         * <code>RWIOReg</code> instances, this simply returns the internally stored value.
+         *
+         * @return the value of the register as a byte
+         */
+        public byte read() {
+            int value = 0;
+            if (I) value |= LegacyState.SREG_I_MASK;
+            if (T) value |= LegacyState.SREG_T_MASK;
+            if (H) value |= LegacyState.SREG_H_MASK;
+            if (S) value |= LegacyState.SREG_S_MASK;
+            if (V) value |= LegacyState.SREG_V_MASK;
+            if (N) value |= LegacyState.SREG_N_MASK;
+            if (Z) value |= LegacyState.SREG_Z_MASK;
+            if (C) value |= LegacyState.SREG_C_MASK;
+            return (byte) value;
+        }
+
+        /**
+         * The <code>write()</code> method writes an 8-bit value to the IO register as a byte. For simple
+         * <code>RWIOReg</code> instances, this simply writes the internally stored value.
+         *
+         * @param val the value to write
+         */
+        public void write(byte val) {
+            I = (val & LegacyState.SREG_I_MASK) != 0;
+            T = (val & LegacyState.SREG_T_MASK) != 0;
+            H = (val & LegacyState.SREG_H_MASK) != 0;
+            S = (val & LegacyState.SREG_S_MASK) != 0;
+            V = (val & LegacyState.SREG_V_MASK) != 0;
+            N = (val & LegacyState.SREG_N_MASK) != 0;
+            Z = (val & LegacyState.SREG_Z_MASK) != 0;
+            C = (val & LegacyState.SREG_C_MASK) != 0;
+        }
+
+        /**
+         * The <code>readBit()</code> method reads a single bit from the IO register.
+         *
+         * @param num the number of the bit to read
+         * @return the value of the bit as a boolean
+         */
+        public boolean readBit(int num) {
+            switch (num) {
+                case LegacyState.SREG_I:
+                    return I;
+                case LegacyState.SREG_T:
+                    return T;
+                case LegacyState.SREG_H:
+                    return H;
+                case LegacyState.SREG_S:
+                    return S;
+                case LegacyState.SREG_V:
+                    return V;
+                case LegacyState.SREG_N:
+                    return N;
+                case LegacyState.SREG_Z:
+                    return Z;
+                case LegacyState.SREG_C:
+                    return C;
+            }
+            throw Util.failure("bit out of range: " + num);
+        }
+
+        public void writeBit(int num, boolean value) {
+            switch (num) {
+                case LegacyState.SREG_I:
+                    if (value)
+                        enableInterrupts();
+                    else
+                        disableInterrupts();
+                    break;
+                case LegacyState.SREG_T:
+                    T = value;
+                    break;
+                case LegacyState.SREG_H:
+                    H = value;
+                    break;
+                case LegacyState.SREG_S:
+                    S = value;
+                    break;
+                case LegacyState.SREG_V:
+                    V = value;
+                    break;
+                case LegacyState.SREG_N:
+                    N = value;
+                    break;
+                case LegacyState.SREG_Z:
+                    Z = value;
+                    break;
+                case LegacyState.SREG_C:
+                    C = value;
+                    break;
+                default:
+                    throw Util.failure("bit out of range: " + num);
+            }
+        }
+    }
 }

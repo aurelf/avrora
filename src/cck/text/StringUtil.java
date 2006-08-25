@@ -310,49 +310,60 @@ public class StringUtil {
     }
 
     /**
-     * The <code>rightJustify()</code> method pads a string to a specified length by adding spaces on the
-     * left, thus justifying the string to the right margin. This is extremely useful in generating columnar
-     * output in textual tables.
-     *
-     * @param v     a long value to convert to a string and justify
-     * @param width the number of characters to pad the string to
-     * @return a string representation of the input, padded on the left with spaces to achieve the desired
-     *         length.
+     * The <code>justify()</code> method justifies a string to either the right or left margin
+     * by inserting spaces to pad the string to a specific width. This is useful in printing out
+     * values in a columnar (aligned) format. This version of the method accepts a string buffer
+     * into which to put the string.
+     * @param right a parameter determining whether to justify to the right margin. If this parameter
+     * is true, the padding spaces will be inserted on the left, before the string.
+     * @param buf the string buffer into which to write the padded string
+     * @param s the string to justify
+     * @param width the width (in characters) to which to justify the string
      */
-    public static String rightJustify(long v, int width) {
-        return rightJustify(Long.toString(v), width);
+    public static void justify(boolean right, StringBuffer buf, String s, int width) {
+        int pad = width - s.length();
+        if ( right ) {
+            space(buf, pad);
+            buf.append(s);
+        } else {
+            buf.append(s);
+            space(buf, pad);
+        }
+    }
+
+    public static void justify(boolean right, StringBuffer buf, long l, int width) {
+        justify(right, buf, Long.toString(l), width);
+    }
+
+    public static void justify(boolean right, StringBuffer buf, float f, int width) {
+        justify(right, buf, Float.toString(f), width);
     }
 
     /**
-     * The <code>rightJustify()</code> method pads a string to a specified length by adding spaces on the
-     * left, thus justifying the string to the right margin. This is extremely useful in generating columnar
-     * output in textual tables.
-     *
-     * @param v     a floating point value to convert to a string and justify
-     * @param width the number of characters to pad the string to
-     * @return a string representation of the input, padded on the left with spaces to achieve the desired
-     *         length.
+     * The <code>justify()</code> method justifies a string to either the right or left margin
+     * by inserting spaces to pad the string to a specific width. This is useful in printing out
+     * values in a columnar (aligned) format.
+     * @param right a parameter determining whether to justify to the right margin. If this parameter
+     * is true, the padding spaces will be inserted on the left, before the string.
+     * @param s the string to justify
+     * @param width the width (in characters) to which to justify the string
+     * @return a new string with padding inserted
      */
-    public static String rightJustify(float v, int width) {
-        return rightJustify(Float.toString(v), width);
-    }
-
-    /**
-     * The <code>rightJustify()</code> method pads a string to a specified length by adding spaces on the
-     * left, thus justifying the string to the right margin. This is extremely useful in generating columnar
-     * output in textual tables.
-     *
-     * @param s     a string to justify
-     * @param width the number of characters to pad the string to
-     * @return a string representation of the input, padded on the left with spaces to achieve the desired
-     *         length.
-     */
-    public static String rightJustify(String s, int width) {
+    public static String justify(boolean right, String s, int width) {
+        // if the string is too wide, return the original
+        if ( width - s.length() <= 0 ) return s;
+        // otherwise, adjust with padding
         StringBuffer buf = new StringBuffer(width);
-        for (int pad = width - s.length(); pad > 0; pad--)
-            buf.append(' ');
-        buf.append(s);
+        justify(right, buf, s, width);
         return buf.toString();
+    }
+
+    public static String justify(boolean right, long l, int width) {
+        return justify(right, Long.toString(l), width);
+    }
+
+    public static String justify(boolean right, float f, int width) {
+        return justify(right, Float.toString(f), width);
     }
 
     /**
@@ -366,7 +377,7 @@ public class StringUtil {
      *         length.
      */
     public static String leftJustify(long v, int width) {
-        return leftJustify(Long.toString(v), width);
+        return justify(false, v, width);
     }
 
     /**
@@ -380,7 +391,7 @@ public class StringUtil {
      *         length.
      */
     public static String leftJustify(float v, int width) {
-        return leftJustify(Float.toString(v), width);
+        return justify(false, v, width);
     }
 
     /**
@@ -394,10 +405,49 @@ public class StringUtil {
      *         length.
      */
     public static String leftJustify(String s, int width) {
-        StringBuffer buf = new StringBuffer(s);
-        for (int pad = width - s.length(); pad > 0; pad--)
-            buf.append(' ');
-        return buf.toString();
+        return justify(false, s, width);
+    }
+
+    /**
+     * The <code>rightJustify()</code> method pads a string to a specified length by adding spaces on the
+     * left, thus justifying the string to the right margin. This is extremely useful in generating columnar
+     * output in textual tables.
+     *
+     * @param v     a long value to convert to a string and justify
+     * @param width the number of characters to pad the string to
+     * @return a string representation of the input, padded on the left with spaces to achieve the desired
+     *         length.
+     */
+    public static String rightJustify(long v, int width) {
+        return justify(true, v, width);
+    }
+
+    /**
+     * The <code>rightJustify()</code> method pads a string to a specified length by adding spaces on the
+     * left, thus justifying the string to the right margin. This is extremely useful in generating columnar
+     * output in textual tables.
+     *
+     * @param v     a floating point value to convert to a string and justify
+     * @param width the number of characters to pad the string to
+     * @return a string representation of the input, padded on the left with spaces to achieve the desired
+     *         length.
+     */
+    public static String rightJustify(float v, int width) {
+        return justify(true, v, width);
+    }
+
+    /**
+     * The <code>rightJustify()</code> method pads a string to a specified length by adding spaces on the
+     * left, thus justifying the string to the right margin. This is extremely useful in generating columnar
+     * output in textual tables.
+     *
+     * @param s     a string to justify
+     * @param width the number of characters to pad the string to
+     * @return a string representation of the input, padded on the left with spaces to achieve the desired
+     *         length.
+     */
+    public static String rightJustify(String s, int width) {
+        return justify(true, s, width);
     }
 
     public static final int SECS_PER_DAY = 3600 * 24;
@@ -716,7 +766,8 @@ public class StringUtil {
         int consumed = indent + leftJust;
         String indstr = space(indent);
         String ljstr = space(leftJust);
-        StringBuffer buf = new StringBuffer(indstr);
+        StringBuffer buf = new StringBuffer(s.length() + 50);
+        buf.append(indstr);
         int lastSp = -1;
         for (int cntr = 0; cntr < len; cntr++) {
             char c = s.charAt(cntr);
@@ -811,8 +862,14 @@ public class StringUtil {
     };
 
     public static String space(int len) {
+        if ( len <= 0 ) return "";
         if ( len < spacers.length ) return spacers[len];
-        else return dup(' ', len);
+        return dup(' ', len);
+    }
+
+    public static void space(StringBuffer buf, int len) {
+        // PERF: consider using spacer[] array of character or string
+        while ( len-- > 0 ) buf.append(' ');
     }
 
     // TODO: test this routine with negative numbers!
@@ -888,11 +945,6 @@ public class StringUtil {
     public static char toBit(boolean f) {
         return f ? '1' : '0';
     }
-
-    public static int ID_LENGTH = 4;
-    public static int TIME_LENGTH = 12;
-    public static boolean REPORT_SECONDS = false;
-    public static int SECONDS_PRECISION = 6;
 
     public static void appendSecs(StringBuffer buf2, long seconds) {
         long[] res = Arithmetic.modulus(seconds, DAYSECS);

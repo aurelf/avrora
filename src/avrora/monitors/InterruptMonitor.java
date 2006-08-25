@@ -227,21 +227,21 @@ public class InterruptMonitor extends MonitorFactory {
             if ( invocations[cntr] > 0 )
                 return StringUtil.leftJustify(meanLatency[cntr].mean, 10);
             else
-                return StringUtil.dup(' ', 10);
+                return StringUtil.space(10);
         }
 
         private String invocationSeparation(int cntr) {
             if ( invocations[cntr] > 0 )
                 return StringUtil.leftJustify(meanInvoke[cntr].mean, 10);
             else
-                return StringUtil.dup(' ', 10);
+                return StringUtil.space(10);
         }
 
         private String invocationWakeup(int cntr) {
             if ( invocations[cntr] > 0 )
                 return StringUtil.leftJustify(meanWake[cntr].mean, 10);
             else
-                return StringUtil.dup(' ', 10);
+                return StringUtil.space(10);
         }
     }
 

@@ -1,39 +1,24 @@
 #
 # Makefile for avrora source code and documentation
+# --> Probably the dumbest makefile ever.
 #
 
-BIN_DIR      = bin
-DOC_DIR      = doc
-SRC_DIR      = src
-
-AVRORA_SRC  := $(shell find $(SRC_DIR)/avrora -name '*.java')
-CCK_SRC     := $(shell find $(SRC_DIR)/cck -name '*.java')
-JINTGEN_SRC := $(shell find $(SRC_DIR)/jintgen -name '*.java')
-
-JAVAC        = javac
-JAVADOC      = javadoc
-CFLAGS       = -source 1.4 -d $(BIN_DIR)
-C5FLAGS      = -source 1.5 -d $(BIN_DIR)
-DOCFLAGS     = -breakiterator -sourcepath $(SRC_DIR) -d $(DOC_DIR)
-
-all: avrora
-
-avrora:
-	@$(JAVAC) $(CFLAGS) $(CCK_SRC) $(AVRORA_SRC)
-	@cp -r src/avrora/gui/images bin/avrora/gui
+all: cck avrora jintgen
 
 cck:
-	@$(JAVAC) $(CFLAGS) $(CCK_SRC)
+	javac -source 1.4 -d bin `find src/cck -name '*.java'`
+
+avrora:
+	javac -source 1.4 -d bin `find src/avrora src/cck -name '*.java'`
+	cp -r src/avrora/gui/images bin/avrora/gui
 
 jintgen:
-	@$(JAVAC) $(C5FLAGS) $(CCK_SRC) $(JINTGEN_SRC)
+	javac5 -d bin `find src/jintgen src/cck -name '*.java'`
 
 clean:
-	@rm -rf bin/cck bin/avrora bin/jintgen doc/*.html doc/cck doc/avrora doc/jintgen
+	rm -rf `find bin -name '*.class'` `find doc -name '*.html'`
 
 doc: doc/index.html
 
 doc/index.html:
-	@$(JAVADOC) $(DOCFLAGS) $(AVRORA_SRC)
-
-.PHONY: all clean doc
+	javadoc -breakiterator -sourcepath src -d doc `find src/avrora -name '*.java'`
