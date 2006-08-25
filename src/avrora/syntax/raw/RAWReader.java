@@ -75,7 +75,7 @@ public class RAWReader extends ProgramReader {
         if (args.length == 0)
             Util.userError("no input files");
         if (args.length != 1)
-            Util.userError("input type \"objdump\" accepts only one file at a time.");
+            Util.userError("input type \"raw\" accepts only one file at a time.");
         AbstractArchitecture arch = getArchitecture();
         String fname = args[0];
         List records = parseFile(fname);
@@ -88,10 +88,11 @@ public class RAWReader extends ProgramReader {
         Main.checkFileExists(fname);
         BufferedReader reader = new BufferedReader(new FileReader(fname));
         List records = new LinkedList();
+        int cntr = 1;
         while ( true ) {
             String line = reader.readLine();
             if ( line == null ) break;
-            Record r = parse(0, line);
+            Record r = parse(cntr++, line);
             if ( r != null ) records.add(r);
         }
         return records;

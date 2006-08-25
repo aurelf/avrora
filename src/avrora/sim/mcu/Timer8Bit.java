@@ -174,7 +174,6 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
             }
         }
 
-        // TODO: this method may be completely unnecessary
         public byte readBuffer() {
             return super.read();
         }
@@ -294,7 +293,9 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
             int compare = OCRn_reg.read() & 0xff;
             int countSave = count;
             if (devicePrinter.enabled)
-                devicePrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "(actual) = " + compare + ", OCR" + n + "(buffer) = " + (0xff & OCRn_reg.readBuffer()) + ']');
+                devicePrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n +
+                        "(actual) = " + compare + ", OCR" + n + "(buffer) = " +
+                        (0xff & OCRn_reg.readBuffer()) + ']');
 
             // TODO: this code has one off counting bugs!!!
             switch (timerMode) {
