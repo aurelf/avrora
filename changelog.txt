@@ -23,7 +23,6 @@
     1    input  Implement fill with value .db directive
     1     devs  EEPROM read/write delays
     1    probe  Counters, branchcounters
-    1     devs  Frame sizes in USART implementation
     1      sim  Out of bound accesses to SRAM, flash, EEPROM
     1     devs  USART baud rates
     1     devs  USART frame sizes
