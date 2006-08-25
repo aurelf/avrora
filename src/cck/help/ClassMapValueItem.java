@@ -90,7 +90,7 @@ public class ClassMapValueItem implements HelpItem {
      */
     public void printHelp() {
         String h = getHelp();
-        Terminal.print(StringUtil.dup(' ', indent));
+        Terminal.print(StringUtil.space(indent));
         String name;
         if (isHelpCategory && Terminal.htmlColors) {
             name = "<a href=" + optvalue + ".html>" + optvalue + "</a>";

@@ -75,7 +75,7 @@ public class SubcategoryItem implements HelpItem {
      */
     public void printHelp() {
         String h = getHelp();
-        Terminal.print(StringUtil.dup(' ', indent));
+        Terminal.print(StringUtil.space(indent));
         String name;
         if (Terminal.htmlColors) {
             name = "<a href=" + helpCat.name + ".html>" + helpCat.name + "</a>";

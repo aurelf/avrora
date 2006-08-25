@@ -78,7 +78,7 @@ public class ValueItem implements HelpItem {
      * option and its value, containing the specified help text.
      */
     public void printHelp() {
-        Terminal.print(StringUtil.dup(' ', indent));
+        Terminal.print(StringUtil.space(indent));
         Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, optname, "=", optvalue);
         Terminal.nextln();
         Terminal.println(StringUtil.formatParagraphs(help, indent + 4, 0, Terminal.MAXLINE));

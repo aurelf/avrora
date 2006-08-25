@@ -714,8 +714,8 @@ public class StringUtil {
         int len = s.length();
         indent += leftJust;
         int consumed = indent + leftJust;
-        String indstr = dup(' ', indent);
-        String ljstr = dup(' ', leftJust);
+        String indstr = space(indent);
+        String ljstr = space(leftJust);
         StringBuffer buf = new StringBuffer(indstr);
         int lastSp = -1;
         for (int cntr = 0; cntr < len; cntr++) {
@@ -746,7 +746,7 @@ public class StringUtil {
         LinkedList list = new LinkedList();
         int len = s.length();
         int consumed = indent;
-        String indstr = dup(' ', indent);
+        String indstr = space(indent);
         StringBuffer buf = new StringBuffer(s.length());
         buf.append(indstr);
         int lastSp = -1;
@@ -794,6 +794,25 @@ public class StringUtil {
             buf.append(c);
         }
         return buf.toString();
+    }
+
+    protected static final String[] spacers = {
+            "",            // 0
+            " ",           // 1
+            "  ",          // 2
+            "   ",         // 3
+            "    ",        // 4
+            "     ",       // 5
+            "      ",      // 6
+            "       ",     // 7
+            "        ",    // 8
+            "         ",    // 9
+            "          ",  // 10
+    };
+
+    public static String space(int len) {
+        if ( len < spacers.length ) return spacers[len];
+        else return dup(' ', len);
     }
 
     // TODO: test this routine with negative numbers!

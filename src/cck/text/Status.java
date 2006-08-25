@@ -74,7 +74,7 @@ public class Status {
         if (inside) {
             Terminal.nextln();
         }
-        Terminal.print(StringUtil.dup(' ', stack.size() * 4));
+        Terminal.print(StringUtil.space(stack.size() * 4));
         Terminal.print(Terminal.COLOR_BROWN, s);
         Terminal.print("...");
         Terminal.flush();
