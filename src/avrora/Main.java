@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2004-2006, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -276,7 +276,7 @@ public class Main {
                     "option.\n\n";
         else
             notice =
-                    "Copyright (c) 2003-2005, Regents of the University of California \n" +
+                    "Copyright (c) 2003-2006, Regents of the University of California \n" +
                     "All rights reserved.\n\n" +
 
                     "Redistribution and use in source and binary forms, with or without " +
@@ -314,7 +314,7 @@ public class Main {
         Terminal.print("[");
         Terminal.printBrightBlue(Version.TAG.toString());
         Terminal.print("]");
-        Terminal.print(" - (c) 2003-2005 UCLA Compilers Group\n\n");
+        Terminal.print(" - (c) 2003-2006 UCLA Compilers Group\n\n");
     }
 
     /**
