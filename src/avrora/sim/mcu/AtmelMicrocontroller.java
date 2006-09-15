@@ -32,10 +32,9 @@
 
 package avrora.sim.mcu;
 
-import avrora.arch.avr.AVRProperties;
 import avrora.sim.*;
-import avrora.sim.clock.ClockDomain;
-import avrora.sim.clock.MainClock;
+import avrora.sim.clock.*;
+import avrora.arch.avr.AVRProperties;
 import cck.text.StringUtil;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
@@ -103,7 +102,7 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
      * @param reg the register to install
      */
     protected ActiveRegister installIOReg(String name, ActiveRegister reg) {
-        interpreter.installIOReg(properties.getIOReg(name), reg);
+        registers.setReg(properties.getIOReg(name), reg);
 	return reg;
     }
 
@@ -114,7 +113,31 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
      * @return a reference to the active register object if it exists
      */
     protected ActiveRegister getIOReg(String name) {
-        return interpreter.getIOReg(properties.getIOReg(name));
+        return registers.getReg(properties.getIOReg(name));
+    }
+
+    /**
+     * The <code>getField()</code> gets an object that represents an entire field which
+     * may be stored across multiple registers in multiple bit fields. This object allows
+     * access to the field's value without consideration for its underlying representation
+     * in the IO register(s).
+     * @param fname the name of the field
+     * @return a reference to the <code>Field</code> object that represents the field
+     */
+    public RegisterSet.Field getField(String fname) {
+	return registers.getField(fname);
+    }
+
+    /**
+     * The <code>installField()</code> method allows device implementations to substitute a new field
+     * implementation for the named field. The field implementation can then override the appropriate
+     * methods of the <code>RegisterSet.Field</code> class to be notified upon writes.
+     * @param fname the name of the field
+     * @param fo the field object to install for this field
+     * @return the new field installed
+     */
+    public RegisterSet.Field installField(String fname, RegisterSet.Field fo) {
+	return registers.installField(fname, fo);
     }
 
     /**
@@ -132,10 +155,14 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
      * is useful for external devices that need to connect to the input of internal devices.
      *
      * @param name the name of the internal device as a string
-     * @return a reference to the internal device if it exists; null otherwise
+     * @return a reference to the internal device if it exists
+     * @throws NoSuchElementException if no device with that name exists
      */
     public AtmelInternalDevice getDevice(String name) {
-        return (AtmelInternalDevice)devices.get(name);
+        AtmelInternalDevice device = (AtmelInternalDevice)devices.get(name);
+        if ( device == null )
+            throw new NoSuchElementException(StringUtil.quote(name)+" device not found");
+        return device;
     }
 
     public static void addPin(HashMap pinMap, int p, String n) {
@@ -153,14 +180,6 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
         pinMap.put(n1, i);
         pinMap.put(n2, i);
         pinMap.put(n3, i);
-    }
-
-    public static void addPin(HashMap pinMap, int p, String n1, String n2, String n3, String n4) {
-        Integer i = new Integer(p);
-        pinMap.put(n1, i);
-        pinMap.put(n2, i);
-        pinMap.put(n3, i);
-        pinMap.put(n4, i);
     }
 
     public static void addInterrupt(HashMap iMap, String n, int i) {

@@ -34,15 +34,10 @@ package avrora.sim.mcu;
 
 import avrora.sim.*;
 import avrora.sim.clock.Clock;
+import cck.util.Arithmetic;
 import cck.util.Util;
 import java.util.*;
 
-/**
- * The <code>ATMegaTimer</code> class implements a timer on the ATMega series
- * of microcontrollers.
- *
- * @author Pekka Nikander
- */
 public abstract class ATMegaTimer extends AtmelInternalDevice {
 
     /*
@@ -88,14 +83,12 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
         timerNumber = n;
         periods = p;
 
-        RegisterSet rset = m.getRegisterSet();
-
-        TOIEn = rset.getField("TOIE" + n);
+        TOIEn = m.getField("TOIE" + n);
         int overflowInterrupt = m.properties.getInterrupt(ovfName);
         TOVn = new FlagField(interpreter.getInterruptTable(), true, overflowInterrupt);
-        rset.installField("TOV" + n, TOVn);
-        WGMn = rset.installField("WGM" + n, newWGMField());
-        CSn = rset.installField("CS" + n, newPeriodField());
+        m.installField("TOV" + n, TOVn);
+        WGMn = m.installField("WGM" + n, newWGMField());
+        CSn = m.installField("CS" + n, newPeriodField());
 
 
         externalClock = m.getClock("external");
@@ -119,11 +112,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
     }
 
     protected void addComparator(String name, Comparator comparator) {
-        comparators.put(name, comparator);
-    }
-
-    protected Comparator getComparator(String name) {
-        return (Comparator)comparators.get(name);
+        comparators.put(comparator.unit, comparator);
     }
 
     /**
@@ -192,7 +181,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
 
         public int mask();
 
-        public int read16();
+        public int read();
 
         public void flush();
     }
@@ -274,23 +263,16 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
         /**
          * Creates a new, mutable Mode object.
          */
-        protected Mode(Class sc, RegisterSet.Field f, ActiveRegister t) {
-            this(sc, f, (TopValue)t);
-        }
-
-        /**
-         * Creates a new, mutable Mode object.
-         */
         protected Mode(Class sc, RegisterSet.Field f, TopValue t) {
-            if (NORMAL.class == sc) {
+            if (Mode.NORMAL.class == sc) {
                 strategy = new NORMAL();
-            } else if (CTC.class == sc) {
+            } else if (Mode.CTC.class == sc) {
                 strategy = new CTC();
-            } else if (PWM.class == sc) {
+            } else if (Mode.PWM.class == sc) {
                 strategy = new PWM();
-            } else if (FC_PWM.class == sc) {
+            } else if (Mode.FC_PWM.class == sc) {
                 strategy = new FC_PWM();
-            } else if (FAST_PWM.class == sc) {
+            } else if (Mode.FAST_PWM.class == sc) {
                 strategy = new FAST_PWM();
             } else {
                 throw new Error("Unknown Strategy class " + sc);
@@ -303,7 +285,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
          * Returns the mode-specific TOP value: fixed, OCRnA, OCRnI, ...
          */
         protected int getTop() {
-            return top.read16();
+            return top.read();
         }
 
         /**
@@ -327,7 +309,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             int value = getCounter();
             if (devicePrinter.enabled) {
                 devicePrinter.println(name + " [" + getCounterName() + " = " + value);
-                Iterator i = comparators.values().iterator();
+                final Iterator i = comparators.values().iterator();
                 for (Comparator c = (Comparator)i.next(); c != null; c = (Comparator)i.next()) {
                     devicePrinter.println(", " + c + "(actual) = " + c.read() + ", " + c + "(buffer) = " + c.readBuffer() + ']');
                 }
@@ -338,9 +320,10 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             // the compare match should be performed in any case.
             // XXX: Check that this is OK; is using count ok
             if (!compareMatchBlocked) {
-                Iterator i = comparators.values().iterator();
-                while (i.hasNext()) ((Comparator)i.next()).compare(value);
-
+                final Iterator i = comparators.values().iterator();
+                for (Comparator c = (Comparator)i.next(); c != null; c = (Comparator)i.next()) {
+                    c.compare(value);
+                }
             }
 
             setCounter(value);
@@ -493,7 +476,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             top = t;
         }
 
-        public int read16() {
+        public int read() {
             return top;
         }
 
@@ -527,7 +510,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             type = t;
             unit = u;
             pin = p;
-            InterruptTable it = interpreter.getInterruptTable();
+            final InterruptTable it = interpreter.getInterruptTable();
             flag = new FlagField(it, true, interruptNumber);
             rset.installField(type + "F" + timerNumber + unit, flag);
         }
@@ -605,7 +588,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
      * <p/>
      * XXX: Make this into a facade
      */
-    protected class TCNTnRegister implements ActiveRegister {
+    protected class TCNTnRegister { // TODO implements ActiveRegister {
 
         public final String name;
         private final ActiveRegister register;
@@ -615,15 +598,23 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             register = r;
         }
 
-        public void write(byte val) {
-            register.write(val);
+        public void write(int val) {
+            // TODO register.write(val);
             compareMatchBlocked = true;
         }
 
-        public byte read() {
+        public void writeBit(int bit, boolean val) {
+            register.writeBit(bit, val);
+            compareMatchBlocked = true;
+        }
+
+        public int read() {
             return register.read();
         }
 
+        public boolean readBit(int bit) {
+            return register.readBit(bit);
+        }
     }
 
     /**
@@ -636,67 +627,42 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
      * Note that the underlying register may be either an 8-bit or 16-bit register; the BufferedRegister is
      * oblivious to that.
      */
-    protected class BufferedRegister extends RW16Register implements TopValue, ActiveRegister {
+    protected class BufferedRegister extends RW16Register implements TopValue {
 
-        /*
-         * XXX: The implementation of this class is currently very ugly,
-         * as it provides interfaces for both 16 and 8 bit registers.
-         *
-         * It attempts to implement the Decorator pattern allowing any
-         * existing register to be buffered.  However, currently the
-         * underlying framework keeps 8-bit and 16-bit registers separate,
-         * making the implementation of this class challenging.
-         *
-         * Notes:
-         * - RW16Register is inherited only because there are lacking
-         *   interface inheritance.  It's implementation is not used for anyting.
-         * - It would be better if read16() didn't exist but it was
-         *   unified with read().
-         */
-        int value;              // The buffered value, 8 or 16 bits
-
-        private final ActiveRegister reg8; // The underlying register, 8-bit
-        private final RW16Register reg16; // The underlying register, 16-bit
+        private final ActiveRegister register; // The underlying register, 8- or 16-bit
 
         protected BufferedRegister(ActiveRegister r) {
-            this.reg8 = r;
-            this.reg16 = null;
-        }
-
-        protected BufferedRegister(RW16Register r) {
-            this.reg16 = r;
-            this.reg8 = null;
-        }
-
-        public void write(byte val) {
-            value = val;
-            mode.registerWritten(this);
+            this.register = r;
         }
 
         public void write(int val) {
-            value = val;
+            super.write(val);
+            mode.registerWritten(this);
+        }
+
+        public void writeBit(int bit, boolean val) {
+            super.writeBit(bit, val);
             mode.registerWritten(this);
         }
 
         public int readBuffer() {
-            return super.read16();
+            return super.read();
         }
 
-        public byte read() {
-            return (byte)read16();
-        }
-
-        public int read16() {
-            return (null != reg8) ? reg8.read() : reg16.read16();
+        public int read() {
+            return register.read();
         }
 
         public int mask() {
             return 0xffff;    // When used as TOP, never mask any bits, independent of the size
         }
 
+        public boolean readBit(int bit) {
+            return register.readBit(bit);
+        }
+
         public void flush() {
-            if (null != reg8) reg8.write((byte)value);
-            else reg16.write(value);
+            // TODO register.write(value);
         }
     }
 
@@ -717,7 +683,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
      * register will act accordingly on the low register, as well as initiate a read/write on the associated
      * high register.
      */
-    protected class LowRegister implements ActiveRegister {
+    protected class LowRegister { // TODO implements ActiveRegister {
 
         final RW16Register reg;
 
@@ -725,37 +691,53 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             reg = r;
         }
 
-        public void write(byte val) {
+        public void write(int val) {
             reg.write((tempHighReg.read() << 8) + val);
         }
 
-        public byte read() {
-            tempHighReg.write((byte)(reg.read16() >> 8));
-            return (byte)reg.read16();
+        public void writeBit(int bit, boolean val) {
+            reg.write((tempHighReg.read() << 8) | Arithmetic.setBit((byte)reg.read(), bit, val));
         }
 
+        public int read() {
+            tempHighReg.write((byte)(reg.read() >> 8));
+            return (byte)reg.read();
+        }
+
+        public boolean readBit(int bit) {
+            byte val = (byte)read();
+            return Arithmetic.getBit(val, bit);
+        }
     }
 
     /**
      * For other 16-bit registers but OCRnxH, both reads and writes go through the temporary register.
      */
-    protected class HighRegister implements ActiveRegister {
+    protected class HighRegister { // TODO implements ActiveRegister {
 
-        public void write(byte val) {
-            tempHighReg.write(val);
+        public void write(int val) {
+            // TODO tempHighReg.write(val);
         }
 
-        public byte read() {
+        public void writeBit(int bit, boolean val) {
+            tempHighReg.writeBit(bit, val);
+        }
+
+        public int read() {
             return tempHighReg.read();
         }
 
+        public boolean readBit(int bit) {
+            byte val = (byte)read();
+            return Arithmetic.getBit(val, bit);
+        }
     }
 
     /**
      * Writes to OCRnxH go through the temporary register
      * but writes are direct.
      */
-    protected class OCRnxHighRegister extends HighRegister {
+    protected class OCRnxHighRegister { // TODO extends HighRegister {
 
         final RW16Register reg;
 
@@ -763,8 +745,8 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             reg = r;
         }
 
-        public byte read() {
-            return (byte)(reg.read16() >> 8);
+        public int read() {
+            return (byte)(reg.read() >> 8);
         }
 
     }
