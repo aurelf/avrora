@@ -101,8 +101,9 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
      * @param name the name of the IO register as a string
      * @param reg the register to install
      */
-    protected void installIOReg(String name, ActiveRegister reg) {
+    protected ActiveRegister installIOReg(String name, ActiveRegister reg) {
         registers.setReg(properties.getIOReg(name), reg);
+	return reg;
     }
 
     /**
@@ -113,6 +114,30 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
      */
     protected ActiveRegister getIOReg(String name) {
         return registers.getReg(properties.getIOReg(name));
+    }
+
+    /**
+     * The <code>getField()</code> gets an object that represents an entire field which
+     * may be stored across multiple registers in multiple bit fields. This object allows
+     * access to the field's value without consideration for its underlying representation
+     * in the IO register(s).
+     * @param fname the name of the field
+     * @return a reference to the <code>Field</code> object that represents the field
+     */
+    public RegisterSet.Field getField(String fname) {
+	return registers.getField(fname);
+    }
+
+    /**
+     * The <code>installField()</code> method allows device implementations to substitute a new field
+     * implementation for the named field. The field implementation can then override the appropriate
+     * methods of the <code>RegisterSet.Field</code> class to be notified upon writes.
+     * @param fname the name of the field
+     * @param fo the field object to install for this field
+     * @return the new field installed
+     */
+    public RegisterSet.Field installField(String fname, RegisterSet.Field fo) {
+	return registers.installField(fname, fo);
     }
 
     /**
