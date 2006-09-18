@@ -34,8 +34,8 @@ package cck.stat;
 
 import cck.text.Printer;
 
-import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * This class represents the proportion of different items with respect to one another. For example, the
