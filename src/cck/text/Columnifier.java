@@ -33,10 +33,6 @@
  */
 package cck.text;
 
-import cck.text.Terminal;
-import cck.text.StringUtil;
-import cck.text.TermUtil;
-
 import java.util.Arrays;
 
 /**
