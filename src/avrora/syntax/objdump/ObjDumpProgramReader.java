@@ -32,9 +32,9 @@
 
 package avrora.syntax.objdump;
 
+import avrora.arch.legacy.LegacyArchitecture;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
-import avrora.arch.legacy.LegacyArchitecture;
 import avrora.syntax.RawModule;
 import cck.util.Option;
 import cck.util.Util;

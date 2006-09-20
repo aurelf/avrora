@@ -33,13 +33,13 @@
 package avrora.monitors;
 
 import avrora.actions.SimAction;
+import avrora.arch.avr.AVRProperties;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.sim.Simulator;
 import avrora.sim.mcu.Microcontroller;
-import avrora.arch.avr.AVRProperties;
 import avrora.sim.util.MemoryProfiler;
-import avrora.arch.legacy.LegacyState;
 import cck.text.*;
 import cck.util.Option;
 import java.util.Iterator;

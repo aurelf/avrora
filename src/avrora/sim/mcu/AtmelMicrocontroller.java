@@ -32,9 +32,10 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.*;
-import avrora.sim.clock.*;
 import avrora.arch.avr.AVRProperties;
+import avrora.sim.*;
+import avrora.sim.clock.ClockDomain;
+import avrora.sim.clock.MainClock;
 import cck.text.StringUtil;
 import java.util.HashMap;
 import java.util.NoSuchElementException;

@@ -34,12 +34,10 @@
 
 package avrora.actions;
 
-import avrora.Defaults;
 import avrora.Main;
 import avrora.arch.AbstractArchitecture;
 import avrora.arch.AbstractDisassembler;
 import avrora.syntax.elf.ELFLoader;
-import cck.util.Option;
 import cck.util.Util;
 
 /**

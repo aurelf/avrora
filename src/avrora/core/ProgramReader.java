@@ -32,12 +32,12 @@
 
 package avrora.core;
 
+import avrora.arch.AbstractArchitecture;
+import avrora.arch.ArchitectureRegistry;
 import cck.help.HelpCategory;
 import cck.text.StringUtil;
 import cck.util.*;
 import java.util.Iterator;
-import avrora.arch.AbstractArchitecture;
-import avrora.arch.ArchitectureRegistry;
 
 /**
  * The <code>ProgramReader</code> class represents an object capable of reading a program given the special

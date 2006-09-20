@@ -32,9 +32,7 @@
 
 package avrora.sim.util;
 
-import avrora.sim.AtmelInterpreter;
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.sim.*;
 import cck.text.Terminal;
 
 

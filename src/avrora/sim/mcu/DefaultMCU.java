@@ -34,12 +34,12 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.util.SimUtil;
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
-import avrora.sim.platform.Platform;
 import avrora.sim.clock.Clock;
 import avrora.sim.clock.ClockDomain;
+import avrora.sim.platform.Platform;
+import avrora.sim.util.SimUtil;
 
 /**
  * @author Ben L. Titzer

@@ -33,8 +33,8 @@
 package avrora.sim.mcu;
 
 import cck.text.StringUtil;
-import cck.util.Util;
 import cck.util.Arithmetic;
+import cck.util.Util;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.*;

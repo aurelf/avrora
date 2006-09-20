@@ -33,7 +33,6 @@
 package avrora.arch.legacy;
 
 import avrora.sim.*;
-import avrora.arch.AbstractInstr;
 
 /**
  * The <code>LegacyState</code> class represents the state of the simulator, including the contents of registers and

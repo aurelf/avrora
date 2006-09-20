@@ -32,8 +32,8 @@
 
 package avrora.arch.legacy;
 
-import avrora.core.Program;
 import avrora.arch.avr.AVRProperties;
+import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.mcu.MCUProperties;
 import cck.util.Arithmetic;

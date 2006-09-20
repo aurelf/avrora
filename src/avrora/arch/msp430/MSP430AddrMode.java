@@ -1,7 +1,4 @@
 package avrora.arch.msp430;
-import avrora.arch.*;
-import java.util.HashMap;
-
 /**
  * The <code>MSP430AddrMode</code> class represents an addressing mode
  * for this architecture. An addressing mode fixes the number and type of

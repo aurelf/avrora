@@ -36,10 +36,9 @@ import avrora.arch.AbstractInstr;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import cck.stat.StatUtil;
 import cck.text.*;
 import cck.util.Option;
-import cck.stat.StatUtil;
-
 import java.util.*;
 
 /**

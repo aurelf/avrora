@@ -33,7 +33,6 @@
 package avrora.sim.platform;
 
 import avrora.core.Program;
-import avrora.sim.InterpreterFactory;
 
 /**
  * The <code>PlatformFactory</code> interface represents a factory-style interface where an implementor can

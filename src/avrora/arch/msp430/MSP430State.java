@@ -34,9 +34,8 @@
 
 package avrora.arch.msp430;
 
-import avrora.sim.*;
-import avrora.sim.clock.MainClock;
 import avrora.arch.AbstractInstr;
+import avrora.sim.*;
 import cck.util.Util;
 
 /**

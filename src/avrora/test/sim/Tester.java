@@ -34,9 +34,9 @@
 
 package avrora.test.sim;
 
-import avrora.sim.Simulator;
 import avrora.arch.AbstractArchitecture;
 import avrora.core.Program;
+import avrora.sim.Simulator;
 
 /**
  * @author Ben L. Titzer

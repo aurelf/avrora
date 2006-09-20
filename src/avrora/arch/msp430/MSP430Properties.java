@@ -34,10 +34,9 @@
 
 package avrora.arch.msp430;
 
-import avrora.sim.CodeSegment;
-import avrora.sim.mcu.RegisterLayout;
 import avrora.sim.mcu.MCUProperties;
-import java.util.*;
+import avrora.sim.mcu.RegisterLayout;
+import java.util.HashMap;
 
 /**
  * @author Ben L. Titzer

@@ -35,7 +35,6 @@ package avrora.sim.mcu;
 import avrora.sim.Simulator;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.platform.Platform;
-import avrora.arch.avr.AVRProperties;
 
 /**
  * The <code>Microcontroller</code> interface corresponds to a hardware device that implements the AVR

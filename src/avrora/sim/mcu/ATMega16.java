@@ -32,8 +32,8 @@
 
 package avrora.sim.mcu;
 
-import avrora.arch.legacy.LegacyInterpreter;
 import avrora.arch.avr.AVRProperties;
+import avrora.arch.legacy.LegacyInterpreter;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;

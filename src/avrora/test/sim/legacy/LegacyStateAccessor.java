@@ -34,9 +34,9 @@
 
 package avrora.test.sim.legacy;
 
+import avrora.arch.legacy.*;
 import avrora.core.Program;
 import avrora.sim.Simulator;
-import avrora.arch.legacy.*;
 import avrora.test.sim.StateAccessor;
 
 /**

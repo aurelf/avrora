@@ -33,18 +33,15 @@
 package avrora.test.sim;
 
 import avrora.Defaults;
-import avrora.test.sim.legacy.LegacyStateAccessor;
-import avrora.test.sim.legacy.LegacyTester;
-import avrora.test.sim.msp430.MSP430Tester;
-import avrora.arch.legacy.LegacyState;
-import avrora.core.*;
+import avrora.core.Program;
+import avrora.core.ProgramReader;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.syntax.Module;
+import avrora.test.sim.legacy.LegacyTester;
+import avrora.test.sim.msp430.MSP430Tester;
 import cck.test.*;
-import cck.text.StringUtil;
 import cck.text.Terminal;
-import cck.util.Util;
 import cck.util.ClassMap;
 import java.util.*;
 

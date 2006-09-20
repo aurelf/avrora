@@ -34,7 +34,6 @@ package avrora.sim.util;
 
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.arch.legacy.LegacyState;
 
 /**
  * The <code>BranchCounter</code> class is a profiling probe that can be inserted at a branch instruction to

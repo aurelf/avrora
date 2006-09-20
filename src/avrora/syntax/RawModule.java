@@ -32,7 +32,6 @@
 
 package avrora.syntax;
 
-import avrora.syntax.*;
 import avrora.syntax.objdump.Token;
 import cck.parser.AbstractToken;
 import cck.text.StringUtil;

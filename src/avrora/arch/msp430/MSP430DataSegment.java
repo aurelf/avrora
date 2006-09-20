@@ -34,9 +34,9 @@
 
 package avrora.arch.msp430;
 
+import avrora.core.Program;
 import avrora.sim.ActiveRegister;
 import avrora.sim.Segment;
-import avrora.core.Program;
 import cck.util.Arithmetic;
 
 /**

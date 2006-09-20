@@ -40,7 +40,8 @@ import avrora.sim.mcu.AtmelMicrocontroller;
 import avrora.sim.mcu.USART;
 import avrora.sim.platform.SerialForwarder;
 import cck.util.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
 
 
 /**

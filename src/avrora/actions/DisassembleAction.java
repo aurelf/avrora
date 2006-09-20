@@ -34,11 +34,10 @@ package avrora.actions;
 
 import avrora.Main;
 import avrora.arch.*;
-import avrora.arch.avr.AVRDisassembler;
-import avrora.arch.msp430.MSP430Disassembler;
 import cck.text.StringUtil;
 import cck.text.Terminal;
-import cck.util.*;
+import cck.util.Option;
+import cck.util.Util;
 import java.io.FileInputStream;
 import java.io.IOException;
 

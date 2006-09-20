@@ -34,12 +34,12 @@
 
 package avrora.arch;
 
-import cck.util.ClassMap;
-import cck.help.HelpCategory;
-import avrora.arch.legacy.LegacyArchitecture;
-import avrora.arch.avr.AVRArchitecture;
-import avrora.arch.msp430.MSP430Architecture;
 import avrora.Defaults;
+import avrora.arch.avr.AVRArchitecture;
+import avrora.arch.legacy.LegacyArchitecture;
+import avrora.arch.msp430.MSP430Architecture;
+import cck.help.HelpCategory;
+import cck.util.ClassMap;
 
 /**
  * The <code>ArchitectureRegistry</code> class implements a registry of all the instruction set architectures

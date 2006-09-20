@@ -32,10 +32,11 @@
 
 package avrora.monitors;
 
-import avrora.sim.*;
-import avrora.sim.util.SimUtil;
-import avrora.sim.mcu.Microcontroller;
 import avrora.arch.avr.AVRProperties;
+import avrora.sim.Simulator;
+import avrora.sim.State;
+import avrora.sim.mcu.Microcontroller;
+import avrora.sim.util.SimUtil;
 import cck.text.StringUtil;
 import cck.util.Option;
 import java.util.Iterator;

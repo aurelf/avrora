@@ -32,16 +32,13 @@
 
 package avrora.monitors;
 
-import avrora.arch.legacy.LegacyInstr;
-import avrora.arch.legacy.LegacyRegister;
-import avrora.arch.legacy.LegacyState;
 import avrora.arch.AbstractInstr;
+import avrora.arch.legacy.*;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.util.SimUtil;
-import avrora.sim.mcu.MCUProperties;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 

@@ -34,7 +34,8 @@ package avrora.monitors;
 
 import avrora.arch.legacy.LegacyRegister;
 import avrora.arch.legacy.LegacyState;
-import avrora.sim.*;
+import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.sim.util.SimUtil;
 import cck.text.StringUtil;
 import cck.text.Terminal;

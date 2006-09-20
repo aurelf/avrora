@@ -34,16 +34,13 @@
 
 package avrora.sim.platform;
 
-import cck.text.Terminal;
+import avrora.arch.msp430.mcu.F1611;
+import avrora.core.Program;
+import avrora.sim.Simulator;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.platform.sensors.LightSensor;
-import avrora.sim.platform.sensors.SensorBoard;
-import avrora.sim.Simulator;
 import avrora.sim.radio.Radio;
-import avrora.sim.radio.CC2420Radio;
-import avrora.core.Program;
-import avrora.arch.msp430.mcu.F1611;
+import cck.text.Terminal;
 
 /**
  * @author Ben L. Titzer

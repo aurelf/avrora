@@ -35,7 +35,8 @@ package avrora.sim.platform;
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
-import avrora.sim.mcu.*;
+import avrora.sim.mcu.ATMegaFamily;
+import avrora.sim.mcu.Microcontroller;
 import avrora.sim.util.SimUtil;
 import cck.text.Terminal;
 

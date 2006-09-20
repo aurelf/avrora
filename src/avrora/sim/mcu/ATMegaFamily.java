@@ -32,9 +32,9 @@
 
 package avrora.sim.mcu;
 
+import avrora.arch.avr.AVRProperties;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
-import avrora.arch.avr.AVRProperties;
 import cck.util.Arithmetic;
 
 /**

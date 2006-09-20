@@ -34,11 +34,11 @@
 
 package avrora.arch.avr;
 
+import avrora.arch.AbstractInstr;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.RegisterSet;
-import avrora.arch.AbstractInstr;
 import cck.util.Arithmetic;
 import cck.util.Util;
 

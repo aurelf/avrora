@@ -34,13 +34,13 @@
 
 package avrora.test.sim.msp430;
 
-import avrora.core.Program;
-import avrora.sim.Simulator;
 import avrora.arch.msp430.MSP430Interpreter;
 import avrora.arch.msp430.MSP430Symbol;
+import avrora.core.Program;
+import avrora.sim.Simulator;
 import avrora.test.sim.StateAccessor;
-import cck.util.Util;
 import cck.util.Arithmetic;
+import cck.util.Util;
 
 /**
  * The <code>MSP430StateAccessor</code> class provides access to the state of the MSP430 simulator

@@ -35,7 +35,7 @@ package avrora.arch.avr;
 import avrora.sim.CodeSegment;
 import avrora.sim.mcu.MCUProperties;
 import avrora.sim.mcu.RegisterLayout;
-import java.util.*;
+import java.util.HashMap;
 
 /**
  * The <code>MicrocontrollerProperties</code> class is simply a wrapper class around several

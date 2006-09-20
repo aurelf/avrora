@@ -32,11 +32,12 @@
 
 package avrora.sim.radio;
 
-import avrora.sim.*;
+import avrora.sim.FiniteStateMachine;
+import avrora.sim.Simulator;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
-import avrora.sim.util.TransactionalList;
 import avrora.sim.util.SimUtil;
+import avrora.sim.util.TransactionalList;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
 import cck.util.Util;

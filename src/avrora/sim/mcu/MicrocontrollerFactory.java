@@ -33,7 +33,6 @@
 package avrora.sim.mcu;
 
 import avrora.core.Program;
-import avrora.sim.InterpreterFactory;
 import avrora.sim.clock.ClockDomain;
 
 /**

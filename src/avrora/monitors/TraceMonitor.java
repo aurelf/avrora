@@ -32,8 +32,8 @@
 
 package avrora.monitors;
 
-import avrora.arch.legacy.LegacyState;
 import avrora.arch.AbstractInstr;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.*;
 import avrora.sim.Simulator;
 import avrora.sim.State;
