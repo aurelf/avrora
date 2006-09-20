@@ -36,7 +36,6 @@ import avrora.arch.legacy.LegacyRegister;
 import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.output.SimPrinter;
 import avrora.sim.util.SimUtil;
 import cck.text.StringUtil;
 import cck.text.Terminal;
@@ -65,7 +64,7 @@ public class GDBServer extends MonitorFactory {
             "send commands to Avrora. This allows gdb to be used as a front end for debugging a program " +
             "running inside of Avrora.";
 
-    private final Option.Long PORT = newOption("port", 10001,
+    private final Option.Long PORT = options.newOption("port", 10001,
             "This option specifies the port on which the GDB server will listen for a connection from " +
             "the GDB front-end.");
 
@@ -89,7 +88,7 @@ public class GDBServer extends MonitorFactory {
         final int port;
         BreakpointProbe BREAKPROBE = new BreakpointProbe();
         StepProbe STEPPROBE = new StepProbe();
-        SimPrinter printer;
+        SimUtil.SimPrinter printer;
 
 
         GDBMonitor(Simulator s, int p) {
@@ -105,7 +104,7 @@ public class GDBServer extends MonitorFactory {
             simulator.insertProbe(new StartupProbe(), 0);
 
             // install the ExceptionWatch
-            simulator.insertErrorWatch(new ExceptionWatch("sram"));
+            simulator.insertExceptionWatch(new ExceptionWatch());
         }
 
         public void report() {
@@ -335,24 +334,24 @@ public class GDBServer extends MonitorFactory {
 
         private void appendPC(State s, StringBuffer buf) {
             int pc = s.getPC();
-            buf.append(StringUtil.toLowHex(pc & 0xff, 2));
-            buf.append(StringUtil.toLowHex((pc >> 8) & 0xff, 2));
-            buf.append(StringUtil.toLowHex((pc >> 16) & 0xff, 2));
-            buf.append(StringUtil.toLowHex((pc >> 24) & 0xff, 2));
+            buf.append(StringUtil.toHex(pc & 0xff, 2));
+            buf.append(StringUtil.toHex((pc >> 8) & 0xff, 2));
+            buf.append(StringUtil.toHex((pc >> 16) & 0xff, 2));
+            buf.append(StringUtil.toHex((pc >> 24) & 0xff, 2));
         }
 
         private void appendSP(State s, StringBuffer buf) {
-            buf.append(StringUtil.toLowHex(s.getSP() & 0xff, 2));
-            buf.append(StringUtil.toLowHex((s.getSP() >> 8) & 0xff, 2));
+            buf.append(StringUtil.toHex(s.getSP() & 0xff, 2));
+            buf.append(StringUtil.toHex((s.getSP() >> 8) & 0xff, 2));
         }
 
         private void appendSREG(LegacyState s, StringBuffer buf) {
-            buf.append(StringUtil.toLowHex(s.getSREG() & 0xff, 2));
+            buf.append(StringUtil.toHex(s.getSREG() & 0xff, 2));
         }
 
         private void appendGPR(LegacyState s, int cntr, StringBuffer buf) {
             byte value = s.getRegisterByte(LegacyRegister.getRegisterByNumber(cntr));
-            buf.append(StringUtil.toLowHex(value & 0xff, 2));
+            buf.append(StringUtil.toHex(value & 0xff, 2));
         }
 
         /**
@@ -410,13 +409,13 @@ public class GDBServer extends MonitorFactory {
                 addr = addr & (~MEMMASK);
                 for ( int cntr = 0; cntr < length; cntr++ ) {
                     byte value = s.getDataByte(addr+cntr);
-                    buf.append(StringUtil.toLowHex(value & 0xff, 2));
+                    buf.append(StringUtil.toHex(value & 0xff, 2));
                 }
             } else {
                 // reading from program memory
                 for ( int cntr = 0; cntr < length; cntr++ ) {
                     byte value = s.getProgramByte(addr+cntr);
-                    buf.append(StringUtil.toLowHex(value & 0xff, 2));
+                    buf.append(StringUtil.toHex(value & 0xff, 2));
                 }
             }
 
@@ -446,7 +445,7 @@ public class GDBServer extends MonitorFactory {
             int cksum = 0;
             for ( int cntr = 0; cntr < bytes.length; cksum += bytes[cntr++] ) ;
 
-            String np = '$' +packet+ '#' +StringUtil.toLowHex(cksum & 0xff, 2);
+            String np = "$"+packet+"#"+StringUtil.toHex(cksum & 0xff, 2);
             if ( printer.enabled )
                 printer.println("   <-- "+np+"");
 
@@ -489,14 +488,8 @@ public class GDBServer extends MonitorFactory {
          *
          * @author Jey Kottalam (kottalam@cs.ucdavis.edu)
          */
-        protected class ExceptionWatch extends Simulator.Watch.Empty {
-            protected final String segment;
-
-            protected ExceptionWatch(String s) {
-                segment = s;
-            }
-            
-            public void fireBeforeRead(State s, int address) {
+        protected class ExceptionWatch implements Simulator.ExceptionWatch {
+            public void invalidRead(String segment, int address) {
                 if(printer.enabled) {
                     printer.println("GDB caught invalid read of " + segment + " at " + address);
                 }
@@ -505,9 +498,9 @@ public class GDBServer extends MonitorFactory {
                 commandLoop("T11");
             }
 
-            public void fireBeforeWrite(State s, int address, byte val) {
+            public void invalidWrite(String segment, int address, byte value) {
                 if(printer.enabled) {
-                    printer.println("GDB caught invalid write of " + segment + " at " + address);
+                    printer.println("GDB caught invalid write of " + segment + " at " + address + " value " + value);
                 }
 
                 // send a SIGSEGV and halt execution

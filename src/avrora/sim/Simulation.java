@@ -37,15 +37,12 @@ import avrora.core.LoadableProgram;
 import avrora.monitors.MonitorFactory;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.mcu.MicrocontrollerFactory;
-import avrora.sim.mcu.AtmelMicrocontroller;
-import avrora.sim.mcu.EEPROM;
 import avrora.sim.platform.*;
 import avrora.sim.util.ClockCycleTimeout;
 import avrora.sim.util.InterruptScheduler;
 import cck.help.HelpCategory;
 import cck.util.*;
 import java.util.*;
-import java.io.*;
 
 /**
  * The <code>Simulation</code> class represents a complete simulation, including
@@ -58,43 +55,42 @@ import java.io.*;
  */
 public abstract class Simulation extends HelpCategory {
 
-    public final Option.Str PLATFORM = newOption("platform", "",
+    protected final Options options = new Options();
+
+    public final Option.Str PLATFORM = options.newOption("platform", "",
             "This option selects the platform on which the microcontroller is built, " +
             "including the external devices such as LEDs and radio. If the platform " +
             "option is not set, the default platform is the microcontroller specified " +
             "in the \"mcu\" option, with no external devices.");
-    public final Option.Long CLOCKSPEED = newOption("clockspeed", 8000000,
+    public final Option.Long CLOCKSPEED = options.newOption("clockspeed", 8000000,
             "This option specifies the clockspeed of the microcontroller when the platform " +
             "is not specified. The speed is given in cycles per second, i.e. hertz.");
-    public final Option.Long EXTCLOCKSPEED = newOption("external-clockspeed", 0,
+    public final Option.Long EXTCLOCKSPEED = options.newOption("external-clockspeed", 0,
             "This option specifies the clockspeed of the external clock supplied to the " +
             "microcontroller when the platform is not specified. The speed is given in cycles " +
             "per second, i.e. hertz. When this option is set to zero, the external clock is the " +
             "same speed as the main clock.");
-    public final Option.Str MCU = newOption("mcu", "atmega128",
+    public final Option.Str MCU = options.newOption("mcu", "atmega128",
             "This option selects the microcontroller from a library of supported " +
             "microcontroller models.");
-    public final Option.Long RANDOMSEED = newOption("random-seed", 0,
+    public final Option.Long RANDOMSEED = options.newOption("random-seed", 0,
             "This option is used to seed a pseudo-random number generator used in the " +
             "simulation. If this option is set to non-zero, then its value is used as " +
             "the seed for reproducible simulation results. If this option is not set, " +
             "those parts of simulation that rely on random numbers will have seeds " +
             "chosen based on system parameters that vary from run to run.");
-    public final Option.Double SECONDS = newOption("seconds", 0.0,
+    public final Option.Double SECONDS = options.newOption("seconds", 0.0,
             "This option is used to terminate the " +
             "simulation after the specified number of simulated seconds have passed.");
-    public final Option.List MONITORS = newOptionList("monitors", "",
+    public final Option.List MONITORS = options.newOptionList("monitors", "",
             "This option specifies a list of monitors to be attached to the program. " +
             "Monitors collect information about the execution of the program while it " +
             "is running such as profiling data or timing information.");
-    public final Option.Str SCHEDULE = newOption("interrupt-schedule", "",
+    public final Option.Str SCHEDULE = options.newOption("interrupt-schedule", "",
             "This option, when specified, contains the name of a file that contains an interrupt " +
             "schedule that describes when to post interrupts (especially external interrupts) to the " +
             "program. This is useful for testing programs under different interrupt loads. For " +
             "multi-node simulations, the interrupt schedule is only applied to node 0.");
-    public final Option.Str EELOADIMAGE = newOption("eeprom-load-image", "",
-            "This option specifies a (binary) image file to load into EEPROM before starting " +
-            "the simulation.");
 
     /**
      * The <code>Monitor</code> interface represents a monitor for a simulation. A monitor
@@ -155,11 +151,7 @@ public abstract class Simulation extends HelpCategory {
             simulator = platform.getMicrocontroller().getSimulator();
             processTimeout();
             processInterruptSched();
-            processEepromLoad();
             synchronizer.addNode(this);
-        }
-
-        protected void addMonitors() {
             // OLD MONITOR API SUPPORT:
             // for each of the monitors in the factory list, create a new monitor
             Iterator i = monitorFactoryList.iterator();
@@ -173,7 +165,7 @@ public abstract class Simulation extends HelpCategory {
             Iterator mi = monitors.iterator();
             while ( mi.hasNext() ) {
                 Object o = mi.next();
-                if ( o instanceof Monitor) {
+                if ( o instanceof Monitor ) {
                     Monitor mon = (Monitor)o;
                     mon.construct(Simulation.this, this, simulator);
                 }
@@ -192,35 +184,6 @@ public abstract class Simulation extends HelpCategory {
             if ( id != 0 ) return;
             if ( !SCHEDULE.isBlank() ) {
                 InterruptScheduler s = new InterruptScheduler(SCHEDULE.get(), simulator);
-            }
-        }
-
-        private void processEepromLoad() {
-            if ( !EELOADIMAGE.isBlank() ) {
-                FileInputStream f;
-                // FIXME: break of abstraction (getDevice is specific to
-                // AtmelMicrocontroller)
-                AtmelMicrocontroller mcu = (AtmelMicrocontroller) platform.getMicrocontroller();
-                EEPROM eeprom = (EEPROM) mcu.getDevice("eeprom");
-                byte[] image;
-
-                try {
-                    f = new FileInputStream(EELOADIMAGE.get());
-
-                    if (f.available() > eeprom.getSize()) {
-                        f.close();
-                        Util.userError("EEPROM image too large", EELOADIMAGE.get());
-                    }
-
-                    image = new byte[f.available()];
-                    f.read(image);
-                    f.close();
-
-                } catch (IOException e) {
-                    throw Util.unexpected(e);
-                }
-
-                eeprom.setContent(image);
             }
         }
 
@@ -436,7 +399,6 @@ public abstract class Simulation extends HelpCategory {
             if ( n == null ) continue;
 
             n.instantiate(); // create the simulator and simulator thread
-            n.addMonitors();
         }
     }
 
@@ -473,7 +435,7 @@ public abstract class Simulation extends HelpCategory {
     /**
      * The <code>join()</code> method waits for the simulation to terminate before returning. After this method
      * returns, the nodes are all guaranteed to be have terminated.
-     * @throws InterruptedException if the thread is interrupt
+     * @throws InterruptedException
      */
     public synchronized void join() throws InterruptedException {
         synchronizer.join();

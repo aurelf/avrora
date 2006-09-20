@@ -56,9 +56,9 @@ public class ATMega16 extends ATMegaFamily {
     public static final int _512b = 512;
 
     public static final int ATMEGA16_IOREG_SIZE = 64;
-    public static final int ATMEGA16_SRAM_SIZE = _1kb;
+    public static final int ATMEGA16_SRAM_SIZE = 1 * _1kb;
     public static final int ATMEGA16_FLASH_SIZE = 16 * _1kb;
-    public static final int ATMEGA16_EEPROM_SIZE = _512b;
+    public static final int ATMEGA16_EEPROM_SIZE = 1 * _512b;
     public static final int ATMEGA16_NUM_PINS = 41;
     public static final int ATMEGA16_NUM_INTS = 22;
 
@@ -111,7 +111,7 @@ public class ATMega16 extends ATMegaFamily {
         addPin(pinAssignments, 4, "AIN1", "OC0", "PB3");
         addPin(pinAssignments, 5, "SS", "PB4");
         addPin(pinAssignments, 6, "MOSI", "PB5");
-        addPin(pinAssignments, 7, "MISO", "PB6");
+        addPin(pinAssignments, 7, "MSIO", "PB6");
         addPin(pinAssignments, 8, "SCK", "PB7");
         addPin(pinAssignments, 9, "RESET");
         addPin(pinAssignments, 10, "VCC.1");

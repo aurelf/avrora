@@ -1,7 +1,4 @@
 package avrora.arch.msp430;
-import avrora.arch.*;
-import java.util.HashMap;
-
 /**
  * The <code>MSP430AddrModeVisitor</code> interface implements the
  * visitor pattern for addressing modes.

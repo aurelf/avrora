@@ -37,7 +37,7 @@ package avrora.actions;
 import avrora.Main;
 import avrora.arch.AbstractArchitecture;
 import avrora.arch.AbstractDisassembler;
-import avrora.syntax.elf.ELFParser;
+import avrora.syntax.elf.ELFLoader;
 import cck.util.Util;
 
 /**
@@ -58,7 +58,7 @@ public class NewSimAction extends Action {
             Util.userError("no simulation file specified");
         String fn = args[0];
         Main.checkFileExists(fn);
-        ELFParser loader = new ELFParser();
+        ELFLoader loader = new ELFLoader();
         loader.options.process(options);
         AbstractArchitecture arch = loader.getArchitecture();
         AbstractDisassembler d = arch.getDisassembler();

@@ -34,14 +34,14 @@
 
 package avrora.test.sim.msp430;
 
-import avrora.test.sim.Tester;
-import avrora.test.sim.StateAccessor;
-import avrora.sim.Simulator;
-import avrora.sim.platform.Platform;
-import avrora.core.Program;
+import avrora.Defaults;
 import avrora.arch.AbstractArchitecture;
 import avrora.arch.msp430.MSP430Architecture;
-import avrora.Defaults;
+import avrora.core.Program;
+import avrora.sim.Simulator;
+import avrora.sim.platform.Platform;
+import avrora.test.sim.StateAccessor;
+import avrora.test.sim.Tester;
 
 /**
  * @author Ben L. Titzer

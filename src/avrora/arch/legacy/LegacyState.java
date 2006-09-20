@@ -43,7 +43,6 @@ import avrora.sim.*;
 public interface LegacyState extends State {
 
     int NUM_REGS = 32; // number of general purpose registers
-    int IOREG_BASE = 32; // base address of IO registers
     int SREG_I = 7;
     int SREG_T = 6;
     int SREG_H = 5;
@@ -105,6 +104,70 @@ public interface LegacyState extends State {
      */
     public byte getSREG();
 
+
+    /**
+     * The <code>getFlag_I()</code> method returns the current value of the I bit in the status register as a
+     * boolean.
+     *
+     * @return the value of the flag
+     */
+    public boolean getFlag_I();
+
+    /**
+     * The <code>getFlag_T()</code> method returns the current value of the T bit in the status register as a
+     * boolean.
+     *
+     * @return the value of the flag
+     */
+    public boolean getFlag_T();
+
+    /**
+     * The <code>getFlag_H()</code> method returns the current value of the H bit in the status register as a
+     * boolean.
+     *
+     * @return the value of the flag
+     */
+    public boolean getFlag_H();
+
+    /**
+     * The <code>getFlag_S()</code> method returns the current value of the S bit in the status register as a
+     * boolean.
+     *
+     * @return the value of the flag
+     */
+    public boolean getFlag_S();
+
+    /**
+     * The <code>getFlag_V()</code> method returns the current value of the V bit in the status register as a
+     * boolean.
+     *
+     * @return the value of the flag
+     */
+    public boolean getFlag_V();
+
+    /**
+     * The <code>getFlag_N()</code> method returns the current value of the N bit in the status register as a
+     * boolean.
+     *
+     * @return the value of the flag
+     */
+    public boolean getFlag_N();
+
+    /**
+     * The <code>getFlag_Z()</code> method returns the current value of the Z bit in the status register as a
+     * boolean.
+     *
+     * @return the value of the flag
+     */
+    public boolean getFlag_Z();
+
+    /**
+     * The <code>getFlag_C()</code> method returns the current value of the C bit in the status register as a
+     * boolean.
+     *
+     * @return the value of the flag
+     */
+    public boolean getFlag_C();
 
     /**
      * The <code>getStackByte()</code> method reads a byte from the address specified by SP+1. This method

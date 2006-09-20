@@ -1,7 +1,4 @@
 package avrora.arch.msp430;
-import avrora.arch.*;
-import java.util.HashMap;
-
 /**
  * The <code>MSP430Operand</code> interface represents operands that are
  * allowed to instructions in this architecture. Inner classes of this
@@ -20,21 +17,21 @@ public abstract class MSP430Operand {
     public static final byte SYMB_val = 8;
     public static final byte ABSO_val = 9;
     public static final byte JUMP_val = 10;
-    
+
     /**
      * The <code>op_type</code> field stores a code that determines the type
      * of the operand. This code can be used to dispatch on the type of the
      * operand by switching on the code.
      */
     public final byte op_type;
-    
+
     /**
      * The <code>accept()</code> method implements the visitor pattern for
      * operand types, allowing a user to double-dispatch on the type of an
      * operand.
      */
     public abstract void accept(MSP430OperandVisitor v);
-    
+
     /**
      * The default constructor for the <code>$operand</code> class simply
      * stores the type of the operand in a final field.
@@ -42,7 +39,7 @@ public abstract class MSP430Operand {
     protected MSP430Operand(byte t) {
         op_type = t;
     }
-    
+
     /**
      * The <code>MSP430Operand.Int</code> class is the super class of
      * operands that can take on integer values. It implements rendering the
@@ -58,8 +55,8 @@ public abstract class MSP430Operand {
             return Integer.toString(value);
         }
     }
-    
-    
+
+
     /**
      * The <code>MSP430Operand.Sym</code> class is the super class of
      * operands that can take on symbolic (enumerated) values. It implements
@@ -77,8 +74,8 @@ public abstract class MSP430Operand {
             return value.symbol;
         }
     }
-    
-    
+
+
     /**
      * The <code>MSP430Operand.Addr</code> class is the super class of
      * operands that represent an address. It implements rendering the
@@ -98,8 +95,8 @@ public abstract class MSP430Operand {
             return buf.toString();
         }
     }
-    
-    
+
+
     /**
      * The <code>MSP430Operand.Rel</code> class is the super class of
      * operands that represent an address that is computed relative to the
@@ -119,7 +116,7 @@ public abstract class MSP430Operand {
             else return "."+relative;
         }
     }
-    
+
     public static class SREG extends Sym {
         SREG(String s) {
             super(SREG_val, MSP430Symbol.get_GPR(s));
@@ -131,7 +128,7 @@ public abstract class MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public static class AIREG_B extends Sym {
         AIREG_B(String s) {
             super(AIREG_B_val, MSP430Symbol.get_GPR(s));
@@ -143,7 +140,7 @@ public abstract class MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public static class AIREG_W extends Sym {
         AIREG_W(String s) {
             super(AIREG_W_val, MSP430Symbol.get_GPR(s));
@@ -155,7 +152,7 @@ public abstract class MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public static class IREG extends Sym {
         IREG(String s) {
             super(IREG_val, MSP430Symbol.get_GPR(s));
@@ -167,7 +164,7 @@ public abstract class MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public static class IMM extends Int {
         public static final int low = -32768;
         public static final int high = 65536;
@@ -178,7 +175,7 @@ public abstract class MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public static class IMML extends Int {
         public static final int low = -32768;
         public static final int high = 65536;
@@ -189,7 +186,7 @@ public abstract class MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public static class INDX extends MSP430Operand {
         public final MSP430Operand.SREG reg;
         public final MSP430Operand.IMM index;
@@ -202,7 +199,7 @@ public abstract class MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public static class SYMB extends Rel {
         public static final int low = -32768;
         public static final int high = 65535;
@@ -213,7 +210,7 @@ public abstract class MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public static class ABSO extends Addr {
         public static final int low = -32768;
         public static final int high = 65535;
@@ -224,7 +221,7 @@ public abstract class MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public static class JUMP extends Rel {
         public static final int low = -512;
         public static final int high = 511;
@@ -235,5 +232,5 @@ public abstract class MSP430Operand {
             v.visit(this);
         }
     }
-    
+
 }

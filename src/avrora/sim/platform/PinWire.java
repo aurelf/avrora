@@ -213,6 +213,14 @@ public class PinWire {
         }
 
         /**
+         * The <code>disableInput()</code> method is called by the simulator when the program changes the
+         * direction of the pin. The device connected to this pin can then take action accordingly.
+         */
+        public void disableInput() {
+            acceptsInput = false;
+        }
+
+        /**
          * The <code>read()</code> method is called by the simulator when the program attempts to read the
          * level of the pin. The device can then compute and return the current level of the pin.
          *
@@ -220,7 +228,10 @@ public class PinWire {
          */
         public boolean read() {
             // read the current state and return boolean value
-            return state.getCurrentState() == 1;
+            if (state.getCurrentState() == 1)
+                return true;
+            else
+                return false;
         }
     }
 
@@ -242,6 +253,14 @@ public class PinWire {
 
             // automatically disable input
             acceptsInput = false;
+        }
+
+        /**
+         * The <code>disableOutput()</code> method is called by the simulator when the program changes the
+         * direction of the pin. The device connected to this pin can then take action accordingly.
+         */
+        public void disableOutput() {
+            acceptsOutput = false;
         }
 
         /**

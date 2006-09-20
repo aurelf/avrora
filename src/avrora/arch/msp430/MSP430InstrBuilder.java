@@ -1,5 +1,4 @@
 package avrora.arch.msp430;
-import avrora.arch.*;
 import java.util.HashMap;
 public abstract class MSP430InstrBuilder {
     public abstract MSP430Instr build(int size, MSP430AddrMode am);

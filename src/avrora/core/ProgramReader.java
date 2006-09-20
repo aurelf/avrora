@@ -45,11 +45,17 @@ import java.util.Iterator;
  */
 public abstract class ProgramReader extends HelpCategory {
 
-    public final Option.Str ARCH = newOption("arch", "avr",
+    /**
+     * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that
+     * encapsulates the command line options available to this reader.
+     */
+    public final Options options = new Options();
+
+    public final Option.Str ARCH = options.newOption("arch", "avr",
             "This option specifies the name of the instruction set architecture for the " +
             "specified program. This architecture option is used to retrieve an appropriate " +
             "disassembler and interpreter for the program.");
-    public final Option.List INDIRECT_EDGES = newOptionList("indirect-edges", "",
+    public final Option.List INDIRECT_EDGES = options.newOptionList("indirect-edges", "",
             "This option can be used to specify the possible targets of indirect calls and " +
             "jumps within a program, which may be needed in performing stack analysis or " +
             "building a control flow graph. Each element of the list is a pair of " +
@@ -88,13 +94,13 @@ public abstract class ProgramReader extends HelpCategory {
         Iterator i = INDIRECT_EDGES.get().iterator();
         while (i.hasNext()) {
             String s = (String)i.next();
-            int ind = s.indexOf(':');
+            int ind = s.indexOf(":");
             if (ind <= 0)
                 throw Util.failure("invalid indirect edge format: " + StringUtil.quote(s));
             SourceMapping sm = p.getSourceMapping();
             SourceMapping.Location loc = sm.getLocation(s.substring(0, ind));
             SourceMapping.Location tar = sm.getLocation(s.substring(ind + 1));
-            p.addIndirectEdge(loc.lma_addr, tar.lma_addr);
+            p.addIndirectEdge(loc.address, tar.address);
         }
     }
 

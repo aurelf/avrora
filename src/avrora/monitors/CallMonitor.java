@@ -37,10 +37,11 @@
 package avrora.monitors;
 
 import avrora.core.SourceMapping;
-import avrora.sim.*;
+import avrora.sim.Simulator;
 import avrora.sim.mcu.MCUProperties;
 import avrora.sim.util.SimUtil;
-import cck.text.*;
+import cck.text.StringUtil;
+import cck.text.Terminal;
 import cck.util.Option;
 
 /**

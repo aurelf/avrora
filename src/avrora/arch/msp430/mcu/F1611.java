@@ -34,13 +34,13 @@
 
 package avrora.arch.msp430.mcu;
 
-import avrora.sim.mcu.*;
-import avrora.sim.clock.ClockDomain;
-import avrora.sim.Simulator;
-import avrora.sim.Interpreter;
 import avrora.arch.msp430.MSP430Interpreter;
 import avrora.arch.msp430.MSP430Properties;
 import avrora.core.Program;
+import avrora.sim.Interpreter;
+import avrora.sim.Simulator;
+import avrora.sim.clock.ClockDomain;
+import avrora.sim.mcu.*;
 import java.util.HashMap;
 
 /**

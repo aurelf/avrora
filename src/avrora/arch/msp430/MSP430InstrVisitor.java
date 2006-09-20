@@ -1,6 +1,4 @@
 package avrora.arch.msp430;
-import avrora.arch.*;
-
 /**
  * The <code>MSP430InstrVisitor</code> interface allows user code that
  * implements the interface to easily dispatch on the type of an

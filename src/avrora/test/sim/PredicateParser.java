@@ -35,10 +35,10 @@
 package avrora.test.sim;
 
 import cck.text.StringUtil;
-import java.util.List;
-import java.util.LinkedList;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>PredicateParser</code> class implements a simple recursive-descent parser for the

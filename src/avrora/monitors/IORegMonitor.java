@@ -33,10 +33,8 @@
 package avrora.monitors;
 
 import avrora.arch.avr.AVRProperties;
-import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.output.SimPrinter;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.util.SimUtil;
 import cck.text.StringUtil;
@@ -51,7 +49,7 @@ import java.util.Iterator;
  */
 public class IORegMonitor extends MonitorFactory {
 
-    final Option.List IOREGS = newOptionList("ioregs", "all",
+    final Option.List IOREGS = options.newOptionList("ioregs", "all",
             "This option accepts a list of IO register names which will be monitored during the " +
             "simulation. For example, specifying \"PORTA,DDR\" as this option's value will enable monitoring " +
             "of reads and writes to the PORTA and DDRA IO registers. " +
@@ -59,7 +57,7 @@ public class IORegMonitor extends MonitorFactory {
             "IO registers will be monitored.");
 
     class Monitor implements avrora.monitors.Monitor {
-        SimPrinter printer;
+        SimUtil.SimPrinter printer;
 
         Monitor(Simulator s) {
             printer = SimUtil.getPrinter(s, "monitors.ioregs");
@@ -81,7 +79,7 @@ public class IORegMonitor extends MonitorFactory {
             for ( int cntr = 0; cntr < size; cntr++ ) {
                 String name = props.getIORegName(cntr);
                 if ( name == null ) name = StringUtil.to0xHex(cntr,2);
-                s.insertWatch(new Watch(name), cntr + LegacyState.IOREG_BASE);
+                s.insertIORWatch(new Watch(name), cntr);
             }
         }
 
@@ -91,10 +89,10 @@ public class IORegMonitor extends MonitorFactory {
                 String str = (String)i.next();
                 int ior;
                 if ( StringUtil.isHex(str) )
-                    ior = StringUtil.evaluateIntegerLiteral(str) + LegacyState.IOREG_BASE;
+                    ior = StringUtil.evaluateIntegerLiteral(str);
                 else
-                    ior = m.getProperties().getIORegAddr(str);
-                s.insertWatch(new Watch(str), ior);
+                    ior = m.getProperties().getIOReg(str);
+                s.insertIORWatch(new Watch(str), ior);
             }
         }
 
@@ -102,11 +100,35 @@ public class IORegMonitor extends MonitorFactory {
             // we don't need to generate a report.
         }
 
-        class Watch extends Simulator.Watch.Empty {
+        class Watch extends Simulator.IORWatch.Empty {
             String name;
 
             Watch(String name) {
                 this.name = StringUtil.leftJustify(name, 6);
+            }
+
+            /**
+             * The <code>fireBeforeBitRead()</code> method is called before the data address is read by the program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param state     the state of the simulation
+             * @param ioreg_num the number of the IO register being read
+             */
+            public void fireAfterBitRead(State state, int ioreg_num, int bit, boolean value) {
+                printer.println(name+"["+bit+"]   -> "+value);
+            }
+
+            /**
+             * The <code>fireBeforeBitWrite()</code> method is called before the data address is written by the
+             * program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param state     the state of the simulation
+             * @param ioreg_num the number of the IO register being read
+             * @param value     the value being written to the memory location
+             */
+            public void fireBeforeBitWrite(State state, int ioreg_num, int bit, boolean value) {
+                printer.println(name+"["+bit+"] <=   "+value);
             }
 
             /**
@@ -122,13 +144,22 @@ public class IORegMonitor extends MonitorFactory {
                 printer.println(name+"    <=   "+render(value));
             }
 
-            public void fireAfterRead(State state, int data_addr, byte val) {
-                printer.println(name+"      -> "+render(val));
-            }
-
             private String render(byte value) {
                 return StringUtil.toHex(value, 2)+" "+StringUtil.toBin(value, 8);
             }
+
+            /**
+             * The <code>fireAfterRead()</code> method is called after the data address is read by the program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param state     the state of the simulation
+             * @param data_addr the address of the data being referenced
+             * @param value     the value of the memory location being read
+             */
+            public void fireAfterRead(State state, int data_addr, byte value) {
+                printer.println(name+"      -> "+render(value));
+            }
+
         }
     }
 

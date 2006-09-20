@@ -34,7 +34,7 @@
 
 package avrora.sim.state;
 
-import avrora.sim.util.TransactionalList;
+import cck.util.Util;
 
 /**
  * The <code>Register</code> class represents a register of a certain
@@ -49,15 +49,13 @@ import avrora.sim.util.TransactionalList;
  *
  * @author Ben L. Titzer
  */
-public class Register implements RegisterView {
-
-    public final int width;
-    public final int mask;
+public class Register {
 
     protected int value;
+    protected final int mask;
 
-    protected VolatileBehavior behavior;
-    protected TransactionalList watches;
+    protected NotifyItem notifyHead;
+    protected NotifyItem notifyTail;
 
     /**
      * The constructor for the <code>Register</code> class creates a new register
@@ -65,34 +63,29 @@ public class Register implements RegisterView {
      * @param w the width of the register in bits
      */
     public Register(int w) {
-        width = w;
-        mask = ~(-1 << w);
+        mask = -1 << w;
     }
 
     /**
-     * The <code>Watch</code> interface allows clients to add instrumentation
-     * to a register. The object implementing the watch is then consulted
+     * The <code>Notification</code> interface allows clients to add instrumentation
+     * to a register. The object implementing the notification is then consulted
      * when reads and writes to the register occur.
      *
+     * </p>
+     * Notifications are used to implement registers that have subfields (i.e.
+     * they contain one or more subregisters with separate roles. A special
+     * notification that extracts the appropriate bits and writes them to
+     * the subfield accomplishes this.
      */
-    public interface Watch {
-        public void fireAfterWrite(Register r, int oldv, int newv);
-        public void fireAfterRead(Register r, int oldv, int newv);
-
-        public static class Empty implements Watch {
-            public void fireAfterWrite(Register r, int oldv, int newv) {
-                // do nothing.
-            }
-            public void fireAfterRead(Register r, int oldv, int newv) {
-                // do nothing.
-            }
-        }
+    public interface Notification {
+        public void written(Register r, int oldv, int newv);
+        public void read(Register r, int oldv);
     }
 
     protected static class NotifyItem {
-        protected final Watch notify;
+        protected final Notification notify;
         protected NotifyItem next;
-        protected NotifyItem(Watch n, NotifyItem nx) {
+        protected NotifyItem(Notification n, NotifyItem nx) {
             notify = n;
             next = nx;
         }
@@ -100,90 +93,91 @@ public class Register implements RegisterView {
 
     /**
      * The <code>write()</code> method writes a value to the register. This method
-     * will notify any objects that have been added to the watch list.
+     * will notify any objects that have been added to the notification list.
+     * The write is considered to be complete before any notifications occur.
      *
-     * @param newv the value to write to this register
+     * @param val the value to write to this register
      */
-    public void write(int newv) {
-        int oldv = value;
-        newv = newv & mask;
-        value = (behavior != null ? mask & behavior.write(value, newv) : newv);
-        if ( watches != null ) {
-            // call instrumentation code.
-            watches.beginTransaction();
-            for ( TransactionalList.Link n = watches.getHead(); n != null; n = n.next ) {
-                ((Watch)n.object).fireAfterWrite(this, oldv, newv);
-            }
-            watches.endTransaction();
-        }
+    public void write(int val) {
+        int oldv = value; // cache the old value
+        value = val = val & mask; // mask off out-of-range bits
+        for ( NotifyItem n = notifyHead; n != null; n = n.next )
+            n.notify.written(this, oldv, val);
     }
+
     /**
      * The <code>read()</code> method reads a value from this register. This method
-     * will trigger calls to an objects in the watch list.
+     * will trigger calls to an objects in the notification list.
      * @return the value in this register
      */
     public int read() {
-        int oldv = value;
-        int newv = value;
-        if ( behavior != null ) value = newv = mask & behavior.read(value);
-        if ( watches != null ) {
-            // call instrumentation code.
-            watches.beginTransaction();
-            for ( TransactionalList.Link n = watches.getHead(); n != null; n = n.next ) {
-                ((Watch)n.object).fireAfterRead(this, oldv, newv);
-            }
-            watches.endTransaction();
-        }
-        return value;
+        int val = value;
+        for ( NotifyItem n = notifyHead; n != null; n = n.next )
+            n.notify.read(this, val);
+        return val;
     }
 
     /**
-     * The <code>setBehavior()</code> method sets the behavior of this register.
-     * @param b the behavior for this register
-     */
-    public void setBehavior(VolatileBehavior b) {
-        behavior = b;
-    }
-
-    /**
-     * The <code>setValue()</code> method sets the value of this register, without triggering
+     * The <code>set()</code> method sets the value of this register, without triggering
      * the notification of any objects in the notification list. This interface should not
      * be used by client (user) code, but is intended for subfields and devices using
      * subfields.
      * @param val the value to which to set the register
      */
-    public void setValue(int val) {
+    public void set(int val) {
         value = val & mask;
     }
 
     /**
-     * The <code>getValue()</code> method retrieves the value from this register, without triggering
+     * The <code>get()</code> method retrieves the value from this register, without triggering
      * the notification of any objects in the notification list. This interface should be used
      * by client code (if necessary at all) to avoid recursive triggering of notifications.
      * @return the value of this register
      */
-    public int getValue() {
+    public int get() {
         return value;
     }
 
     /**
-     * The <code>getWidth()</code> method returns the width of this register (or register view)
-     * in bits.
-     * @return the width of this view in bits.
+     * The <code>notifyFirst()</code> method adds a new object implementing the <code>Notification</code>
+     * interface to the notification list. This method will always add the object to the beginning
+     * of the list, ensuring the notification will occur before any notifications already present
+     * in the list. This method does not check for duplicates; a duplicate entry in the list will
+     * result in multiple repeated calls to the object notification.
+     *
+     * @param n the notification to add to this list
      */
-    public int getWidth() {
-        return width;
-    }
-
-    public void addWatch(Watch w) {
-        if ( watches == null ) {
-            watches = new TransactionalList();
+    public void notifyFirst(Notification n) {
+        if ( notifyHead == null ) {
+            notifyHead = notifyTail = new NotifyItem(n, null);
+        } else {
+            notifyHead = new NotifyItem(n, notifyHead);
         }
-        watches.add(w);
     }
 
-    public void removeWatch(Watch w) {
-        watches.remove(w);
-        if ( watches.isEmpty() ) watches = null;
+    /**
+     * The <code>notifyLast()</code> method adds a new object implementing the <code>Notification</code>
+     * interface to the notification list. This method will always add the object to the end
+     * of the list, ensuring the notification will occur after any notifications already present
+     * in the list. This method does not check for duplicates; a duplicate entry in the list will
+     * result in multiple repeated calls to the object notification.
+     *
+     * @param n the notification to add to this list
+     */
+    public void notifyLast(Notification n) {
+        if ( notifyHead == null ) {
+            notifyHead = notifyTail = new NotifyItem(n, null);
+        } else {
+            notifyTail.next = new NotifyItem(n, null);
+            notifyTail = notifyTail.next;
+        }
+    }
+
+    /**
+     * The <code>removeNotify()</code> method removes a notification from this list.
+     * @param n the notification to remove from this list
+     */
+    public void removeNotify(Notification n) {
+        throw Util.unimplemented();
     }
 }

@@ -33,9 +33,9 @@
 package avrora.sim;
 
 import avrora.arch.AbstractInstr;
+import avrora.arch.avr.AVRProperties;
 import avrora.arch.legacy.*;
 import avrora.core.Program;
-import avrora.arch.avr.AVRProperties;
 import avrora.sim.mcu.RegisterSet;
 import avrora.sim.util.*;
 import cck.util.Arithmetic;

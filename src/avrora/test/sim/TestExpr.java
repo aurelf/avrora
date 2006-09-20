@@ -34,8 +34,8 @@
 
 package avrora.test.sim;
 
-import avrora.core.SourceMapping;
 import avrora.core.Program;
+import avrora.core.SourceMapping;
 
 /**
  * @author Ben L. Titzer

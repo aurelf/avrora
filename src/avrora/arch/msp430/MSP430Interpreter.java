@@ -36,12 +36,12 @@ package avrora.arch.msp430;
 
 import avrora.core.Program;
 import avrora.sim.*;
+import avrora.sim.mcu.MCUProperties;
+import avrora.sim.mcu.RegisterSet;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.SimUtil;
-import avrora.sim.mcu.RegisterSet;
-import avrora.sim.mcu.MCUProperties;
-import cck.util.Util;
 import cck.text.StringUtil;
+import cck.util.Util;
 
 /**
  * @author Ben L. Titzer

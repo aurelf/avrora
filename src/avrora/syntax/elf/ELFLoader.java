@@ -34,10 +34,7 @@ package avrora.syntax.elf;
 
 import avrora.Main;
 import avrora.arch.*;
-import avrora.core.Program;
-import avrora.core.ProgramReader;
-import avrora.core.SourceMapping;
-import avrora.core.LabelMapping;
+import avrora.core.*;
 import cck.text.*;
 import cck.util.Option;
 import cck.util.Util;

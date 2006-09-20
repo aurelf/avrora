@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.syntax.atmel;
+package avrora.syntax.gas;
 
 import avrora.arch.legacy.LegacyArchitecture;
 import avrora.core.Program;
@@ -41,51 +41,48 @@ import java.io.File;
 import java.io.FileInputStream;
 
 /**
- * The <code>AtmelProgramReader</code> is an implementation of the <code>ProgramReader</code> that reads
- * source assembly files in the Atmel style syntax. It can handle only one file at a time.
+ * The <code>GASProgramReader</code> is an implementation of the <code>ProgramReader</code> that reads a
+ * source program in the GAS-style syntax and builds a program from it.
  *
  * @author Ben L. Titzer
  */
-public class AtmelProgramReader extends ProgramReader {
+public class GASProgramReader extends ProgramReader {
 
     /**
-     * The <code>read()</code> method takes the command line arguments passed to main and interprets it as a
-     * list of filenames to load. It expects only one filename to be present. It will load, parse, and
-     * simplify the program and return it.
+     * The <code>read()</code> method accepts a list of filenames as strings, loads them, resolves symbols,
+     * and produces a simplified program.
      *
-     * @param args the string arguments representing the names of the files to read
-     * @return a program obtained by parsing and building the file
-     * @throws avrora.syntax.atmel.ParseException
-     *                             if the file does not parse correctly
-     * @throws java.io.IOException if there is a problem reading from the files
+     * @param args the string names of the files to load
+     * @return a program built from the specified source files
+     * @throws avrora.syntax.gas.ParseException
+     *                             if a parse error is encountered
+     * @throws java.io.IOException if there is a problem reading from one of the files
      */
     public Program read(String[] args) throws Exception {
         if (args.length == 0)
             Util.userError("no input files");
+        // TODO: handle multiple GAS files and link them
         if (args.length != 1)
-            Util.userError("input type \"atmel\" accepts only one file at a time.");
+            Util.userError("input type \"gas\" accepts only one file at a time.");
 
         if ( getArchitecture() != LegacyArchitecture.INSTANCE )
-            Util.userError("input type  \"atmel\" parses only the \"legacy\" architecture.");
+            Util.userError("input type  \"gas\" parses only the \"legacy\" architecture.");
 
         File f = new File(args[0]);
-        Module module = new Module(false, false);
+        Module module = new Module(true, true);
         FileInputStream fis = new FileInputStream(f);
-        //Status.begin("Parsing");
-        AtmelParser parser = new AtmelParser(fis, module, f.getName());
+        GASParser parser = new GASParser(fis, module, f.getName());
         parser.Module();
-        //Status.success();
-        //Status.begin("Building");
         Program p = module.build();
-        //Status.success();
         addIndirectEdges(p);
         return p;
     }
 
-    public AtmelProgramReader() {
-        super("The \"atmel\" input format reads programs that are written in " +
-                "assembly language in the format supported by the Atmel assembler. " +
-                "Nearly all of the directives are supported, except macros.");
+    public GASProgramReader() {
+        super("The \"gas\" input format reads programs that are written in " +
+                "GAS format assembly language. A subset of the directives and " +
+                "syntax is supported. No linking functionality is currently " +
+                "implemented; all symbol references must be defined in one file. ");
     }
 
 }

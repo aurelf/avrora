@@ -51,7 +51,7 @@ public class ArchitectureRegistry {
 
     private static ClassMap archMap;
 
-    public static synchronized void addArchitectures() {
+    public static void addArchitectures() {
         if (archMap == null) {
             archMap = new ClassMap("Architecture", AbstractArchitecture.class);
             //-- DEFAULT ACTIONS
@@ -61,7 +61,7 @@ public class ArchitectureRegistry {
 
             // plug in a new help category for simulations accesible with "-help simulations"
             HelpCategory hc = new HelpCategory("architectures", "Help for supported instruction set architectures.");
-            hc.addOptionValueSection("ARCHITECTURES",
+            Defaults.addOptionSection(hc, "ARCHITECTURES",
                     "When running a simulation or other program analysis tool, Avrora derives information " +
                     "about the CPU architecture from an internal specification. In order to select the appropriate " +
                     "architecture, each one is named and can be selected with command line options.",

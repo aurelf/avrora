@@ -36,7 +36,6 @@ package avrora.sim.mcu;
 
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
-import avrora.sim.output.SimPrinter;
 import avrora.sim.clock.Clock;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.platform.Platform;
@@ -51,7 +50,7 @@ public abstract class DefaultMCU implements Microcontroller {
     protected final RegisterSet registers;
     protected Platform platform;
     protected Simulator simulator;
-    protected SimPrinter pinPrinter;
+    protected SimUtil.SimPrinter pinPrinter;
     protected final ClockDomain clockDomain;
     protected final FiniteStateMachine sleepState;
 
@@ -156,11 +155,11 @@ public abstract class DefaultMCU implements Microcontroller {
             number = num;
         }
 
-        public void connectOutput(Output o) {
+        public void connect(Output o) {
             output = o;
         }
 
-        public void connectInput(Input i) {
+        public void connect(Input i) {
             input = i;
         }
 

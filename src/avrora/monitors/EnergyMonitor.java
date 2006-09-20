@@ -46,9 +46,10 @@ import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
 import avrora.sim.util.SimUtil;
 import cck.text.Terminal;
-import cck.util.*;
-import java.util.Iterator;
+import cck.util.Option;
+import cck.util.Util;
 import java.io.*;
+import java.util.Iterator;
 
 /**
  * energy monitor implementation this class handles logging and

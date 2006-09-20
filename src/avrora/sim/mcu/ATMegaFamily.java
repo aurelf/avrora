@@ -35,7 +35,6 @@ package avrora.sim.mcu;
 import avrora.arch.avr.AVRProperties;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
-import avrora.sim.state.BooleanView;
 import cck.util.Arithmetic;
 
 /**
@@ -79,14 +78,14 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
 
         public void invoke(int inum) {
-            if (autoclear) {
+            if ( autoclear ) {
                 val = false;
                 interpreter.setPosted(inum, false);
             }
         }
     }
 
-    // TODO: migrate flag register to use InterruptFlag
+    // TODO: migrate flag register to use FlagBit
     public static class FlagRegister extends RWRegister {
 
         class Notification implements InterruptTable.Notification {
@@ -117,22 +116,23 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             mapping = map;
             interpreter = interp;
             InterruptTable it = interpreter.getInterruptTable();
-            for (int cntr = 0; cntr < 8; cntr++) {
-                if (mapping[cntr] > 0) it.registerInternalNotification(new Notification(cntr), mapping[cntr]);
+            for ( int cntr = 0; cntr < 8; cntr++ ) {
+                if ( mapping[cntr] > 0 )
+                    it.registerInternalNotification(new Notification(cntr), mapping[cntr]);
             }
         }
 
         public void write(byte val) {
-            value = (byte) (value & ~val);
-            for (int cntr = 0; cntr < 8; cntr++) {
+            value = (byte)(value & ~val);
+            for ( int cntr = 0; cntr < 8; cntr++ ) {
                 // do nothing for zero bits
-                if (!Arithmetic.getBit(val, cntr)) continue;
+                if ( !Arithmetic.getBit(val, cntr) ) continue;
                 setPosted(cntr, false);
             }
         }
 
         private void setPosted(int inum, boolean p) {
-            if (mapping[inum] > 0) interpreter.setPosted(mapping[inum], p);
+            if ( mapping[inum] > 0 ) interpreter.setPosted(mapping[inum], p);
         }
 
         public void flagBit(int bit) {
@@ -145,6 +145,12 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             setPosted(bit, false);
         }
 
+        public void writeBit(int bit, boolean val) {
+            if (val) {
+                value = Arithmetic.clearBit(value, bit);
+                setPosted(bit, false);
+            }
+        }
     }
 
     public static class MaskRegister extends RWRegister {
@@ -163,13 +169,18 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
         public void write(byte val) {
             value = val;
-            for (int cntr = 0; cntr < 8; cntr++) {
+            for ( int cntr = 0; cntr < 8; cntr++ ) {
                 setEnabled(cntr, Arithmetic.getBit(val, cntr));
             }
         }
 
         void setEnabled(int cntr, boolean e) {
-            if (mapping[cntr] > 0) interpreter.setEnabled(mapping[cntr], e);
+            if ( mapping[cntr] > 0 ) interpreter.setEnabled(mapping[cntr], e);
+        }
+
+        public void writeBit(int bit, boolean val) {
+            value = Arithmetic.setBit(value, bit, val);
+            setEnabled(bit, val);
         }
 
     }
@@ -192,6 +203,10 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             value = val;
         }
 
+        public void writeBit(int bit, boolean val) {
+            pins[bit].setOutputDir(val);
+            value = Arithmetic.setBit(value, bit, val);
+        }
     }
 
     /**
@@ -211,6 +226,10 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             value = val;
         }
 
+        public void writeBit(int bit, boolean val) {
+            pins[bit].write(val);
+            value = Arithmetic.setBit(value, bit, val);
+        }
     }
 
     /**
@@ -234,13 +253,20 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             value |= pins[5].read() ? 1 << 5 : 0;
             value |= pins[6].read() ? 1 << 6 : 0;
             value |= pins[7].read() ? 1 << 7 : 0;
-            return (byte) value;
+            return (byte)value;
+        }
+
+        public boolean readBit(int bit) {
+            return pins[bit].read();
         }
 
         public void write(byte val) {
             // ignore writes.
         }
 
+        public void writeBit(int num, boolean val) {
+            // ignore writes
+        }
     }
 
     protected ATMegaFamily(ClockDomain cd, AVRProperties p, FiniteStateMachine fsm) {
@@ -267,8 +293,13 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             static final int TCR0UB = 0;
 
             public void write(byte val) {
-                super.write((byte) (0xf & val));
+                super.write((byte)(0xf & val));
                 decode(val);
+            }
+
+            public void writeBit(int bit, boolean val) {
+                super.writeBit(bit, val);
+                decode(value);
             }
 
             protected void decode(byte val) {
@@ -282,7 +313,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
     }
 
-    protected static final int[] periods2 = {0, 1, 8, 64, 256, 1024, 0, 0};
+    protected static final int[] periods2 = {0, 1, 8, 64, 256, 1024};
 
     /**
      * <code>Timer2</code> is an additional 8-bit timer on the ATMega128. It is not available in
@@ -306,12 +337,12 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
             OCIEnA = 4;
             OCIEnB = 3;
-            OCIEnC = 0;// on ETIMSK
+            OCIEnC = 0; // on ETIMSK
             TOIEn = 2;
             TOVn = 2;
             OCFnA = 4;
             OCFnB = 3;
-            OCFnC = 0;// on ETIFR
+            OCFnC = 0; // on ETIFR
             ICFn = 5;
             periods = periods1;
         }
@@ -336,12 +367,12 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             // bit numbers
             OCIEnA = 4;
             OCIEnB = 3;
-            OCIEnC = 1;// on ETIMSK
+            OCIEnC = 1; // on ETIMSK
             TOIEn = 2;
             TOVn = 2;
             OCFnA = 4;
             OCFnB = 3;
-            OCFnC = 1;// on ETIFR
+            OCFnC = 1; // on ETIFR
             ICFn = 5;
 
             periods = periods3;
@@ -349,8 +380,8 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
         protected Timer3(int compareUnits) {
             super(3, compareUnits, ATMegaFamily.this);
-            xTIMSK_reg = (ATMegaFamily.MaskRegister) microcontroller.getIOReg("ETIMSK");
-            xTIFR_reg = (ATMegaFamily.FlagRegister) microcontroller.getIOReg("ETIFR");
+            xTIMSK_reg = (ATMegaFamily.MaskRegister)microcontroller.getIOReg("ETIMSK");
+            xTIFR_reg = (ATMegaFamily.FlagRegister)microcontroller.getIOReg("ETIFR");
         }
 
     }
@@ -361,27 +392,25 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
      * and a direction register for setting whether each pin in the port is input or output. This method
      * is a utility to build these registers for each port given the last character of the name (e.g. 'A' in
      * PORTA).
-     *
      * @param p the last character of the port name
      */
     protected void buildPort(char p) {
-        Pin[] portPins = new Pin[8];
+        ATMegaFamily.Pin[] portPins = new ATMegaFamily.Pin[8];
         for (int cntr = 0; cntr < 8; cntr++)
-            portPins[cntr] = (Pin) getPin("P" + p + cntr);
-        installIOReg("PORT" + p, new PortRegister(portPins));
-        installIOReg("DDR" + p, new DirectionRegister(portPins));
-        installIOReg("PIN" + p, new PinRegister(portPins));
+            portPins[cntr] = (ATMegaFamily.Pin)getPin("P" + p + cntr);
+        installIOReg("PORT"+p, new PortRegister(portPins));
+        installIOReg("DDR"+p, new DirectionRegister(portPins));
+        installIOReg("PIN"+p, new PinRegister(portPins));
     }
 
     /**
      * The <code>buildInterruptRange()</code> method creates the IO registers and <code>MaskableInterrupt</code>
      * instances corresponding to a complete range of interrupts.
-     *
      * @param increasing a flag indicating that the vector numbers increase with bit number of the IO register
      * @param maskRegNum the IO register number of the mask register
      * @param flagRegNum the IO register number of the flag register
-     * @param baseVect   the beginning vector of this range of interrupts
-     * @param numVects   the number of vectors in this range
+     * @param baseVect the beginning vector of this range of interrupts
+     * @param numVects the number of vectors in this range
      * @return a flag register that corresponds to the interrupt range
      */
     protected FlagRegister buildInterruptRange(boolean increasing, String maskRegNum, String flagRegNum, int baseVect, int numVects) {
@@ -410,50 +439,10 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
     /**
      * The getEIFR_reg() method is used to access the external interrupt flag register.
-     *
      * @return the <code>ActiveRegister</code> object corresponding to the EIFR IO register
      */
     public FlagRegister getEIFR_reg() {
         return EIFR_reg;
     }
 
-    public static class InterruptFlag implements InterruptTable.Notification {
-        final AtmelInterpreter interpreter;
-        final boolean autoclear;
-        final int inum;
-        final BooleanView view;
-
-        public InterruptFlag(AtmelInterpreter i, boolean auto, int in, BooleanView b) {
-            interpreter = i;
-            autoclear = auto;
-            inum = in;
-            interpreter.getInterruptTable().registerInternalNotification(this, inum);
-            view = b;
-        }
-
-        public void flag(boolean flag) {
-            view.setValue(flag);
-            interpreter.setPosted(inum, flag);
-        }
-
-        public boolean get() {
-            return view.getValue();
-        }
-
-        public void force(int inum) {
-            view.setValue(true);
-            interpreter.setPosted(inum, true);
-        }
-
-        public void sync() {
-            interpreter.setPosted(inum, view.getValue());
-        }
-
-        public void invoke(int inum) {
-            if (autoclear) {
-                view.setValue(false);
-                interpreter.setPosted(inum, false);
-            }
-        }
-    }
 }

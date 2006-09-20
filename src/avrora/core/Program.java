@@ -32,8 +32,8 @@
 
 package avrora.core;
 
-import avrora.arch.legacy.LegacyInstr;
 import avrora.arch.*;
+import avrora.arch.legacy.LegacyInstr;
 import cck.text.StringUtil;
 import cck.util.Util;
 import java.util.*;

@@ -45,12 +45,12 @@ public class RW16Register { // TODO implements ActiveRegister
     public short value;
 
     /**
-     * The <code>read()</code> method reads the 16-bit value of the IO register as an <code>int</code>. For
+     * The <code>read16()</code> method reads the 16-bit value of the IO register as an <code>int</code>. For
      * simple <code>RWRegister</code> instances, this simply returns the internally stored value.
      *
      * @return the value of the register as a byte
      */
-    public int read() {
+    public int read16() {
         return (int)value & 0xffff;
     }
 

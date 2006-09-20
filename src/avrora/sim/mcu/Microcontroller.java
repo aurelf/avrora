@@ -59,6 +59,18 @@ public interface Microcontroller {
          */
         public interface Input {
             /**
+             * The <code>enableInput()</code> method is called by the simulator when the program changes the
+             * direction of the pin. The device connected to this pin can then take action accordingly.
+             */
+            public void enableInput();
+
+            /**
+             * The <code>disableInput()</code> method is called by the simulator when the program changes the
+             * direction of the pin. The device connected to this pin can then take action accordingly.
+             */
+            public void disableInput();
+
+            /**
              * The <code>read()</code> method is called by the simulator when the program attempts to read the
              * level of the pin. The device can then compute and return the current level of the pin.
              *
@@ -73,6 +85,18 @@ public interface Microcontroller {
          * interface will be called.
          */
         public interface Output {
+            /**
+             * The <code>enableOutput()</code> method is called by the simulator when the program changes the
+             * direction of the pin. The device connected to this pin can then take action accordingly.
+             */
+            public void enableOutput();
+
+            /**
+             * The <code>disableOutput()</code> method is called by the simulator when the program changes the
+             * direction of the pin. The device connected to this pin can then take action accordingly.
+             */
+            public void disableOutput();
+
             /**
              * The <code>write()</code> method is called by the simulator when the program writes a logical
              * level to the pin. The device can then take the appropriate action.
@@ -89,7 +113,7 @@ public interface Microcontroller {
          *
          * @param i the <code>Input</code> instance to connect to
          */
-        public void connectInput(Input i);
+        public void connect(Input i);
 
         /**
          * The <code>connect()</code> method will connect this pin to the specified output. Attempts by the
@@ -98,7 +122,17 @@ public interface Microcontroller {
          *
          * @param o the <code>Output</code> instance to connect to
          */
-        public void connectOutput(Output o);
+        public void connect(Output o);
+    }
+
+    public abstract class InputPin implements Pin.Input {
+        public void enableInput() {}
+        public void disableInput() {}
+    }
+
+    public abstract class OutputPin implements Pin.Output {
+        public void enableOutput() {}
+        public void disableOutput() {}
     }
 
     /**
@@ -118,7 +152,6 @@ public interface Microcontroller {
 
     /**
      * The <code>setPlatform()</code> method sets the platform instance that contains this microcontroller.
-     * @param p the new platform for this microcontroller
      */
     public void setPlatform(Platform p);
 

@@ -33,6 +33,7 @@
 package avrora.monitors;
 
 import avrora.arch.AbstractInstr;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.*;
 import avrora.sim.Simulator;
 import avrora.sim.State;
@@ -50,12 +51,12 @@ import java.util.Iterator;
  */
 public class TraceMonitor extends MonitorFactory {
 
-    final Option.List FROMTO = newOptionList("trace-from", "",
+    final Option.List FROMTO = options.newOptionList("trace-from", "",
             "The \"trace-from\" option specifies the list of program point pairs for which " +
             "to enable the tracing. The tracing will be enabled when the first point is entered " +
             "and be disabled when the second point is reached. Nesting of multiple point pairs " +
             "is handled correctly.");
-    final Option.Long TIME = newOption("trace-start", 0,
+    final Option.Long TIME = options.newOption("trace-start", 0,
             "The \"trace-start\" option specifies the time to start the instruction trace, in " +
             "clock cycles. This option can be useful for diagnosing problems in long simulations " +
             "that happens after a given time is reached.");
@@ -65,7 +66,7 @@ public class TraceMonitor extends MonitorFactory {
      * <code>ProgramProfiler</code> instance which is a probe that is executed after every instruction that
      * collects execution counts for every instruction in the program.
      */
-    public class Mon implements Monitor {
+    public class Mon implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Program program;
         public final GlobalProbe PROBE;
@@ -97,7 +98,7 @@ public class TraceMonitor extends MonitorFactory {
                 traceNum++;
                 if ( nesting == 0 ) {
                     print("trace ("+pair+") begin: "+traceNum+" --------------------------");
-                    print(s, s.getInstr(addr));
+                    print(s, ((LegacyState)s).getInstr(addr));
                     simulator.insertProbe(PROBE);
                 } else {
                     print("nested ("+pair+") begin: "+traceNum+" --------------------------");
@@ -175,25 +176,25 @@ public class TraceMonitor extends MonitorFactory {
             Iterator i = FROMTO.get().iterator();
             while (i.hasNext()) {
                 String str = (String)i.next();
-                int ind = str.indexOf(':');
+                int ind = str.indexOf(":");
                 if (ind <= 0)
                     throw Util.failure("invalid address format: " + StringUtil.quote(str));
                 String src = str.substring(0, ind);
                 String dst = str.substring(ind + 1);
 
-                SourceMapping.Location loc = getLocation(src);
-                SourceMapping.Location tar = getLocation(dst);
+                LabelMapping.Location loc = getLocation(src);
+                LabelMapping.Location tar = getLocation(dst);
 
-                addPair(loc.lma_addr, tar.lma_addr);
+                addPair(loc.address, tar.address);
             }
         }
 
-        private SourceMapping.Location getLocation(String src) {
+        private LabelMapping.Location getLocation(String src) {
             SourceMapping lm = program.getSourceMapping();
             SourceMapping.Location loc = lm.getLocation(src);
             if ( loc == null )
                 Util.userError("Invalid program address: ", src);
-            if ( program.readInstr(loc.lma_addr) == null )
+            if ( program.readInstr(loc.address) == null )
                 Util.userError("Invalid program address: ", src);
             return loc;
         }
@@ -212,13 +213,11 @@ public class TraceMonitor extends MonitorFactory {
          * number of executions of each instruction, compressed for basic blocks.
          */
         public void report() {
-            TermUtil.printSeparator("Trace results for node "+simulator.getID());
             long cycles = simulator.getClock().getCount();
             float ipc = count / (float)cycles;
             TermUtil.reportQuantity("Instructions executed", count, "");
             TermUtil.reportQuantity("Program throughput", ipc, "instrs/cycle");
             TermUtil.reportQuantity("Program throughput", ipc * simulator.getClock().getHZ() / 1000000, "mips");
-            Terminal.nextln();
         }
     }
 

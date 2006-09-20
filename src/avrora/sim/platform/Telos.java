@@ -39,6 +39,7 @@ import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.mcu.Microcontroller;
+import avrora.sim.radio.Radio;
 import cck.text.Terminal;
 
 /**
@@ -67,6 +68,8 @@ public class Telos extends Platform {
     }
 
     protected final Simulator sim;
+
+    protected Radio radio;
 
     protected Telos(Microcontroller m) {
         super(m);

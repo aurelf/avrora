@@ -34,17 +34,18 @@
 
 package avrora.syntax.raw;
 
+import avrora.Main;
+import avrora.arch.AbstractArchitecture;
+import avrora.core.Program;
+import avrora.core.ProgramReader;
 import cck.text.StringUtil;
-import cck.util.Util;
 import cck.util.Arithmetic;
+import cck.util.Util;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.*;
-import java.io.*;
-import avrora.core.ProgramReader;
-import avrora.core.Program;
-import avrora.arch.*;
-import avrora.Main;
 
 /**
  * @author Ben L. Titzer

@@ -54,12 +54,12 @@ import java.util.List;
  */
 public class MemoryMonitor extends MonitorFactory {
 
-    public final Option.List LOCATIONS = newOptionList("locations", "",
+    public final Option.List LOCATIONS = options.newOptionList("locations", "",
             "This option, when set, specifies a list of memory locations to instrument. When " +
             "this option is not specified, the monitor will instrument all reads and writes to " +
             "memory.");
 
-    public final Option.Bool LOWER_ADDRESS = newOption("low-addresses", false,
+    public final Option.Bool LOWER_ADDRESS = options.newOption("low-addresses", false,
             "When this option is enabled, the memory monitor will be inserted for lower addresses, " +
             "recording reads and writes to the general purpose registers on the AVR and also IO registers " +
             "through direct and indirect memory reads and writes.");
@@ -81,7 +81,7 @@ public class MemoryMonitor extends MonitorFactory {
             if ( LOWER_ADDRESS.get() ) {
                 memstart = 0;
             } else {
-                memstart = LegacyState.IOREG_BASE + p.ioreg_size;
+                memstart = LegacyState.NUM_REGS + p.ioreg_size;
             }
             memprofile = new MemoryProfiler(ramsize);
 
@@ -90,14 +90,14 @@ public class MemoryMonitor extends MonitorFactory {
 
         private void insertWatches() {
 
-            if (!LOCATIONS.get().isEmpty() ) {
+            if ( LOCATIONS.get().size() > 0 ) {
                 // instrument only the locations specified
                 List l = LOCATIONS.get();
                 List loc = SimAction.getLocationList(program, l);
                 Iterator i = loc.iterator();
                 while ( i.hasNext() ) {
                     SourceMapping.Location location = (SourceMapping.Location)i.next();
-                    simulator.insertWatch(memprofile, location.vma_addr - 0x800000);
+                    simulator.insertWatch(memprofile, location.address);
                 }
             } else {
                 // instrument the entire memory
@@ -108,7 +108,7 @@ public class MemoryMonitor extends MonitorFactory {
         }
 
         public void report() {
-            TermUtil.printSeparator("Memory profiling results for node "+simulator.getID());
+            TermUtil.printSeparator(Terminal.MAXLINE, "Memory profiling results");
             Terminal.printGreen("   Address     Reads               Writes");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
@@ -146,7 +146,6 @@ public class MemoryMonitor extends MonitorFactory {
 
             }
             printLine("total ", (long)rtotal, rtotal, (long)wtotal, wtotal);
-            Terminal.nextln();
         }
 
         private void printLine(String addr, long r, double rtotal, long w, double wtotal) {
