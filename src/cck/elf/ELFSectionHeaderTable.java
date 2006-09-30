@@ -33,6 +33,9 @@
  */
 package cck.elf;
 
+import cck.elf.ELFDataInputStream;
+import cck.elf.ELFHeader;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 

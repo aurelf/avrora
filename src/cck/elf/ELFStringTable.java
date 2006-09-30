@@ -33,6 +33,9 @@
  */
 package cck.elf;
 
+import cck.elf.ELFHeader;
+import cck.elf.ELFSectionHeaderTable;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;

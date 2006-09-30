@@ -61,7 +61,7 @@ public class ELFDumpAction extends Action {
      * appropriate name and help string.
      */
     public ELFDumpAction() {
-        super(HELP);
+        super(ELFDumpAction.HELP);
     }
 
     /**

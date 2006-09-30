@@ -44,7 +44,7 @@ import avrora.sim.mcu.*;
 import avrora.sim.platform.*;
 import avrora.sim.types.*;
 import avrora.syntax.atmel.AtmelProgramReader;
-import avrora.syntax.elf.ELFLoader;
+import avrora.syntax.elf.ELFParser;
 import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.objdump.*;
 import avrora.syntax.raw.RAWReader;
@@ -143,7 +143,7 @@ public class Defaults {
             inputs.addClass("atmel", AtmelProgramReader.class);
             inputs.addClass("objdump", ObjDumpProgramReader.class);
             inputs.addClass("odpp", ObjDump2ProgramReader.class);
-            inputs.addClass("elf", ELFLoader.class);
+            inputs.addClass("elf", ELFParser.class);
 
             HelpCategory hc = new HelpCategory("inputs", "Help for the supported program input formats.");
             addOptionSection(hc, "INPUT FORMATS", "The input format of the program is specified with the \"-input\" " +
@@ -169,6 +169,7 @@ public class Defaults {
             actions.addClass("gui", GUIAction.class);
             actions.addClass("isea", ISEAAction.class);
             actions.addClass("odpp", ODPPAction.class);
+            actions.addClass("elf-dump", ELFDumpAction.class);
 
             // plug in a new help category for actions accesible with "-help actions"
             HelpCategory hc = new HelpCategory("actions", "Help for Avrora actions.");
@@ -428,7 +429,7 @@ public class Defaults {
             else if (".odpp".equals(extension))
                 reader = new ObjDump2ProgramReader();
             else if (".elf".equals(extension))
-                reader = new ELFLoader();
+                reader = new ELFParser();
 
             if ( reader == null ) {
                 Util.userError("file extension " + StringUtil.quote(extension) + " unknown");
