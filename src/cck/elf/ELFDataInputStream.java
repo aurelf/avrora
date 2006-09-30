@@ -31,7 +31,7 @@
  *
  * Created Sep 5, 2005
  */
-package avrora.syntax.elf;
+package cck.elf;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

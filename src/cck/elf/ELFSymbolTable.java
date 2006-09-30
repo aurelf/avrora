@@ -31,7 +31,12 @@
  *
  * Created Sep 5, 2005
  */
-package avrora.syntax.elf;
+package cck.elf;
+
+import cck.elf.ELFDataInputStream;
+import cck.elf.ELFHeader;
+import cck.elf.ELFSectionHeaderTable;
+import cck.elf.ELFStringTable;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -60,12 +65,12 @@ public class ELFSymbolTable {
     public static final int STB_HIPROC = 15;
 
     public class Entry {
-        int st_name;
-        int st_value;
-        int st_size;
-        int st_info;
-        int st_other;
-        short st_shndx;
+        public int st_name;
+        public int st_value;
+        public int st_size;
+        public int st_info;
+        public int st_other;
+        public short st_shndx;
 
         public String getBinding() {
             switch ( (st_info >> 4) & 0xf ) {
@@ -102,9 +107,9 @@ public class ELFSymbolTable {
 
     }
 
-    protected final ELFHeader header;
-    protected final ELFSectionHeaderTable.Entry32 entry;
-    protected final Entry[] entries;
+    public final ELFHeader header;
+    public final ELFSectionHeaderTable.Entry32 entry;
+    public final Entry[] entries;
     protected ELFStringTable strtab;
 
     /**

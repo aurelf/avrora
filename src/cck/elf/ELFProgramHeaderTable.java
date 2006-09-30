@@ -31,10 +31,13 @@
  *
  * Created Sep 5, 2005
  */
-package avrora.syntax.elf;
+package cck.elf;
 
 import cck.text.StringUtil;
 import cck.util.Util;
+import cck.elf.ELFDataInputStream;
+import cck.elf.ELFHeader;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -97,8 +100,8 @@ public class ELFProgramHeaderTable {
         }
     }
 
-    protected final ELFHeader header;
-    protected final Entry32[] entries;
+    public final ELFHeader header;
+    public final Entry32[] entries;
 
     /**
      * The constructor for the <code>ELFProgramHeaderTable</code> class creates a new instance

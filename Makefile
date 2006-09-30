@@ -16,7 +16,7 @@ jintgen:
 	javac5 -d bin `find src/jintgen src/cck -name '*.java'`
 
 clean:
-	rm -rf `find bin -name '*.class'` `find doc -name '*.html'`
+	rm -rf bin/cck bin/avrora bin/jintgen doc/*.html doc/cck doc/avrora doc/jintgen
 
 doc: doc/index.html
 

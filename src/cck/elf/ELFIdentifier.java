@@ -32,7 +32,7 @@
  * Creation date: Sep 2, 2005
  */
 
-package avrora.syntax.elf;
+package cck.elf;
 
 /**
  * The <code>ELFIndentifier</code> class contains all of the constants and information
