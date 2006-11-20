@@ -89,12 +89,20 @@ public class Util {
      * within the application.
      */
     public static class InternalError extends Error {
+        private String category;
+
         public InternalError(String param) {
             super(param);
+            category = "Internal Error";
+        }
+
+        public InternalError(String c, String param) {
+            super(param);
+            category = c;
         }
 
         public void report() {
-            Terminal.print(Terminal.ERROR_COLOR, "Internal Error");
+            Terminal.print(Terminal.ERROR_COLOR, category);
             Terminal.print(": " + param + '\n');
             printStackTrace();
         }
@@ -158,6 +166,17 @@ public class Util {
      */
     public static InternalError failure(String s) {
         return new InternalError(s);
+    }
+
+    /**
+     * The <code>failure()</code> method is a utility that constructs a
+     * <code>InternalError</code> instance with the specified message. It is useful for internal
+     * error conditions and defensive programming.
+     *
+     * @return an instance of the <code>Util.InternalError</code> class with the specified error message
+     */
+    public static InternalError failure(String c, String s) {
+        return new InternalError(c, s);
     }
 
     /**
