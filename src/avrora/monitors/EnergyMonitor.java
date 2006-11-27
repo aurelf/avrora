@@ -61,12 +61,12 @@ import java.util.Iterator;
  */
 public class EnergyMonitor extends MonitorFactory {
 
-    protected final Option.Double BATTERY = options.newOption("battery", 0.0,
+    protected final Option.Double BATTERY = newOption("battery", 0.0,
             "This option specifies the number of joules in each node's battery. During " +
             "simulation, the energy consumption of each node is tracked, and if the node " +
             "runs out of battery, it will be shut down and removed from the " +
             "simulation.");
-    protected final Option.Str LOG = options.newOption("logfile", "",
+    protected final Option.Str LOG = newOption("logfile", "",
             "This option specifies whether the energy monitor should log changes to each " +
             "node's energy state. If this option is specified, then each node's energy " +
             "state transitions will be written to <option>.#, where '#' represents the " +

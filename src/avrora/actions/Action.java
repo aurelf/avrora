@@ -45,12 +45,6 @@ import cck.util.Options;
 public abstract class Action extends HelpCategory {
 
     /**
-     * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that
-     * encapsulates the command line options available to this action.
-     */
-    public final Options options;
-
-    /**
      * The constructor for the <code>Action</code> class initializes the referneces to the short name and help
      * string for this action as well as creating the internal options.
      *
@@ -58,7 +52,6 @@ public abstract class Action extends HelpCategory {
      */
     protected Action(String h) {
         super("action", h);
-        options = new Options();
 
         addSection("ACTION OVERVIEW", help);
         addOptionSection("Help for the specific options accepted by this action is below.", options);
@@ -73,77 +66,4 @@ public abstract class Action extends HelpCategory {
      */
     public abstract void run(String[] args) throws Exception;
 
-    /**
-     * The <code>newOption()</code> is used by subclasses to easily create new options for this action.
-     *
-     * @param name the name of the option
-     * @param val  the default value of the option
-     * @param desc a string representation of the help for this option
-     * @return an instance of <code>Option</code> representing the option created and registered
-     */
-    protected Option.Bool newOption(String name, boolean val, String desc) {
-        return options.newOption(name, val, desc);
-    }
-
-    /**
-     * The <code>newOption()</code> is used by subclasses to easily create new options for this action.
-     *
-     * @param name the name of the option
-     * @param val  the default value of the option
-     * @param desc a string representation of the help for this option
-     * @return an instance of <code>Option</code> representing the option created and registered
-     */
-    protected Option.Long newOption(String name, long val, String desc) {
-        return options.newOption(name, val, desc);
-    }
-
-    /**
-     * The <code>newOption()</code> is used by subclasses to easily create new options for this action.
-     *
-     * @param name the name of the option
-     * @param val  the default value of the option
-     * @param desc a string representation of the help for this option
-     * @return an instance of <code>Option</code> representing the option created and registered
-     */
-    protected Option.Double newOption(String name, double val, String desc) {
-        return options.newOption(name, val, desc);
-    }
-
-    /**
-     * The <code>newOption()</code> is used by subclasses to easily create new options for this action. This
-     * particular method creates an interval option.
-     *
-     * @param name the name of the option
-     * @param l    the default low value of the option
-     * @param h    the default high value of the option
-     * @param desc a string representation of the help for this option
-     * @return an instance of <code>Option</code> representing the option created and registered
-     */
-    protected Option.Interval newOption(String name, long l, long h, String desc) {
-        return options.newOption(name, l, h, desc);
-    }
-
-    /**
-     * The <code>newOption()</code> is used by subclasses to easily create new options for this action.
-     *
-     * @param name the name of the option
-     * @param val  the default value of the option as a string
-     * @param desc a string representation of the help for this option
-     * @return an instance of <code>Option</code> representing the option created and registered
-     */
-    protected Option.Str newOption(String name, String val, String desc) {
-        return options.newOption(name, val, desc);
-    }
-
-    /**
-     * The <code>newOptionList()</code> is used by subclasses to easily create new options for this action.
-     *
-     * @param name the name of the option
-     * @param val  the default value of the option as a comma separated string
-     * @param desc a string representation of the help for this option
-     * @return an instance of <code>Option</code> representing the option created and registered
-     */
-    protected Option.List newOptionList(String name, String val, String desc) {
-        return options.newOptionList(name, val, desc);
-    }
 }

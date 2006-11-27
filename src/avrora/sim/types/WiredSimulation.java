@@ -55,20 +55,20 @@ public class WiredSimulation extends Simulation {
     public static String HELP = "The wired network simulation is used for simulating multiple nodes " +
             "simultaneously. These nodes can communicate with each other over wires.";
 
-    public final Option.List NODECOUNT = options.newOptionList("nodecount", "1",
+    public final Option.List NODECOUNT = newOptionList("nodecount", "1",
             "This option is used to specify the number of nodes to be instantiated. " +
             "The format is a list of integers, where each integer specifies the number of " +
             "nodes to instantiate with each program supplied on the command line. For example, " +
             "when set to \"1,2\" one node will be created with the first program loaded onto it, " +
             "and two nodes created with the second program loaded onto them.");
-    public final Option.Interval RANDOM_START = options.newOption("random-start", 0, 0,
+    public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
             "This option inserts a random delay before starting " +
             "each node in order to prevent artificial cycle-level synchronization. The " +
             "starting delay is pseudo-randomly chosen with uniform distribution over the " +
             "specified interval, which is measured in clock cycles. If the \"random-seed\" " +
             "option is set to a non-zero value, then its value is used as the seed to the " +
             "pseudo-random number generator.");
-    public final Option.Long STAGGER_START = options.newOption("stagger-start", 0,
+    public final Option.Long STAGGER_START = newOption("stagger-start", 0,
             "This option causes the simulator to insert a progressively longer delay " +
             "before starting each node in order to avoid artificial cycle-level " +
             "synchronization between nodes. The starting times are staggered by the specified number " +

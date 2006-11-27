@@ -47,7 +47,7 @@ import cck.util.Option;
  */
 public class SimPerfMonitor extends MonitorFactory {
 
-    public final Option.Double FREQUENCY = options.newOption("frequency", 100.0,
+    public final Option.Double FREQUENCY = newOption("frequency", 100.0,
             "This option is used in the simulator profiling monitor to determine how many " +
             "times per simulated second to sample the simulator's performance.");
 

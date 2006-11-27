@@ -111,7 +111,7 @@ public class Defaults {
             monitorMap.addClass("real-time", RealTimeMonitor.class);
 
             HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
-            addOptionSection(hc, "SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +
+            hc.addOptionValueSection("SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +
                     "monitors that instrument the program in order to study and analyze its behavior. The " +
                     "\"simulate\" action supports this option that allows a monitor class " +
                     "to be loaded which will instrument the program before it is run and then generate a report " +
@@ -146,7 +146,7 @@ public class Defaults {
             inputs.addClass("elf", ELFParser.class);
 
             HelpCategory hc = new HelpCategory("inputs", "Help for the supported program input formats.");
-            addOptionSection(hc, "INPUT FORMATS", "The input format of the program is specified with the \"-input\" " +
+            hc.addOptionValueSection("INPUT FORMATS", "The input format of the program is specified with the \"-input\" " +
                 "option supplied at the command line. This input format is used by " +
                 "actions that operate on programs to determine how to interpret the " +
                 "input and build a program from the files specified. For example, the input format might " +
@@ -173,7 +173,7 @@ public class Defaults {
 
             // plug in a new help category for actions accesible with "-help actions"
             HelpCategory hc = new HelpCategory("actions", "Help for Avrora actions.");
-            addOptionSection(hc, "ACTIONS", "Avrora accepts the \"-action\" command line option " +
+            hc.addOptionValueSection("ACTIONS", "Avrora accepts the \"-action\" command line option " +
                     "that you can use to select from the available functionality that Avrora " +
                     "provides. This action might be to assemble the file, " +
                     "print a listing, perform a simulation, or run an analysis tool. This " +
@@ -194,7 +194,7 @@ public class Defaults {
 
             // plug in a new help category for simulations accesible with "-help simulations"
             HelpCategory hc = new HelpCategory("simulations", "Help for supported simulation types.");
-            addOptionSection(hc, "SIMULATION TYPES",
+            hc.addOptionValueSection("SIMULATION TYPES",
                     "When running a simulation, Avrora accepts the \"-simulation\" command line option " +
                     "that selects the simulation type from multiple different types provided, or a " +
                     "user-supplied Java class of your own. For example, a simulation might be for a " +
@@ -349,17 +349,6 @@ public class Defaults {
     public static void addMainCategory(HelpCategory cat) {
         HelpSystem.addCategory(cat.name, cat);
         mainCategories.put(cat.name, cat);
-    }
-
-    public static void addOptionSection(HelpCategory hc, String title, String para, String optname, ClassMap optvals) {
-        LinkedList list = new LinkedList();
-        Iterator i = optvals.getSortedList().iterator();
-        while (i.hasNext()) {
-            String s = (String) i.next();
-            list.addLast(new ClassMapValueItem(4, optname, s, optvals));
-        }
-
-        hc.addListSection(title, para, list);
     }
 
     public static HelpCategory getHelpCategory(String name) {

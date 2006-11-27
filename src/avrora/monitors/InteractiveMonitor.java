@@ -52,7 +52,7 @@ import java.util.Iterator;
  */
 public class InteractiveMonitor extends MonitorFactory {
 
-    protected final Option.List BREAKPOINTS = options.newOptionList("breakpoints", "",
+    protected final Option.List BREAKPOINTS = newOptionList("breakpoints", "",
             "This option selects a list of breakpoints in the program that can be either " +
             "labels (such as the start of a function) or hexadecimal addresses that begin with " +
             "\"0x\". Breakpoints will be inserted into the program and the simulation will " +

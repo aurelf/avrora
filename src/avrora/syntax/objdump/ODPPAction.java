@@ -50,10 +50,10 @@ import java.util.HashSet;
  */
 public class ODPPAction extends Action {
 
-    protected final Option.Str FILE = options.newOption("file", "",
+    protected final Option.Str FILE = newOption("file", "",
             "The \"file\" option, when set, indicates the file to which to output the " +
             "preprocessed objdump output.");
-    protected final Option.List SECTIONS = options.newOptionList("sections",".text,.data",
+    protected final Option.List SECTIONS = newOptionList("sections",".text,.data",
             "This option specifies a list of sections that the loader should load from " +
             "the output.");
 

@@ -53,17 +53,17 @@ import java.util.Iterator;
  */
 public class SerialMonitor extends MonitorFactory {
 
-    protected final Option.List PORTS = options.newOptionList("ports", "0:0:2390",
+    protected final Option.List PORTS = newOptionList("ports", "0:0:2390",
             "The \"ports\" option specifies a list of server ports that the simulator will listen on " +
             "to connect to the serial forwarder for each node. The format is to first give " +
             "the node number, the UART number, and then the port number " +
             "($node:$uart:$port,$node:$uart:$port).");
-    protected final Option.List DEVICE = options.newOptionList("devices", "",
+    protected final Option.List DEVICE = newOptionList("devices", "",
             "The \"device\" option can be used to specify the devices (represented as file names) " +
             "to connect to each of the nodes' serial port. The format is to first give " +
             "the node number, the UART number, and then a file name for the input file, and (optionally) " +
             "a file name for the output ($node:$uart:$in[:$out],$node:$uart:$in[:$out]).");
-    protected final Option.Str COMMAND = options.newOption("command", "",
+    protected final Option.Str COMMAND = newOption("command", "",
             "The \"command\" option defines an external command to connect to the serial " +
             "port of the simulated system.");
 

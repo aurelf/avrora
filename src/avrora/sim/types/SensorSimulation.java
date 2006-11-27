@@ -61,32 +61,32 @@ public class SensorSimulation extends Simulation {
             "include sensor data and routing information for a multi-hop network. Currently, only the \"mica2\" " +
             "platform sensor nodes are supported.";
 
-    public final Option.List NODECOUNT = options.newOptionList("nodecount", "1",
+    public final Option.List NODECOUNT = newOptionList("nodecount", "1",
             "This option is used to specify the number of nodes to be instantiated. " +
             "The format is a list of integers, where each integer specifies the number of " +
             "nodes to instantiate with each program supplied on the command line. For example, " +
             "when set to \"1,2\" one node will be created with the first program loaded onto it, " +
             "and two nodes created with the second program loaded onto them.");
-    public final Option.Str TOPOLOGY = options.newOption("topology", "",
+    public final Option.Str TOPOLOGY = newOption("topology", "",
             "This option can be used to specify the name of " +
             "a file that contains information about the topology of the network. " +
             "When this option is specified. the free space radio model will be used " +
             "to model radio propagation.");
-    public final Option.Interval RANDOM_START = options.newOption("random-start", 0, 0,
+    public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
             "This option inserts a random delay before starting " +
             "each node in order to prevent artificial cycle-level synchronization. The " +
             "starting delay is pseudo-randomly chosen with uniform distribution over the " +
             "specified interval, which is measured in clock cycles. If the \"random-seed\" " +
             "option is set to a non-zero value, then its value is used as the seed to the " +
             "pseudo-random number generator.");
-    public final Option.Long STAGGER_START = options.newOption("stagger-start", 0,
+    public final Option.Long STAGGER_START = newOption("stagger-start", 0,
             "This option causes the simulator to insert a progressively longer delay " +
             "before starting each node in order to avoid artificial cycle-level " +
             "synchronization between nodes. The starting times are staggered by the specified number " +
             "of clock cycles. For example, if this option is given the " +
             "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
             "time 2*X, etc.");
-    public final Option.List SENSOR_DATA = options.newOptionList("sensor-data", "",
+    public final Option.List SENSOR_DATA = newOptionList("sensor-data", "",
             "This option accepts a list describing the input data for each sensor node. The format " +
             "for each entry in this list is $sensor:$id:$data, where $sensor is the name of " +
             "the sensor device such as \"light\", $id is the integer ID of the node, and $data is " +
@@ -95,7 +95,7 @@ public class SensorSimulation extends Simulation {
             "result, then a list of time value pairs separated by whitespace; the sensor will continue " +
             "returning the current value until the next (relative) time in seconds, and then the sensor " +
             "will change to the new value. ");
-    public final Option.Bool UPDATE_NODE_ID = options.newOption("update-node-id", true,
+    public final Option.Bool UPDATE_NODE_ID = newOption("update-node-id", true,
             "When this option is set, the sensor network simulator will attempt to update " +
             "the node identifiers stored in the flash memory of the program. For TinyOS programs, " +
             "this identifier is labelled \"TOS_LOCAL_ADDRESS\". For SOS programs, this identifier is " +

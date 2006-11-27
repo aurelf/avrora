@@ -48,7 +48,7 @@ public class TestAction extends Action {
             "that runs test cases supplied at the command line. The test cases are " +
             "used in regressions for diagnosing bugs.";
 
-    public final Option.Bool DETAIL = options.newOption("detail", false, "This option selects whether " +
+    public final Option.Bool DETAIL = newOption("detail", false, "This option selects whether " +
             "the automated testing framework will report detailed information for failed test cases.");
 
     public TestAction() {

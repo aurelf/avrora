@@ -50,14 +50,14 @@ import java.io.IOException;
  */
 public class DisassembleAction extends Action {
 
-    Option.Str ARCH = options.newOption("arch", "avr",
+    Option.Str ARCH = newOption("arch", "avr",
             "This option selects the architecture for the disassembler.");
-    Option.Long MAX_LENGTH = options.newOption("max-length", 16,
+    Option.Long MAX_LENGTH = newOption("max-length", 16,
             "This option specifies the maximum length of an instruction in bytes.");
-    Option.Bool EXHAUSTIVE = options.newOption("exhaustive", false,
+    Option.Bool EXHAUSTIVE = newOption("exhaustive", false,
             "When this option is specified, this action will test the disassembler exhaustively by " +
             "trying bit patterns systematically.");
-    Option.Str FILE = options.newOption("file", "",
+    Option.Str FILE = newOption("file", "",
             "When this option is specified, this action will test the disassembler by loading the " +
             "specified file and disassembling the data contained inside.");
 

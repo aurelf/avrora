@@ -64,7 +64,7 @@ public class GDBServer extends MonitorFactory {
             "send commands to Avrora. This allows gdb to be used as a front end for debugging a program " +
             "running inside of Avrora.";
 
-    private final Option.Long PORT = options.newOption("port", 10001,
+    private final Option.Long PORT = newOption("port", 10001,
             "This option specifies the port on which the GDB server will listen for a connection from " +
             "the GDB front-end.");
 

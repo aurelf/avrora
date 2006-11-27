@@ -46,12 +46,6 @@ import cck.util.Options;
 public abstract class MonitorFactory extends HelpCategory {
 
     /**
-     * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that
-     * stores the command line options to the monitor.
-     */
-    public final Options options;
-
-    /**
      * The constructor for the <code>MonitorFactory</code> class initializes the <code>options</code> field,
      * as well as the references to the help string and the short name of the monitor.
      *
@@ -59,7 +53,6 @@ public abstract class MonitorFactory extends HelpCategory {
      */
     protected MonitorFactory(String h) {
         super("monitor", h);
-        options = new Options();
 
         addSection("MONITOR OVERVIEW", help);
         addOptionSection("Help for the options accepted by this monitor is below.", options);

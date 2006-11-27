@@ -48,7 +48,7 @@ import cck.util.Util;
  */
 public class ISEAAction extends Action {
 
-    protected final Option.Str START = options.newOption("procedure", "0x0000",
+    protected final Option.Str START = newOption("procedure", "0x0000",
             "When this option is specified, the ISE analyzer will analyze only the specified procedure, rather " +
             "than the entire program.");
 
