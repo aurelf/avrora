@@ -1151,7 +1151,9 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
          * @param val the value to write
          */
         public void write(byte val) {
-            I = (val & LegacyState.SREG_I_MASK) != 0;
+            boolean enabled = (val & LegacyState.SREG_I_MASK) != 0;
+            if (enabled) enableInterrupts();
+            else disableInterrupts();
             T = (val & LegacyState.SREG_T_MASK) != 0;
             H = (val & LegacyState.SREG_H_MASK) != 0;
             S = (val & LegacyState.SREG_S_MASK) != 0;
