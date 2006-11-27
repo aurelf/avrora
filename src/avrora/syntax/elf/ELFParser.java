@@ -61,7 +61,7 @@ public class ELFParser extends ProgramReader {
     ELFStringTable shstrtab;
     AbstractArchitecture arch;
 
-    protected final Option.Bool SYMBOLS = options.newOption("load-symbols", true,
+    protected final Option.Bool SYMBOLS = newOption("load-symbols", true,
             "This option causes the ELF loader to load the symbol table (if it exists) from " +
             "the ELF file. The symbol table contains information about the names and sizes of " +
             "data items and functions within the executable. Enabling this option allows for " +

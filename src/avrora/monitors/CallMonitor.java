@@ -52,16 +52,16 @@ import cck.util.Option;
  */
 public class CallMonitor extends MonitorFactory {
 
-    protected final Option.Bool SITE = options.newOption("call-sites", true,
+    protected final Option.Bool SITE = newOption("call-sites", true,
             "When this option is specified, the call monitor will report the address " +
             "of the instruction in the caller when a call or an interrupt " +
             "occurs.");
-    protected final Option.Bool SHOW = options.newOption("show-stack", true,
+    protected final Option.Bool SHOW = newOption("show-stack", true,
             "When this option is specified, the call monitor trace will print the " +
             "call stack with each call, interrupt or return. When this option " +
             "is set to false, this monitor will only indent calls and returns, " +
             "without printing the entire call stack.");
-    protected final Option.Bool EDGE = options.newOption("edge-types", true,
+    protected final Option.Bool EDGE = newOption("edge-types", true,
             "When this option is specified, the call monitor trace will print the " +
             "type of each call or return. For example, if an interrupt occurs, then " +
             "the interrupt number and name will be reported.");

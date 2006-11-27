@@ -51,12 +51,12 @@ import java.util.Iterator;
  */
 public class TraceMonitor extends MonitorFactory {
 
-    final Option.List FROMTO = options.newOptionList("trace-from", "",
+    final Option.List FROMTO = newOptionList("trace-from", "",
             "The \"trace-from\" option specifies the list of program point pairs for which " +
             "to enable the tracing. The tracing will be enabled when the first point is entered " +
             "and be disabled when the second point is reached. Nesting of multiple point pairs " +
             "is handled correctly.");
-    final Option.Long TIME = options.newOption("trace-start", 0,
+    final Option.Long TIME = newOption("trace-start", 0,
             "The \"trace-start\" option specifies the time to start the instruction trace, in " +
             "clock cycles. This option can be useful for diagnosing problems in long simulations " +
             "that happens after a given time is reached.");

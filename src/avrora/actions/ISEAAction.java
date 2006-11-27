@@ -63,7 +63,7 @@ public class ISEAAction extends Action {
             SourceMapping.Location location = p.getSourceMapping().getLocation(START.get());
             if ( location == null )
                 Util.userError("Cannot find program location "+START.get());
-            a.analyze(location.lma_addr);
+            a.analyze(location.address);
         } else {
             a.analyze();
         }

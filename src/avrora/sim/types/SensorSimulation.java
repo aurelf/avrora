@@ -35,15 +35,14 @@ package avrora.sim.types;
 import avrora.Main;
 import avrora.core.*;
 import avrora.sim.*;
-import avrora.sim.clock.RippleSynchronizer;
 import avrora.sim.platform.Platform;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.sensors.*;
 import avrora.sim.radio.*;
-import avrora.sim.radio.Topology;
+import avrora.sim.radio.freespace.FreeSpaceAir;
+import avrora.sim.radio.freespace.Topology;
 import cck.text.StringUtil;
 import cck.util.*;
-
 import java.io.IOException;
 import java.util.*;
 
@@ -73,11 +72,6 @@ public class SensorSimulation extends Simulation {
             "a file that contains information about the topology of the network. " +
             "When this option is specified. the free space radio model will be used " +
             "to model radio propagation.");
-    public final Option.Double RANGE = newOption("radio-range", 15.0,
-            "This option, when used in conjunction with the -topology option, specifies " +
-            "the maximum range for radio communication between nodes. This simple " +
-            "idealized radius model will drop all communications between nodes whose " +
-            "distance is greater than this threshold value.");
     public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
             "This option inserts a random delay before starting " +
             "each node in order to prevent artificial cycle-level synchronization. The " +
@@ -167,58 +161,9 @@ public class SensorSimulation extends Simulation {
         private void createNode() {
             thread = new SimulatorThread(this);
             super.instantiate();
-            // get the radio device, if it exists.
-            Object dev = platform.getDevice("radio");
-            if (dev instanceof CC2420Radio) {
-                // connect to the cc2420 medium
-                CC2420Radio radio = (CC2420Radio)dev;
-                this.radio = radio;
-                radio.setMedium(createCC2420Medium());
-            } else if (dev instanceof CC1000Radio) {
-                // connect to the cc1000 medium
-                CC1000Radio radio = (CC1000Radio)dev;
-                this.radio = radio;
-                radio.setMedium(createCC1000Medium());
-            }
+            radio = (Radio)platform.getDevice("radio");
+            air.addRadio(radio);
             simulator.delay(startup);
-            if (topology != null) {
-                setNodePosition();
-                return;
-            }
-        }
-
-        private Medium createCC2420Medium() {
-            if (cc2420_medium == null) {
-                createRadioModel();
-                return cc2420_medium = CC2420Radio.createMedium(synchronizer, radioModel);
-            }
-            return cc2420_medium;
-        }
-
-        private Medium createCC1000Medium() {
-            if (cc1000_medium == null) {
-                createRadioModel();
-                return cc1000_medium = CC1000Radio.createMedium(synchronizer, radioModel);
-            }
-            return cc1000_medium;
-        }
-
-        private void createRadioModel() {
-            if (topology == null && !TOPOLOGY.isBlank()) {
-                try {
-                    topology = new Topology(TOPOLOGY.get());
-                    radioModel = new RadiusModel(1.0, 15.0);
-                } catch (IOException e) {
-                    throw Util.unexpected(e);
-                }
-            }
-        }
-
-        private void setNodePosition() {
-            RadiusModel.Position p = topology.getPosition(id);
-            if (p != null && radio != null) {
-                radioModel.setPosition(radio, p);
-            }
         }
 
         private void updateNodeID() {
@@ -226,21 +171,14 @@ public class SensorSimulation extends Simulation {
                 Program p = path.getProgram();
                 SourceMapping smap = p.getSourceMapping();
                 if ( smap != null ) {
-                    updateVariable(smap, "TOS_LOCAL_ADDRESS", id);          // TinyOS 1.1
-                    updateVariable(smap, "node_address", id);               // SOS
-                    updateVariable(smap, "TOS_NODE_ID", id);                // Tinyos 2.0
-                    updateVariable(smap, "ActiveMessageAddressC$addr", id); // Tinyos 2.0
+                    SourceMapping.Location location = smap.getLocation("TOS_LOCAL_ADDRESS");
+                    if ( location == null ) location = smap.getLocation("node_address");
+                    if ( location != null ) {
+                        AtmelInterpreter bi = (AtmelInterpreter)simulator.getInterpreter();
+                        bi.writeFlashByte(location.address, Arithmetic.low(id));
+                        bi.writeFlashByte(location.address+1, Arithmetic.high(id));
+                    }
                 }
-            }
-        }
-
-        private void updateVariable(SourceMapping smap, String name, int value) {
-            SourceMapping.Location location = smap.getLocation(name);
-            if ( location == null ) location = smap.getLocation("node_address");
-            if ( location != null ) {
-                AtmelInterpreter bi = (AtmelInterpreter)simulator.getInterpreter();
-                bi.writeFlashByte(location.lma_addr, Arithmetic.low(value));
-                bi.writeFlashByte(location.lma_addr +1, Arithmetic.high(value));
             }
         }
 
@@ -249,14 +187,11 @@ public class SensorSimulation extends Simulation {
          * default simulation remove method by removing the node from the radio air implementation.
          */
         protected void remove() {
-            synchronizer.removeNode(this);
+            air.removeRadio(radio);
         }
     }
 
-    Topology topology;
-    RadiusModel radioModel;
-    Medium cc2420_medium;
-    Medium cc1000_medium;
+    RadioAir air;
     long stagger;
 
     public SensorSimulation() {
@@ -269,8 +204,7 @@ public class SensorSimulation extends Simulation {
                 "that describes the physical layout of the sensor network. Also, each node's sensors can be " +
                 "supplied with random or replay sensor data through the \"sensor-data\" option.", options);
 
-        PLATFORM.setNewDefault("mica2");       // set the new default monitors
-        MONITORS.setNewDefault("leds,packet"); // set the new default monitors
+        PLATFORM.setNewDefault("mica2");
     }
 
     /**
@@ -304,8 +238,9 @@ public class SensorSimulation extends Simulation {
         Main.checkFilesExist(args);
         PlatformFactory pf = getPlatform();
 
-        // build the synchronizer
-        synchronizer = new RippleSynchronizer(100000, null);
+        // get the radio air model
+        air = getRadioAir();
+        synchronizer = air.getSynchronizer();
 
         // create the nodes based on arguments
         createNodes(args, pf);
@@ -314,15 +249,35 @@ public class SensorSimulation extends Simulation {
         processSensorInput();
     }
 
+    public void setAir(RadioAir nair) {
+        air = nair;
+        synchronizer = air.getSynchronizer();
+    }
+
+    protected void instantiateNodes() {
+        try {
+            // we need to build a new air model
+            setAir(getRadioAir());
+        } catch ( IOException e ) {
+            throw Util.unexpected(e);
+        }
+        super.instantiateNodes();
+    }
+
     private void createNodes(String[] args, PlatformFactory pf) throws Exception {
+        int cntr = 0;
         Iterator i = NODECOUNT.get().iterator();
-        for ( int arg = 0; arg < args.length; arg++ ) {
-            int count = i.hasNext() ? StringUtil.evaluateIntegerLiteral((String)i.next()) : 1;
-            LoadableProgram lp = new LoadableProgram(args[arg]);
+        while (i.hasNext()) {
+
+            if (args.length <= cntr) break;
+
+            String pname = args[cntr++];
+            LoadableProgram lp = new LoadableProgram(pname);
             lp.load();
 
             // create a number of nodes with the same program
-            for (int node = 0; node < count; node++) {
+            int max = StringUtil.evaluateIntegerLiteral((String)i.next());
+            for (int node = 0; node < max; node++) {
                 SensorNode n = (SensorNode)createNode(pf, lp);
                 long r = processRandom();
                 long s = processStagger();
@@ -360,6 +315,14 @@ public class SensorSimulation extends Simulation {
             node.sensorInput.add(sdi);
             if (! ".".equals(file) )
                 Main.checkFileExists(file);
+        }
+    }
+
+    private RadioAir getRadioAir() throws IOException {
+        if ( TOPOLOGY.isBlank() ) {
+            return new SimpleAir();
+        } else {
+            return new FreeSpaceAir(new Topology(TOPOLOGY.get()));
         }
     }
 

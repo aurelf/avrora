@@ -45,17 +45,11 @@ import java.util.Iterator;
  */
 public abstract class ProgramReader extends HelpCategory {
 
-    /**
-     * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that
-     * encapsulates the command line options available to this reader.
-     */
-    public final Options options = new Options();
-
-    public final Option.Str ARCH = options.newOption("arch", "avr",
+    public final Option.Str ARCH = newOption("arch", "avr",
             "This option specifies the name of the instruction set architecture for the " +
             "specified program. This architecture option is used to retrieve an appropriate " +
             "disassembler and interpreter for the program.");
-    public final Option.List INDIRECT_EDGES = options.newOptionList("indirect-edges", "",
+    public final Option.List INDIRECT_EDGES = newOptionList("indirect-edges", "",
             "This option can be used to specify the possible targets of indirect calls and " +
             "jumps within a program, which may be needed in performing stack analysis or " +
             "building a control flow graph. Each element of the list is a pair of " +

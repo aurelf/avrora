@@ -48,7 +48,7 @@ import java.io.*;
  */
 public class ObjDumpProgramReader extends ProgramReader {
 
-    protected final Option.List SECTIONS = options.newOptionList("sections",".text,.data",
+    protected final Option.List SECTIONS = newOptionList("sections",".text,.data",
             "This option specifies a list of sections that the loader should load from " +
             "the output.");
 

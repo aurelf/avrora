@@ -54,12 +54,12 @@ import java.util.List;
  */
 public class MemoryMonitor extends MonitorFactory {
 
-    public final Option.List LOCATIONS = options.newOptionList("locations", "",
+    public final Option.List LOCATIONS = newOptionList("locations", "",
             "This option, when set, specifies a list of memory locations to instrument. When " +
             "this option is not specified, the monitor will instrument all reads and writes to " +
             "memory.");
 
-    public final Option.Bool LOWER_ADDRESS = options.newOption("low-addresses", false,
+    public final Option.Bool LOWER_ADDRESS = newOption("low-addresses", false,
             "When this option is enabled, the memory monitor will be inserted for lower addresses, " +
             "recording reads and writes to the general purpose registers on the AVR and also IO registers " +
             "through direct and indirect memory reads and writes.");

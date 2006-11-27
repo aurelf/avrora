@@ -33,7 +33,7 @@
 package avrora.actions;
 
 import avrora.Defaults;
-import cck.test.TestEngine;
+import cck.test.AutomatedTester;
 import cck.text.Status;
 import cck.util.Option;
 
@@ -61,10 +61,8 @@ public class TestAction extends Action {
      * @throws Exception
      */
     public void run(String[] args) throws Exception {
-        TestEngine.LONG_REPORT = DETAIL.get();
+        AutomatedTester.LONG_REPORT = DETAIL.get();
         Status.ENABLED = false;
-        TestEngine engine = new TestEngine(Defaults.getTestHarnessMap());
-        boolean r = engine.runTests(args);
-        if (!r) System.exit(1);
+        new AutomatedTester(Defaults.getTestHarnessMap()).runTests(args);
     }
 }

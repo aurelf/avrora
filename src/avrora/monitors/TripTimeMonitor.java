@@ -52,16 +52,16 @@ import java.util.Iterator;
  */
 public class TripTimeMonitor extends MonitorFactory {
 
-    final Option.List PAIRS = options.newOptionList("pairs", "",
+    final Option.List PAIRS = newOptionList("pairs", "",
             "The \"pairs\" option specifies the list of program point pairs for which " +
             "to measure the point-to-point trip time. ");
-    final Option.List FROM = options.newOptionList("from", "",
+    final Option.List FROM = newOptionList("from", "",
             "The \"from\" option specifies the list of program points for which " +
             "to measure to every other instruction in the program. ");
-    final Option.List TO = options.newOptionList("to", "",
+    final Option.List TO = newOptionList("to", "",
             "The \"from\" option specifies the list of program points for which " +
             "to measure from every other instruction in the program. ");
-    final Option.Bool DISTRIBUTION = options.newOption("distribution", false,
+    final Option.Bool DISTRIBUTION = newOption("distribution", false,
             "This option, when specified, causes the trip time monitor to print a complete distribution of the " +
             "trip times for each pair of program points. WARNING: this option can consume large amounts of memory " +
             "and generate a large amount of output.");
