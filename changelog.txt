@@ -96,6 +96,7 @@
     2    probe  Event profiler that collects min, max, mean statistics
 
 ----------------------------------- Completed -----------------------------------------
+    1     devs  Added ATMega169 from Anttu Koski                             1.7.70
     2     devs  Added new versions of ATMega, ATMegaTimer                    1.7.66
     1     devs  Added first version of ATMegaTimer class                     1.7.65
     2    probe  Implemented CallTrace and CallStack utilities for probes     1.7.57
