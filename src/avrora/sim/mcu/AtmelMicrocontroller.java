@@ -183,6 +183,14 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
         pinMap.put(n3, i);
     }
 
+    public static void addPin(HashMap pinMap, int p, String n1, String n2, String n3, String n4) {
+        Integer i = new Integer(p);
+        pinMap.put(n1, i);
+        pinMap.put(n2, i);
+        pinMap.put(n3, i);
+        pinMap.put(n4, i);
+    }
+
     public static void addInterrupt(HashMap iMap, String n, int i) {
         iMap.put(n, new Integer(i));
     }

@@ -61,9 +61,9 @@ public class ATMega169 extends ATMegaFamilyNew {
     public static final int _512b = 512;
 
     public static final int ATMEGA169_IOREG_SIZE = 256 - 32;
-    public static final int ATMEGA169_SRAM_SIZE = _1kb;
+    public static final int ATMEGA169_SRAM_SIZE = 1 * _1kb;
     public static final int ATMEGA169_FLASH_SIZE = 16 * _1kb;
-    public static final int ATMEGA169_EEPROM_SIZE = _512b;
+    public static final int ATMEGA169_EEPROM_SIZE = 1 * _512b;
     public static final int ATMEGA169_NUM_PINS = 64;
     public static final int ATMEGA169_NUM_INTS = 22;
 
