@@ -34,10 +34,7 @@ package cck.util;
 
 import cck.text.StringUtil;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * The <code>ClassMap</code> is a class that maps short names (i.e. short, lower case strings) to java classes
@@ -70,6 +67,11 @@ public class ClassMap {
     protected final HashMap classMap;
 
     /**
+     * The <code>reverseMap</code> field is a hash map that maps a Java class back to its alias.
+     */
+    protected final HashMap reverseMap;
+
+    /**
      * The <code>objMap</code> field is a hash map that maps a string to an instance of a particular class,
      * i.e. an object.
      */
@@ -85,6 +87,7 @@ public class ClassMap {
     public ClassMap(String t, Class clz) {
         clazz = clz;
         classMap = new HashMap();
+        reverseMap = new HashMap();
         objMap = new HashMap();
         type = t;
     }
@@ -98,6 +101,7 @@ public class ClassMap {
      */
     public void addClass(String alias, Class clz) {
         classMap.put(alias, clz);
+        reverseMap.put(clz, alias);
     }
 
     /**
@@ -115,6 +119,7 @@ public class ClassMap {
 
         objMap.put(alias, o);
         classMap.put(alias, cz);
+        reverseMap.put(o, alias);
     }
 
     /**
@@ -172,6 +177,20 @@ public class ClassMap {
 
         // UNREACHABLE
         throw Util.failure("Unreachable state in dynamic instantiation of class");
+    }
+
+    /**
+     * The <code>getAlias()</code> method returns the alias of a particular class or object
+     * that corresponds to the short name for the class. If there is no such alias for this
+     * object, this method will return the name of the class of the object.
+     * @param o the object for which to look up the alias
+     * @return the string name of the alias for the object
+     */
+    public String getAlias(Object o) {
+        String s = (String)reverseMap.get(o);
+        if ( s == null ) s = (String)reverseMap.get(o.getClass());
+        if ( s == null ) s = o.getClass().getName();
+        return s;
     }
 
     /**
