@@ -37,8 +37,7 @@ import cck.text.Terminal;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.Comparator;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * The <code>Option</code> class represents an option that has been given on the command line. The inner
@@ -538,6 +537,16 @@ public abstract class Option {
                 i.next();
             }
             value.add(buf.toString().trim());
+        }
+
+        public String[] toArray() {
+            String[] result = new String[value.size()];
+            Iterator i = value.iterator();
+            int cntr = 0;
+            while ( i.hasNext() ) {
+                result[cntr++] = (String)i.next();
+            }
+            return result;
         }
 
         /**
