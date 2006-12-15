@@ -1060,4 +1060,23 @@ public class StringUtil {
         str.getChars(0, val.length, val, 0);
         return val;
     }
+
+    public static List toList(String val) {
+        LinkedList list = new LinkedList();
+        if (val.equals("")) return list;
+
+        CharacterIterator i = new StringCharacterIterator(val);
+        StringBuffer buf = new StringBuffer(32);
+        while (i.current() != CharacterIterator.DONE) {
+            if (i.current() == ',') {
+                list.add(buf.toString().trim());
+                buf = new StringBuffer(32);
+            } else {
+                buf.append(i.current());
+            }
+            i.next();
+        }
+        list.add(buf.toString().trim());
+        return list;
+    }
 }

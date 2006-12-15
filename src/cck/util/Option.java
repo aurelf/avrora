@@ -521,22 +521,7 @@ public abstract class Option {
 
         private void parseString(String val) {
             orig = val;
-            value = new LinkedList();
-
-            if (val.equals("")) return;
-
-            CharacterIterator i = new StringCharacterIterator(val);
-            StringBuffer buf = new StringBuffer(32);
-            while (i.current() != CharacterIterator.DONE) {
-                if (i.current() == ',') {
-                    value.add(buf.toString().trim());
-                    buf = new StringBuffer(32);
-                } else {
-                    buf.append(i.current());
-                }
-                i.next();
-            }
-            value.add(buf.toString().trim());
+            value = StringUtil.toList(val);
         }
 
         public String[] toArray() {
