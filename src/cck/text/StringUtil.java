@@ -612,12 +612,29 @@ public class StringUtil {
 
     public static String commalist(List l) {
         StringBuffer buf = new StringBuffer();
+        commalist(l, buf);
+        return buf.toString();
+    }
+
+    public static void commalist(List l, StringBuffer buf) {
         Iterator i = l.iterator();
         while (i.hasNext()) {
             buf.append(i.next().toString());
-            if (i.hasNext()) buf.append(',');
+            if (i.hasNext()) buf.append(", ");
         }
+    }
+
+    public static String commalist(Object[] o) {
+        StringBuffer buf = new StringBuffer();
+        commalist(o, buf);
         return buf.toString();
+    }
+
+    public static void commalist(Object[] o, StringBuffer buf) {
+        for ( int cntr = 0; cntr < o.length; cntr++ ) {
+            if (cntr > 0) buf.append(", ");
+            buf.append(o[cntr].toString());
+        }
     }
 
     public static String linelist(List l) {
