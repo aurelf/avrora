@@ -49,7 +49,7 @@ public class Distribution extends MinMaxMean {
      * array. Therefore, <code>distrib[myval - distribMin]</code> contains the count for <code>myval</code>,
      * provided that the array is large enough. Values outside the array have have a count of zero.
      */
-    public int distrib[]; // table of number of occurrences of each value
+    public int[] distrib; // table of number of occurrences of each value
 
     /**
      * The <code>median</code> field stores the median value of the distribution. This field is not computed
@@ -145,7 +145,7 @@ public class Distribution extends MinMaxMean {
     /**
      * PrintVST the distribution using stars
      */
-    protected void printDistribution(Printer printer, int base, int data[]) {
+    protected void printDistribution(Printer printer, int base, int[] data) {
         int cntr, max;
         float scale = 1;
         int num = data.length;
@@ -195,7 +195,7 @@ public class Distribution extends MinMaxMean {
 
         if (newsize == distrib.length) return;
 
-        int newdistrib[] = new int[newsize];
+        int[] newdistrib = new int[newsize];
 
         // copy the old data to the new array
         System.arraycopy(distrib, 0, newdistrib, distribMin - min, distrib.length);
@@ -216,7 +216,7 @@ public class Distribution extends MinMaxMean {
      */
     protected void recomputeMaxDistrib(int newMax) {
         int newsize = 1 + newMax - distribMin;
-        int newdistrib[] = new int[newsize];
+        int[] newdistrib = new int[newsize];
 
         // copy the old data to the new array
         System.arraycopy(distrib, 0, newdistrib, 0, distrib.length);
@@ -231,7 +231,7 @@ public class Distribution extends MinMaxMean {
     protected void recomputeMinDistrib(int newMin) {
         int mindiff = distribMin - newMin;
         int newsize = mindiff + distrib.length;
-        int newdistrib[] = new int[newsize];
+        int[] newdistrib = new int[newsize];
 
         // copy the old data to the new array
         System.arraycopy(distrib, 0, newdistrib, mindiff, distrib.length);
