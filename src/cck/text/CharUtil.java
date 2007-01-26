@@ -101,8 +101,7 @@ public class CharUtil {
      */
     public static boolean isDecDigit(char c) {
         if (c < '0') return false;
-        if (c > '9') return false;
-        else return true;
+        return c <= '9';
     }
 
     /**
@@ -126,8 +125,7 @@ public class CharUtil {
      */
     public static boolean isOctDigit(char c) {
         if (c < '0') return false;
-        if (c > '7') return false;
-        else return true;
+        return c <= '7';
     }
 
     /**
