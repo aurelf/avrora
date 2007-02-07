@@ -51,7 +51,7 @@ import avrora.syntax.raw.RAWReader;
 import avrora.test.*;
 import avrora.test.sim.SimTestHarness;
 import cck.help.*;
-import cck.test.TestHarness;
+import cck.test.TestEngine;
 import cck.text.StringUtil;
 import cck.util.ClassMap;
 import cck.util.Util;
@@ -123,7 +123,7 @@ public class Defaults {
 
     private static void addTestHarnesses() {
         if (harnessMap == null) {
-            harnessMap = new ClassMap("Test Harness", TestHarness.class);
+            harnessMap = new ClassMap("Test Harness", TestEngine.Harness.class);
             //-- DEFAULT TEST HARNESSES
             harnessMap.addClass("simulator", SimTestHarness.class);
             harnessMap.addClass("simplifier", SimplifierTestHarness.class);

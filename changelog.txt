@@ -154,6 +154,7 @@
     2     devs  Introduce Channel class to simplify SPI and USART implem.
 
 ----------------------------------- Completed -----------------------------------------
+    1     devs  Added LED.LEDGroup for use with red/green/yellow mica2       1.7.71
     1     devs  Added first version of avrora.sim.state.Register             1.7.66
     1     devs  Added some utility methods to AtmelMicrocontroller           1.7.65
     1    probe  migrate to SourceMapping, remove Program.Location            1.7.42

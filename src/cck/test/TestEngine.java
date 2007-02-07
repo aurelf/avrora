@@ -33,10 +33,13 @@
 package cck.test;
 
 import cck.text.Status;
+import cck.text.StringUtil;
 import cck.text.Terminal;
-import cck.util.*;
+import cck.text.Verbose;
+import cck.util.ClassMap;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,18 +54,14 @@ import java.util.Properties;
  * instances of the <code>TestCase</code> class that are collected by this framework.
  *
  * @author Ben L. Titzer
- * @see TestCase
- * @see TestResult
+ * @see cck.test.TestCase
+ * @see cck.test.TestResult
  */
 public class TestEngine {
-
-    public static int MAXIMUM_TEST_MS = 5000;
 
     public static boolean LONG_REPORT;
     public static boolean PROGRESS_REPORT;
     public static boolean STATISTICS;
-    public static int THREADS = 1;
-    public static int VERBOSE = 1;
 
     /**
      * The <code>TestHarness</code> interface encapsulates the notion of a testing harness that is capable of
@@ -85,15 +84,8 @@ public class TestEngine {
         public TestCase newTestCase(String fname, Properties props) throws Exception;
     }
 
-    public List[] results;
-    public List successes;
-
-    private String[] testNames;
-    private int numTests;
-    private int currentTest;
-    private int finishedTests;
-
     private final ClassMap harnessMap;
+    private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
 
     /**
      * The constructor for the <code>TestEngine</code> class creates a new test engine
@@ -112,122 +104,40 @@ public class TestEngine {
      * <code>TestCase</code>. Each test case is then run and the results are tabulated.
      *
      * @param fnames an array of the filenames of tests to run
-     * @throws IOException if there is a problem loading the test cases
-     * @return true if all the tests pass
+     * @throws java.io.IOException if there is a problem loading the test cases
      */
-    public boolean runTests(String[] fnames) throws IOException {
-        // record start time
-        long time = System.currentTimeMillis();
-
-        // initialize the lists of tests and fields
-        initTests(fnames);
-
-        // run all the test cases
-        runAllTests();
-
-        // record end time
-        time = System.currentTimeMillis() - time;
-
-        // report failures
-        reportFailures();
-
-        // report successes
-        reportSuccesses(time);
-
-        // report statistics
-        reportStatistics(results);
-
-        // return true if all tests passed
-        return successes.size() == numTests;
-    }
-
-    private void reportFailures() {
-        if (VERBOSE > 0) {
-            report("Internal errors", results, TestResult.INTERNAL, numTests);
-            report("Unexpected exceptions", results, TestResult.EXCEPTION, numTests);
-            report("Failed", results, TestResult.FAILURE, numTests);
-            report("Malformed test cases", results, TestResult.MALFORMED, numTests);
-            report("Nonterminating cases", results, TestResult.NONTERM, numTests);
-        }
-    }
-
-    private void reportSuccesses(long time) {
-        if (VERBOSE > 0) {
-            Terminal.printBrightGreen("Passed");
-            Terminal.print(": " + successes.size());
-            Terminal.print(" of " + numTests);
-            Terminal.print(" in " + TimeUtil.milliToSecs(time) +" seconds");
-            Terminal.nextln();
-        }
-    }
-
-    private void initTests(String[] fnames) {
+    public void runTests(String[] fnames) throws java.io.IOException {
+        // turn off status reporting while running tests
         Status.ENABLED = false;
-        this.testNames = fnames;
-        this.numTests = fnames.length;
-        currentTest = 0;
 
-        results = new LinkedList[TestResult.MAX_CODE];
+        List[] tests = new LinkedList[TestResult.MAX_CODE];
         for ( int cntr = 0; cntr < TestResult.MAX_CODE; cntr++ )
-            results[cntr] = new LinkedList();
+            tests[cntr] = new LinkedList();
 
-        successes = results[TestResult.SUCCESS];
-    }
+        List successes = tests[TestResult.SUCCESS];
+        for (int cntr = 0; cntr < fnames.length; cntr++) {
+            printer.println("Running test " + StringUtil.quote(fnames[cntr]) + "...");
 
-    private void runAllTests() {
-        try {
-            // create worker threads
-            WorkThread[] threads = new WorkThread[THREADS];
-            for ( int cntr = 0; cntr < THREADS; cntr++ ) {
-                WorkThread thread = new WorkThread();
-                threads[cntr] = thread;
-                thread.start();
-            }
-            // if any thread is still running, check it hasn't run too long.
-            while ( finishedTests < numTests) {
-                long now = System.currentTimeMillis();
-                for ( int cntr = 0; cntr < THREADS; cntr++ ) {
-                    WorkThread thread = threads[cntr];
-                    if ( thread.intest && (now - thread.test_began) > MAXIMUM_TEST_MS) {
-                        thread.interrupt();
-                        thread.stop(new NonTermination(now - thread.test_began));
-                    }
-                }
-                synchronized(this) {
-                    // last thread will signal us upon completion, but wait 1000 ms tops.
-                    this.wait(1000);
-                }
-            }
-        } catch (InterruptedException e) {
-            throw Util.unexpected(e);
+            String fname = fnames[cntr];
+            TestCase tc = runTest(fname);
+
+            tests[tc.result.code].add(tc);
         }
+
+        Terminal.printBrightGreen("Test successes");
+        Terminal.println(": " + successes.size() + " of " + fnames.length);
+
+        report("Internal errors", tests, TestResult.INTERNAL, fnames.length);
+        report("Unexpected exceptions", tests, TestResult.EXCEPTION, fnames.length);
+        report("Failures", tests, TestResult.FAILURE, fnames.length);
+        report("Malformed test cases", tests, TestResult.MALFORMED, fnames.length);
+
+        reportStatistics(tests);
+        // return 0 if all tests were successful, 1 otherwise
+        if (successes.size() == fnames.length) System.exit(0);
+        else System.exit(1);
     }
 
-    private void runTest(int num) {
-        try {
-            TestCase tc = runTest(testNames[num]);
-        } catch (IOException e) {
-            throw Util.unexpected(e);
-        }
-    }
-
-    protected int nextTest() {
-        synchronized(this) {
-            if ( currentTest < numTests) return currentTest++;
-            else return -1;
-        }
-    }
-
-    private void finishTest(TestCase tc) {
-        synchronized(this) {
-            results[tc.result.code].add(tc);
-            finishedTests++;
-            reportVerbose(tc);
-            if ( finishedTests >= numTests ) {
-                this.notifyAll();
-            }
-        }
-    }
     private void reportStatistics(List[] tests) {
         if ( STATISTICS ) {
             for ( int cntr = 0; cntr < tests.length; cntr++ ) {
@@ -268,55 +178,24 @@ public class TestEngine {
         Terminal.print("\n");
     }
 
-    private TestCase runTest(String fname) throws IOException {
+    private TestCase runTest(String fname) throws java.io.IOException {
         TestCase tc = readTestCase(fname);
         Throwable exception = null;
 
         try {
-            beginVerbose(fname);
+            if ( PROGRESS_REPORT ) Terminal.print("Running "+fname+"...");
             tc.run();
         } catch (Throwable t) {
             exception = t;
         }
 
-        try {
-            tc.result = tc.match(exception);
-        } catch (Throwable t) {
-            tc.result = new TestResult.UnexpectedException("exception in match routine: ", t);
-        }
-        finishTest(tc);
+        if ( PROGRESS_REPORT ) Terminal.nextln();
+
+        tc.result = tc.match(exception);
         return tc;
     }
 
-    private void beginVerbose(String fname) {
-        if ( VERBOSE == 3 ) {
-            Terminal.print("Running "+fname+"...");
-            Terminal.flush();
-        }
-    }
-
-    private void reportVerbose(TestCase tc) {
-        if ( VERBOSE == 3 ) {
-            if ( tc.result.isSuccess() ) Terminal.printGreen("passed");
-            else Terminal.printRed("failed");
-            Terminal.nextln();
-        } else if (VERBOSE == 2) {
-            if ( tc.result.isSuccess() ) {
-                Terminal.printGreen("o");
-            } else {
-                Terminal.printRed("X");
-            }
-            if (finishedTests % 50 == 0 || finishedTests >= numTests) {
-                Terminal.print(" "+ finishedTests + " of " + numTests);
-                Terminal.nextln();
-            } else if (finishedTests % 10 == 0) {
-                Terminal.print(" ");
-            }
-            Terminal.flush();
-        }
-    }
-
-    private TestCase readTestCase(String fname) throws IOException {
+    private TestCase readTestCase(String fname) throws java.io.IOException {
         BufferedReader r = new BufferedReader(new FileReader(fname));
         Properties vars = new Properties();
 
@@ -324,10 +203,10 @@ public class TestEngine {
             String buffer = r.readLine();
             if (buffer == null) break;
 
-            int index = buffer.indexOf('@');
+            int index = buffer.indexOf("@");
             if (index < 0) break;
 
-            int index2 = buffer.indexOf(':');
+            int index2 = buffer.indexOf(":");
             if (index2 < 0) break;
 
             String var = buffer.substring(index + 1, index2).trim();
@@ -352,27 +231,4 @@ public class TestEngine {
         }
     }
 
-    public class NonTermination extends Util.Error {
-        public long milliseconds;
-
-        public NonTermination(long ms) {
-            super("Nontermination Error", "test did not terminate after "+ms+" ms");
-            milliseconds = ms;
-        }
-    }
-
-    protected class WorkThread extends Thread {
-        volatile boolean intest;
-        volatile long test_began;
-
-        public void run() {
-            for ( int num = nextTest(); num >= 0; num = nextTest() ) {
-                test_began = System.currentTimeMillis();
-                intest = true;
-                runTest(num);
-                intest = false;
-            }
-        }
-
-    }
 }

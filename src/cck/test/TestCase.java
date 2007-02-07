@@ -270,5 +270,12 @@ public abstract class TestCase {
         }
     }
 
-
+    /**
+     * The <code>reportStatistics()</code> method can be used by a test case to optionally
+     * report any statistics gathered by the test when it was executed. For example,
+     * a common task is to record the time taken to execute the test.
+     */
+    public void reportStatistics() {
+        
+    }
 }

@@ -33,8 +33,7 @@
 package jintgen;
 
 import cck.help.HelpCategory;
-import cck.test.AutomatedTester;
-import cck.test.TestHarness;
+import cck.test.TestEngine;
 import cck.text.*;
 import cck.util.*;
 import jintgen.gen.*;
@@ -110,9 +109,9 @@ public class Main {
             parseOptions(args);
 
             if ( TEST.get() ) {
-                ClassMap harnessMap = new ClassMap("Test Harness", TestHarness.class);
+                ClassMap harnessMap = new ClassMap("Test Harness", TestEngine.Harness.class);
                 harnessMap.addClass("verifier", VerifierTestHarness.class);
-                new AutomatedTester(harnessMap).runTests(mainOptions.getArguments());
+                new TestEngine(harnessMap).runTests(mainOptions.getArguments());
             } else if (args.length == 0 || HELP.get()) {
                 // print the help if there are no arguments or -help is specified
                 printHelp(mainOptions.getArguments());
