@@ -49,7 +49,7 @@ import java.util.Properties;
  *
  * @author Ben L. Titzer
  */
-public class ProbeTestHarness implements TestHarness {
+public class ProbeTestHarness implements TestEngine.Harness {
 
     class ProbeTestCase extends TestCase {
 

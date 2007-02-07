@@ -87,6 +87,39 @@ public class LED extends Microcontroller.OutputPin {
         }
     }
 
+    public static class LEDGroup implements FiniteStateMachine.Probe {
+        protected Simulator sim;
+        protected LED[] leds;
+
+        public LEDGroup(Simulator sim, LED[] nleds) {
+            this.sim = sim;
+            leds = nleds;
+            for ( int cntr = 0; cntr < nleds.length; cntr++ ) {
+                // insert the state probe on every LED's state
+                leds[cntr].state.insertProbe(this);
+            }
+        }
+
+        public void fireBeforeTransition(int beforeState, int afterState) {
+            // do nothing
+        }
+
+        public void fireAfterTransition(int beforeState, int afterState) {
+            if ( beforeState == afterState ) return;
+            // print the status of the LED
+            synchronized ( Terminal.class ) {
+                // synchronize on the terminal to prevent interleaved output
+                Terminal.print(SimUtil.getIDTimeString(sim));
+                for ( int cntr = 0; cntr < leds.length; cntr++ ) {
+                    Terminal.print(" ");
+                    if ( leds[cntr].state.getCurrentState() == 0 ) Terminal.print("off");
+                    else Terminal.print(leds[cntr].colornum, "on ");
+                }
+                Terminal.nextln();
+            }
+        }
+    }
+
     protected LED(Simulator s, int n, String c) {
         sim = s;
         colornum = n;

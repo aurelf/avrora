@@ -51,7 +51,7 @@ import java.util.Properties;
  * @author Ben L. Titzer
  * @author Evan Barnes
  */
-public class InterruptTestHarness implements TestHarness {
+public class InterruptTestHarness implements TestEngine.Harness {
 
     class InterruptTestCase extends TestCase {
 

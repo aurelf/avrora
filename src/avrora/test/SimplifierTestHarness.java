@@ -37,7 +37,8 @@ import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
 import cck.test.TestCase;
-import cck.test.TestHarness;
+import cck.test.TestEngine;
+
 import java.util.Properties;
 
 /**
@@ -46,7 +47,7 @@ import java.util.Properties;
  *
  * @author Ben L. Titzer
  */
-public class SimplifierTestHarness implements TestHarness {
+public class SimplifierTestHarness implements TestEngine.Harness {
 
     class SimplifierTest extends TestCase.ExpectSourceError {
 

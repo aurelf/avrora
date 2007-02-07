@@ -79,6 +79,7 @@ public class Mica2 extends Platform {
     protected SensorBoard sensorboard;
     protected ExternalFlash externalFlash;
     protected LightSensor lightSensor;
+    protected LED.LEDGroup ledGroup;
 
     protected Mica2(Microcontroller m) {
         super(m);
@@ -95,9 +96,11 @@ public class Mica2 extends Platform {
         LED green = new LED(sim, Terminal.COLOR_GREEN, "Green");
         LED red = new LED(sim, Terminal.COLOR_RED, "Red");
 
-        yellow.enablePrinting();
-        green.enablePrinting();
-        red.enablePrinting();
+        ledGroup = new LED.LEDGroup(sim, new LED[] { yellow, green, red });
+
+        //yellow.enablePrinting();
+        //green.enablePrinting();
+        //red.enablePrinting();
 
         mcu.getPin("PA0").connect(yellow);
         mcu.getPin("PA1").connect(green);

@@ -54,19 +54,46 @@ import java.util.Properties;
  * instances of the <code>TestCase</code> class that are collected by this framework.
  *
  * @author Ben L. Titzer
- * @see cck.test.TestHarness
  * @see cck.test.TestCase
  * @see cck.test.TestResult
  */
-public class AutomatedTester {
+public class TestEngine {
 
     public static boolean LONG_REPORT;
     public static boolean PROGRESS_REPORT;
+    public static boolean STATISTICS;
+
+    /**
+     * The <code>TestHarness</code> interface encapsulates the notion of a testing harness that is capable of
+     * creating the correct type of test cases given the file and a list of properties extracted from the file by
+     * the automated testing framework.
+     *
+     * @author Ben L. Titzer
+     */
+    public interface Harness {
+
+        /**
+         * The <code>newTestCase()</code> method creates a new test case of the right type given the file name and
+         * the properties already extracted from the file by the testing framework.
+         *
+         * @param fname the name of the file
+         * @param props a list of properties extracted from the file
+         * @return an instance of the <code>TestCase</code> class
+         * @throws Exception if there is a problem creating the testcase or reading it
+         */
+        public TestCase newTestCase(String fname, Properties props) throws Exception;
+    }
 
     private final ClassMap harnessMap;
     private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
 
-    public AutomatedTester(ClassMap hm) {
+    /**
+     * The constructor for the <code>TestEngine</code> class creates a new test engine
+     * with the specified class map. The class map is used to map short names in the
+     * properties of test files to the class that implements the harness.
+     * @param hm the class map that maps string names to harnesses
+     */
+    public TestEngine(ClassMap hm) {
         harnessMap = hm;
     }
 
@@ -83,44 +110,53 @@ public class AutomatedTester {
         // turn off status reporting while running tests
         Status.ENABLED = false;
 
-        List slist = new LinkedList();
-        List flist = new LinkedList();
-        List ilist = new LinkedList();
-        List ulist = new LinkedList();
-        List mlist = new LinkedList();
+        List[] tests = new LinkedList[TestResult.MAX_CODE];
+        for ( int cntr = 0; cntr < TestResult.MAX_CODE; cntr++ )
+            tests[cntr] = new LinkedList();
 
+        List successes = tests[TestResult.SUCCESS];
         for (int cntr = 0; cntr < fnames.length; cntr++) {
             printer.println("Running test " + StringUtil.quote(fnames[cntr]) + "...");
 
             String fname = fnames[cntr];
             TestCase tc = runTest(fname);
 
-            if (tc.result.isSuccess()) slist.add(tc);
-            else if (tc.result.isInternalError()) ilist.add(tc);
-            else if (tc.result.isUnexpectedException()) ulist.add(tc);
-            else if (tc.result.isMalformed()) mlist.add(tc);
-            else flist.add(tc);
+            tests[tc.result.code].add(tc);
         }
 
         Terminal.printBrightGreen("Test successes");
-        Terminal.println(": " + slist.size() + " of " + fnames.length);
+        Terminal.println(": " + successes.size() + " of " + fnames.length);
 
-        report(ilist, "Internal errors", Terminal.COLOR_YELLOW, fnames.length);
-        report(ulist, "Unexpected exceptions", Terminal.COLOR_YELLOW, fnames.length);
-        report(flist, "Failures", Terminal.COLOR_RED, fnames.length);
-        report(mlist, "Malformed test cases", Terminal.COLOR_CYAN, fnames.length);
+        report("Internal errors", tests, TestResult.INTERNAL, fnames.length);
+        report("Unexpected exceptions", tests, TestResult.EXCEPTION, fnames.length);
+        report("Failures", tests, TestResult.FAILURE, fnames.length);
+        report("Malformed test cases", tests, TestResult.MALFORMED, fnames.length);
 
+        reportStatistics(tests);
         // return 0 if all tests were successful, 1 otherwise
-        if (slist.size() == fnames.length) System.exit(0);
+        if (successes.size() == fnames.length) System.exit(0);
         else System.exit(1);
     }
 
-    private static void report(List l, String c, int color, int total) {
-        if (l.isEmpty()) return;
+    private void reportStatistics(List[] tests) {
+        if ( STATISTICS ) {
+            for ( int cntr = 0; cntr < tests.length; cntr++ ) {
+                Iterator i = tests[cntr].iterator();
+                while (i.hasNext()) {
+                    TestCase tc = (TestCase) i.next();
+                    tc.reportStatistics();
+                }
+            }
+        }
+    }
 
-        Terminal.print(color, c);
-        Terminal.println(": " + l.size() + " of " + total);
-        Iterator i = l.iterator();
+    private static void report(String c, List[] lists, int w, int total) {
+        List list = lists[w];
+        if (list.isEmpty()) return;
+
+        Terminal.print(TestResult.getColor(w), c);
+        Terminal.println(": " + list.size() + " of " + total);
+        Iterator i = list.iterator();
         while (i.hasNext()) {
             TestCase tc = (TestCase) i.next();
             report(tc.getFileName(), tc.result);
@@ -188,7 +224,7 @@ public class AutomatedTester {
         if (hname == null) return new TestCase.Malformed(fname, "no test harness specified");
 
         try {
-            TestHarness harness = (TestHarness) harnessMap.getObjectOfClass(hname);
+            Harness harness = (Harness) harnessMap.getObjectOfClass(hname);
             return harness.newTestCase(fname, vars);
         } catch (Throwable t) {
             return new TestCase.InitFailure(fname, t);

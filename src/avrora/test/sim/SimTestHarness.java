@@ -51,7 +51,7 @@ import java.util.*;
  *
  * @author Ben L. Titzer
  */
-public class SimTestHarness implements TestHarness {
+public class SimTestHarness implements TestEngine.Harness {
 
     protected static final ClassMap testerMap;
 

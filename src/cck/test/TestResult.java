@@ -46,22 +46,49 @@ import cck.util.Util;
  */
 public abstract class TestResult {
 
+    public static final int SUCCESS = 0;
+    public static final int FAILURE = 1;
+    public static final int EXCEPTION = 2;
+    public static final int INTERNAL = 3;
+    public static final int MALFORMED = 4;
+    public static final int MAX_CODE = 5;
+
+    public final int code;
+
+    public TestResult(int c) {
+        code = c;
+    }
+
     public abstract void shortReport();
 
     public boolean isSuccess() {
-        return false;
+        return code == SUCCESS;
     }
 
     public boolean isInternalError() {
-        return false;
+        return code == INTERNAL;
     }
 
     public boolean isUnexpectedException() {
-        return false;
+        return code == EXCEPTION;
     }
 
     public boolean isMalformed() {
-        return false;
+        return code == MALFORMED;
+    }
+
+    public int getColor() {
+        return getColor(this.code);
+    }
+
+    static int getColor(int code) {
+        switch ( code ) {
+            case SUCCESS: return Terminal.COLOR_GREEN;
+            case EXCEPTION: return Terminal.COLOR_YELLOW;
+            case INTERNAL: return Terminal.COLOR_YELLOW;
+            case MALFORMED: return Terminal.COLOR_CYAN;
+        }
+        return Terminal.COLOR_RED;
     }
 
     public void longReport() {
@@ -69,29 +96,35 @@ public abstract class TestResult {
     }
 
     public static class TestSuccess extends TestResult {
+        public TestSuccess() {
+            super(SUCCESS);
+        }
         public void shortReport() {
             Terminal.print("passed");
-        }
-
-        public void longReport() {
-            Terminal.print("passed");
-        }
-
-        public boolean isSuccess() {
-            return true;
         }
     }
 
     public static class TestFailure extends TestResult {
 
         public final String message;
+        public final Throwable thrown;
 
         public TestFailure() {
+            super(FAILURE);
             message = "failed";
+            thrown = null;
         }
 
         public TestFailure(String r) {
+            super(FAILURE);
             message = r;
+            thrown = null;
+        }
+
+        public TestFailure(String r, Throwable t) {
+            super(FAILURE);
+            message = r;
+            thrown = t;
         }
 
         public void shortReport() {
@@ -100,16 +133,13 @@ public abstract class TestResult {
     }
 
     public static class IncorrectError extends TestFailure {
-        String expected;
-        SourceError encountered;
+        public final String expected;
+        public final SourceError encountered;
 
         public IncorrectError(String ex, SourceError ce) {
+            super("expected error " + ex + ", but received " + ce.getErrorType(), ce);
             expected = ex;
             encountered = ce;
-        }
-
-        public void shortReport() {
-            Terminal.print("expected error " + expected + ", but received " + encountered.getErrorType());
         }
 
         public void longReport() {
@@ -119,14 +149,11 @@ public abstract class TestResult {
     }
 
     public static class ExpectedPass extends TestFailure {
-        SourceError encountered;
+        public final SourceError encountered;
 
         public ExpectedPass(SourceError e) {
+            super("expected pass, but received error " + e.getErrorType(), e);
             encountered = e;
-        }
-
-        public void shortReport() {
-            Terminal.print("expected pass, but received error " + encountered.getErrorType());
         }
 
         public void longReport() {
@@ -136,72 +163,52 @@ public abstract class TestResult {
     }
 
     public static class ExpectedError extends TestFailure {
-        String expected;
+        public final String expected;
 
         public ExpectedError(String e) {
+            super("expected error " + e + ", but passed");
             expected = e;
-        }
-
-        public void shortReport() {
-            Terminal.print("expected error " + expected + ", but passed");
         }
     }
 
     public static class InternalError extends TestFailure {
-        Util.InternalError encountered;
+        public final Util.InternalError encountered;
 
         public InternalError(Util.InternalError e) {
+            super("encountered internal error: " + e.getMessage(), e);
             encountered = e;
-        }
-
-        public void shortReport() {
-            Terminal.print("encountered internal error: " + encountered.getMessage());
         }
 
         public void longReport() {
             Terminal.print("encountered internal error\n");
             encountered.report();
         }
-
-        public boolean isInternalError() {
-            return true;
-        }
     }
 
     public static class UnexpectedException extends TestFailure {
-        Throwable encountered;
+        public final Throwable encountered;
 
         public UnexpectedException(Throwable e) {
+            super("encountered unexpected exception " + e.getClass(), e);
             encountered = e;
-        }
-
-        public void shortReport() {
-            Terminal.print("encountered unexpected exception " + encountered.getClass());
         }
 
         public void longReport() {
             Terminal.println("encountered unexpected exception");
             encountered.printStackTrace();
         }
-
-        public boolean isUnexpectedException() {
-            return true;
-        }
     }
 
     public static class Malformed extends TestResult {
-        String error;
+        public final String error;
 
         public Malformed(String e) {
+            super(MALFORMED);
             error = e;
         }
 
         public void shortReport() {
             Terminal.print("malformed testcase: " + error);
-        }
-
-        public boolean isMalformed() {
-            return true;
         }
     }
 }

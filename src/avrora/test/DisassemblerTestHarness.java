@@ -48,7 +48,7 @@ import java.util.Properties;
  *
  * @author Ben L. Titzer
  */
-public class DisassemblerTestHarness implements TestHarness {
+public class DisassemblerTestHarness implements TestEngine.Harness {
 
     class DisassemblerTest extends TestCase.ExpectSourceError {
 

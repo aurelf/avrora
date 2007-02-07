@@ -35,7 +35,7 @@
 package jintgen.isdl.verifier;
 
 import cck.test.TestCase;
-import cck.test.TestHarness;
+import cck.test.TestEngine;
 import jintgen.isdl.ArchDecl;
 import jintgen.isdl.parser.ISDLParser;
 import java.io.File;
@@ -45,7 +45,7 @@ import java.util.Properties;
 /**
  * @author Ben L. Titzer
  */
-public class VerifierTestHarness implements TestHarness {
+public class VerifierTestHarness implements TestEngine.Harness {
 
     class VerifierTest extends TestCase.ExpectSourceError {
 
