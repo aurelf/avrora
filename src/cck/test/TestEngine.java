@@ -33,13 +33,11 @@
 package cck.test;
 
 import cck.text.Status;
-import cck.text.StringUtil;
 import cck.text.Terminal;
-import cck.text.Verbose;
 import cck.util.ClassMap;
+import cck.util.Util;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,6 +60,9 @@ public class TestEngine {
     public static boolean LONG_REPORT;
     public static boolean PROGRESS_REPORT;
     public static boolean STATISTICS;
+    public static int THREADS;
+    public List[] results;
+    public List successes;
 
     /**
      * The <code>TestHarness</code> interface encapsulates the notion of a testing harness that is capable of
@@ -85,6 +86,8 @@ public class TestEngine {
     }
 
     private final ClassMap harnessMap;
+    protected String[] testNames;
+    protected int cursor;
 
     /**
      * The constructor for the <code>TestEngine</code> class creates a new test engine
@@ -106,32 +109,82 @@ public class TestEngine {
      * @throws java.io.IOException if there is a problem loading the test cases
      */
     public void runTests(String[] fnames) throws java.io.IOException {
-        // turn off status reporting while running tests
-        Status.ENABLED = false;
+        // initialize the lists of tests and fields
+        initTests(fnames);
 
-        List[] tests = new LinkedList[TestResult.MAX_CODE];
-        for ( int cntr = 0; cntr < TestResult.MAX_CODE; cntr++ )
-            tests[cntr] = new LinkedList();
+        // run all the test cases
+        runAllTests();
 
-        List successes = tests[TestResult.SUCCESS];
-        for (int cntr = 0; cntr < fnames.length; cntr++) {
-
-            TestCase tc = runTest(fnames[cntr]);
-            tests[tc.result.code].add(tc);
-        }
-
+        // report successes
         Terminal.printBrightGreen("Test successes");
-        Terminal.println(": " + successes.size() + " of " + fnames.length);
+        Terminal.println(": " + successes.size() + " of " + testNames.length);
 
-        report("Internal errors", tests, TestResult.INTERNAL, fnames.length);
-        report("Unexpected exceptions", tests, TestResult.EXCEPTION, fnames.length);
-        report("Failures", tests, TestResult.FAILURE, fnames.length);
-        report("Malformed test cases", tests, TestResult.MALFORMED, fnames.length);
+        // report failures
+        report("Internal errors", results, TestResult.INTERNAL, testNames.length);
+        report("Unexpected exceptions", results, TestResult.EXCEPTION, testNames.length);
+        report("Failures", results, TestResult.FAILURE, testNames.length);
+        report("Malformed test cases", results, TestResult.MALFORMED, testNames.length);
 
-        reportStatistics(tests);
+        // report statistics
+        reportStatistics(results);
+
         // return 0 if all tests were successful, 1 otherwise
-        if (successes.size() == fnames.length) System.exit(0);
+        if (successes.size() == testNames.length) System.exit(0);
         else System.exit(1);
+    }
+
+    private void initTests(String[] fnames) {
+        Status.ENABLED = false;
+        this.testNames = fnames;
+        cursor = 0;
+
+        results = new LinkedList[TestResult.MAX_CODE];
+        for ( int cntr = 0; cntr < TestResult.MAX_CODE; cntr++ )
+            results[cntr] = new LinkedList();
+
+        successes = results[TestResult.SUCCESS];
+    }
+
+    private void runAllTests() {
+        try {
+            if ( THREADS > 1 ) {
+                // multi-threaded tests.
+                WorkThread[] threads = new WorkThread[THREADS];
+                for ( int cntr = 0; cntr < THREADS; cntr++ ) {
+                    WorkThread thread = new WorkThread();
+                    threads[cntr] = thread;
+                    thread.start();
+                }
+                for ( int cntr = 0; cntr < THREADS; cntr++ ) {
+                    threads[cntr].join();
+                }
+            } else {
+                // single-threaded tests.
+                for ( int num = nextTest(); num >= 0; num = nextTest() ) {
+                    runTest(num);
+                }
+            }
+        } catch (InterruptedException e) {
+            throw Util.unexpected(e);
+        }
+    }
+
+    private void runTest(int num) {
+        try {
+            TestCase tc = runTest(testNames[num]);
+            synchronized(this) {
+                results[tc.result.code].add(tc);
+            }
+        } catch (IOException e) {
+            throw Util.unexpected(e);
+        }
+    }
+
+    protected int nextTest() {
+        synchronized(this) {
+            if ( cursor < testNames.length ) return cursor++;
+            else return -1;
+        }
     }
 
     private void reportStatistics(List[] tests) {
@@ -227,4 +280,9 @@ public class TestEngine {
         }
     }
 
+    protected class WorkThread extends Thread {
+        public void run() {
+            for ( int num = nextTest(); num >= 0; num = nextTest() ) runTest(num);
+        }
+    }
 }
