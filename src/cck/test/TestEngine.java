@@ -85,7 +85,6 @@ public class TestEngine {
     }
 
     private final ClassMap harnessMap;
-    private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
 
     /**
      * The constructor for the <code>TestEngine</code> class creates a new test engine
@@ -116,11 +115,8 @@ public class TestEngine {
 
         List successes = tests[TestResult.SUCCESS];
         for (int cntr = 0; cntr < fnames.length; cntr++) {
-            printer.println("Running test " + StringUtil.quote(fnames[cntr]) + "...");
 
-            String fname = fnames[cntr];
-            TestCase tc = runTest(fname);
-
+            TestCase tc = runTest(fnames[cntr]);
             tests[tc.result.code].add(tc);
         }
 
