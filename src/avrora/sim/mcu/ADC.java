@@ -246,18 +246,15 @@ public class ADC extends AtmelInternalDevice {
 
         final ControlRegister.Conversion conversion;
 
-        byte oldVal;
-        boolean firing;
+        boolean converting;
 
         ControlRegister() {
             conversion = new ControlRegister.Conversion();
         }
 
         private void unpostADCInterrupt() {
-            value = Arithmetic.setBit(value, ADIF, false);
-            adif = false;
+            value = Arithmetic.setBit(value, ADIF, adif = false);
             interpreter.setPosted(interruptNum, false);
-            // TODO: firing = false?
         }
 
         public void write(byte nval) {
@@ -266,25 +263,47 @@ public class ADC extends AtmelInternalDevice {
             adsc = Arithmetic.getBit(nval, ADSC);
             adfr = Arithmetic.getBit(nval, ADFR);
             adie = Arithmetic.getBit(nval, ADIE);
+            adif = Arithmetic.getBit(nval, ADIF);
             prescalerDivider = PRESCALER[(nval & 0x7)];
 
-            if (aden && adsc && !Arithmetic.getBit(oldVal, ADSC) && !firing) {
-                // queue event for converting
-                firing = true;
-                mainClock.insertEvent(conversion, prescalerDivider * 13);
-            }
+            value = nval;
 
-            oldVal = nval;
-
-            // if the ADIF bit is set, we need to unpost the interrupt
-            if (Arithmetic.getBit(nval, ADIF)) {
-                unpostADCInterrupt();
+            if (aden) {
+                // if enabled and start conversion
+                if (adsc) startConversion();
             } else {
-                value = Arithmetic.setBit(nval, ADIF, Arithmetic.getBit(value, ADIF));
+                // else, stop conversion
+                stopConversion();
             }
 
+            // reset the flag bit if written by the user
+            if ( adif ) unpostADCInterrupt();
+
+            // enable the interrupt if the flag is set
             interpreter.setEnabled(interruptNum, adie);
 
+            // print the status of this register
+            printStatus();
+        }
+
+        public void startConversion() {
+            if ( !converting ) {
+                // queue event for converting
+                converting = true;
+                insertConversion();
+            }
+        }
+
+        private void insertConversion() {
+            mainClock.insertEvent(conversion, prescalerDivider * 13);
+        }
+
+        public void stopConversion() {
+            value = Arithmetic.setBit(value, ADSC, adsc = false);
+            if ( converting ) {
+                converting = false;
+                mainClock.removeEvent(conversion);
+            }
         }
 
         public void writeBit(int bit, boolean val) {
@@ -292,18 +311,20 @@ public class ADC extends AtmelInternalDevice {
         }
 
         protected void printStatus() {
-            StringBuffer buf = new StringBuffer(100);
-            buf.append("ADC: enabled ");
-            buf.append(StringUtil.toBit(aden));
-            buf.append(", start ");
-            buf.append(StringUtil.toBit(adsc));
-            buf.append(", freerun ");
-            buf.append(StringUtil.toBit(adfr));
-            buf.append(", iflag ");
-            buf.append(StringUtil.toBit(adif));
-            buf.append(", divider ");
-            buf.append(prescalerDivider);
-            devicePrinter.println(buf.toString());
+            if ( devicePrinter.enabled ) {
+                StringBuffer buf = new StringBuffer(100);
+                buf.append("ADC: enabled ");
+                buf.append(StringUtil.toBit(aden));
+                buf.append(", start ");
+                buf.append(StringUtil.toBit(adsc));
+                buf.append(", freerun ");
+                buf.append(StringUtil.toBit(adfr));
+                buf.append(", iflag ");
+                buf.append(StringUtil.toBit(adif));
+                buf.append(", divider ");
+                buf.append(prescalerDivider);
+                devicePrinter.println(buf.toString());
+            }
         }
 
         /**
@@ -314,21 +335,21 @@ public class ADC extends AtmelInternalDevice {
 
             public void fire() {
 
-                value = Arithmetic.setBit(value, ADSC, false);
+                int channel = ADMUX_reg.singleInputIndex;
+                int val = calculateADC(channel);
+                if (devicePrinter.enabled) {
+                    devicePrinter.println("ADC: Conversion completed on channel " + channel + ": " + StringUtil.to0xHex(val, 3));
+                }
+                write16(val, ADC_reg.high, ADC_reg.low);
+                value = Arithmetic.setBit(value, ADIF, adif = true);
+                interpreter.setPosted(interruptNum, true);
 
-                if (aden) {
-                    int channel = ADMUX_reg.singleInputIndex;
-                    int val = calculateADC(channel);
-                    if (devicePrinter.enabled) {
-                        devicePrinter.println("ADC: Conversion completed on channel " + channel + ": " + StringUtil.to0xHex(val, 3));
-                    }
-                    write16(val, ADC_reg.high, ADC_reg.low);
-                    value = Arithmetic.setBit(value, ADIF, true);
-                    interpreter.setPosted(interruptNum, true);
+                if ( adfr ) {
+                    // in free running mode, start the next conversion
+                    insertConversion();
                 } else {
-                    if (devicePrinter.enabled) {
-                        devicePrinter.println("ADC: Conversion completed, ADEN = false");
-                    }
+                    // otherwise, stop conversion
+                    stopConversion();
                 }
             }
         }
@@ -340,8 +361,6 @@ public class ADC extends AtmelInternalDevice {
 
         public void invoke(int inum) {
             unpostADCInterrupt();
-            firing = false;
         }
-
     }
 }
