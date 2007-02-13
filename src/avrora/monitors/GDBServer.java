@@ -334,24 +334,24 @@ public class GDBServer extends MonitorFactory {
 
         private void appendPC(State s, StringBuffer buf) {
             int pc = s.getPC();
-            buf.append(StringUtil.toHex(pc & 0xff, 2));
-            buf.append(StringUtil.toHex((pc >> 8) & 0xff, 2));
-            buf.append(StringUtil.toHex((pc >> 16) & 0xff, 2));
-            buf.append(StringUtil.toHex((pc >> 24) & 0xff, 2));
+            buf.append(StringUtil.toLowHex(pc & 0xff, 2));
+            buf.append(StringUtil.toLowHex((pc >> 8) & 0xff, 2));
+            buf.append(StringUtil.toLowHex((pc >> 16) & 0xff, 2));
+            buf.append(StringUtil.toLowHex((pc >> 24) & 0xff, 2));
         }
 
         private void appendSP(State s, StringBuffer buf) {
-            buf.append(StringUtil.toHex(s.getSP() & 0xff, 2));
-            buf.append(StringUtil.toHex((s.getSP() >> 8) & 0xff, 2));
+            buf.append(StringUtil.toLowHex(s.getSP() & 0xff, 2));
+            buf.append(StringUtil.toLowHex((s.getSP() >> 8) & 0xff, 2));
         }
 
         private void appendSREG(LegacyState s, StringBuffer buf) {
-            buf.append(StringUtil.toHex(s.getSREG() & 0xff, 2));
+            buf.append(StringUtil.toLowHex(s.getSREG() & 0xff, 2));
         }
 
         private void appendGPR(LegacyState s, int cntr, StringBuffer buf) {
             byte value = s.getRegisterByte(LegacyRegister.getRegisterByNumber(cntr));
-            buf.append(StringUtil.toHex(value & 0xff, 2));
+            buf.append(StringUtil.toLowHex(value & 0xff, 2));
         }
 
         /**
@@ -409,13 +409,13 @@ public class GDBServer extends MonitorFactory {
                 addr = addr & (~MEMMASK);
                 for ( int cntr = 0; cntr < length; cntr++ ) {
                     byte value = s.getDataByte(addr+cntr);
-                    buf.append(StringUtil.toHex(value & 0xff, 2));
+                    buf.append(StringUtil.toLowHex(value & 0xff, 2));
                 }
             } else {
                 // reading from program memory
                 for ( int cntr = 0; cntr < length; cntr++ ) {
                     byte value = s.getProgramByte(addr+cntr);
-                    buf.append(StringUtil.toHex(value & 0xff, 2));
+                    buf.append(StringUtil.toLowHex(value & 0xff, 2));
                 }
             }
 
@@ -445,7 +445,7 @@ public class GDBServer extends MonitorFactory {
             int cksum = 0;
             for ( int cntr = 0; cntr < bytes.length; cksum += bytes[cntr++] ) ;
 
-            String np = "$"+packet+"#"+StringUtil.toHex(cksum & 0xff, 2);
+            String np = "$"+packet+"#"+StringUtil.toLowHex(cksum & 0xff, 2);
             if ( printer.enabled )
                 printer.println("   <-- "+np+"");
 
