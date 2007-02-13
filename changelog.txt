@@ -32,6 +32,7 @@
     2    radio  Detect receives of radio bytes and notify radio probes
 
 ----------------------------------- Completed -----------------------------------------
+    1      gdb  Switched gdb monitor to use lowercase hex [Tim Auton]         1.7.73
     1      dev  Fixed problem with ADC conversion simulation                  1.7.72
     1      sim  Enable / Disable interrupts on write to SREG                  1.7.69
     1      sim  RAMPZ usage for with more than 128k of flash                  1.7.63

@@ -501,11 +501,14 @@ public class StringUtil {
      *         length specified
      */
     public static String toHex(long value, int width) {
-        char[] result = new char[width];
-        return convertToHex(value, width, 0, result);
+        return convertToHex(value, width, 0, new char[width], CharUtil.HEX_CHARS);
     }
 
-    private static String convertToHex(long value, int width, int start, char[] result) {
+    public static String toLowHex(long value, int width) {
+        return convertToHex(value, width, 0, new char[width], CharUtil.LOW_HEX_CHARS);
+    }
+
+    private static String convertToHex(long value, int width, int start, char[] result, char[] hexChars) {
         if (value > (long) 1 << width * 4) {
             StringBuffer buf = new StringBuffer();
             for (int cntr = 0; cntr < start; cntr++) buf.append(result[cntr]);
@@ -515,7 +518,7 @@ public class StringUtil {
 
         int i = start + width - 1;
         for (int cntr = 0; cntr < width; cntr++) {
-            result[i - cntr] = CharUtil.HEX_CHARS[(int) (value >> (cntr * 4)) & 0xf];
+            result[i - cntr] = hexChars[(int) (value >> (cntr * 4)) & 0xf];
         }
 
         return new String(result);
@@ -525,7 +528,7 @@ public class StringUtil {
         char[] result = new char[width + 2];
         result[0] = '0';
         result[1] = 'x';
-        return convertToHex(value, width, 2, result);
+        return convertToHex(value, width, 2, result, CharUtil.HEX_CHARS);
     }
 
     public static String toBin(long value, int width) {
