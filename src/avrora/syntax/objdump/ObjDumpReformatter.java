@@ -121,16 +121,27 @@ public class ObjDumpReformatter {
     }
 
     private void printSectionHeader(String section, StringBuffer out, String line) {
-        out.append("  section "+section+" ");
+        append(out, "  section ", section, " ");
         StringTokenizer st = new StringTokenizer(line);
         st.nextToken(); // 0
         st.nextToken(); //.text
-        out.append(" size=0x" + st.nextToken());
-        out.append(" vma=0x" + st.nextToken());
-        out.append(" lma=0x" + st.nextToken());
-        out.append(" offset=0x" + st.nextToken());
-        out.append(" ;" + st.nextToken());
+        append(out, " size=0x", st.nextToken());
+        append(out, " vma=0x", st.nextToken());
+        append(out, " lma=0x", st.nextToken());
+        append(out, " offset=0x", st.nextToken());
+        append(out, " ;", st.nextToken());
         out.append(" \n");
+    }
+
+    private static void append(StringBuffer out, Object a, Object b) {
+        out.append(a);
+        out.append(b);
+    }
+
+    private static void append(StringBuffer out, Object a, Object b, Object c) {
+        out.append(a);
+        out.append(b);
+        out.append(c);
     }
 
     private String readSection(BufferedReader in, StringBuffer out, String section) throws IOException {
@@ -142,10 +153,10 @@ public class ObjDumpReformatter {
     }
 
     private String ignoreSection(BufferedReader in, StringBuffer out, String section) throws IOException {
-        out.append("; section "+section+" removed");
+        append(out, "; section ", section, " removed");
         String line = nextLine(in);
         while ( line != null) {
-            out.append("; "+line+"\n");
+            append(out, "; ", line, "\n");
             if ( getSectionName(line) != null )
                 return line;
             line = nextLine(in);
@@ -155,7 +166,7 @@ public class ObjDumpReformatter {
 
     private String convertSection(BufferedReader in, StringBuffer out, String section) throws IOException {
         // add the start of the section name
-        out.append("\nstart " + section + ":\n");
+        append(out, "\nstart ", section, ":\n");
 
         // read the next line
         String line = nextLine(in);
@@ -166,7 +177,7 @@ public class ObjDumpReformatter {
             if (getSectionName(line) != null)
                 return line;
 
-            // ignore ... in output
+            // ignore "..." in output
             if (line.indexOf("...") != -1) {
                 line = nextLine(in);
                 out.append("; ...");
@@ -178,11 +189,11 @@ public class ObjDumpReformatter {
             }
 
             if (isLabel(line)) {
-                out.append("\nlabel 0x");
+                out.append("label 0x");
                 StringTokenizer st = new StringTokenizer(line);
                 out.append(st.nextToken());
-                String name = st.nextToken();
-                out.append("  " + name.replaceAll("[<,>]", "\"") + '\n');
+                String name = st.nextToken().replaceAll("[<,>]", "\"");
+                append(out, "  ", name, "\n");
             } else {
 
                 String tok;
@@ -194,11 +205,14 @@ public class ObjDumpReformatter {
                         tok = st.nextToken();
 
                         if (tok.matches("\\p{XDigit}\\p{XDigit}"))
-                            out.append(" 0x" + tok);
+                            append(out, " 0x", tok);
                         else if ( tok.charAt(0) == '<' )
-                            out.append("; "+tok);
+                            append(out, "; ", tok);
+                        // workaround for objdump 2.16.1 bug
+                        else if ( tok.startsWith("0x0x") )
+                            append(out, " ", tok.substring(2, tok.length()));
                         else
-                            out.append("  " + tok);
+                            append(out, " ", tok);
 
                     }
                     out.append('\n');
