@@ -176,7 +176,7 @@ public class ClassMap {
         }
 
         // UNREACHABLE
-        throw Util.failure("Unreachable state in dynamic instantiation of class");
+        throw Util.unreachable();
     }
 
     /**

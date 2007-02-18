@@ -34,6 +34,7 @@ package cck.test;
 
 import cck.text.Status;
 import cck.text.Terminal;
+import cck.text.StringUtil;
 import cck.util.ClassMap;
 import cck.util.Util;
 
@@ -107,30 +108,47 @@ public class TestEngine {
      *
      * @param fnames an array of the filenames of tests to run
      * @throws java.io.IOException if there is a problem loading the test cases
+     * @return true if all the tests pass
      */
-    public void runTests(String[] fnames) throws java.io.IOException {
+    public boolean runTests(String[] fnames) throws java.io.IOException {
+        // record start time
+        long time = System.currentTimeMillis();
+
         // initialize the lists of tests and fields
         initTests(fnames);
 
         // run all the test cases
         runAllTests();
 
-        // report successes
-        Terminal.printBrightGreen("Test successes");
-        Terminal.println(": " + successes.size() + " of " + testNames.length);
+        // record end time
+        time = System.currentTimeMillis() - time;
 
         // report failures
-        report("Internal errors", results, TestResult.INTERNAL, testNames.length);
-        report("Unexpected exceptions", results, TestResult.EXCEPTION, testNames.length);
-        report("Failures", results, TestResult.FAILURE, testNames.length);
-        report("Malformed test cases", results, TestResult.MALFORMED, testNames.length);
+        reportFailures();
+
+        // report successes
+        reportSuccesses(time);
 
         // report statistics
         reportStatistics(results);
 
-        // return 0 if all tests were successful, 1 otherwise
-        if (successes.size() == testNames.length) System.exit(0);
-        else System.exit(1);
+        // return true if all tests passed
+        return successes.size() == testNames.length;
+    }
+
+    private void reportFailures() {
+        report("Internal errors", results, TestResult.INTERNAL, testNames.length);
+        report("Unexpected exceptions", results, TestResult.EXCEPTION, testNames.length);
+        report("Failed", results, TestResult.FAILURE, testNames.length);
+        report("Malformed test cases", results, TestResult.MALFORMED, testNames.length);
+    }
+
+    private void reportSuccesses(long time) {
+        Terminal.printBrightGreen("Passed");
+        Terminal.print(": " + successes.size());
+        Terminal.print(" of " + testNames.length);
+        Terminal.print(" in " + StringUtil.milliToSecs(time) +" seconds");
+        Terminal.nextln();
     }
 
     private void initTests(String[] fnames) {
