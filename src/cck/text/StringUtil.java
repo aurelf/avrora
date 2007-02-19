@@ -640,6 +640,13 @@ public class StringUtil {
         }
     }
 
+    public static void commalist(Iterator i, StringBuffer buf) {
+        for ( int cntr = 0; i.hasNext(); cntr++ ) {
+            if (cntr > 0) buf.append(", ");
+            buf.append(i.next().toString());
+        }
+    }
+
     public static String linelist(List l) {
         StringBuffer buf = new StringBuffer();
         linelist(buf, l);
