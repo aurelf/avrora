@@ -47,12 +47,6 @@ public class ADC extends AtmelInternalDevice {
     public static final int VBG_LEVEL = 0x3ff;
     public static final int GND_LEVEL = 0x000;
 
-    public static final int ACSR = 0x08;
-    public static final int ADMUX = 0x07;
-    public static final int ADCSRA = 0x06;
-    public static final int ADCH = 0x05;
-    public static final int ADCL = 0x04;
-
     private static final ADCInput VBG_INPUT = new ADCInput() {
         public int getLevel() {
             return VBG_LEVEL; // figure out correct value for this eventually
@@ -133,8 +127,8 @@ public class ADC extends AtmelInternalDevice {
 
     /**
      * Abstract class grouping together registers related to the ADC.
+     * TODO: remove this class and migrate to general registers
      */
-    // TODO: is this class necessary?
     protected abstract class ADCRegister extends RWRegister {
 
         public void write(byte val) {
@@ -162,12 +156,15 @@ public class ADC extends AtmelInternalDevice {
     static final int[] SINGLE_ENDED_INPUT = { 0, 1, 2, 3, 4, 5, 6, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9 };
 
+    // TODO: unused
     static final int[] GAIN = { -1, -1, -1, -1, -1, -1, -1, -1, 10, 10, 200, 200, 10, 10, 200, 200, 1, 1, 1,
             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1 };
 
+    // TODO: unused
     static final int[] POS_INPUT = { -1, -1, -1, -1, -1, -1, -1, -1, 0, 1, 0, 1, 2, 3, 2, 3, 0, 1, 2, 3, 4, 5,
             6, 7, 0, 1, 2, 3, 4, 5, -1, -1 };
 
+    // TODO: unused
     static final int[] NEG_INPUT = { -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1,
             1, 1, 2, 2, 2, 2, 2, 2, -1, 1 };
 
@@ -182,10 +179,10 @@ public class ADC extends AtmelInternalDevice {
         static final int REFS_INTERNAL = 3;
 
 
-        int singleInputIndex = 0;
-        int gain = -1;
-        int positiveInputIndex = -1;
-        int negativeInputIndex = -1;
+        int singleInputIndex;
+
+        int positiveInputIndex = -1; // TODO: unused
+        int negativeInputIndex = -1; // TODO: unused
 
         boolean singleEndedInput = true;
 
@@ -202,11 +199,11 @@ public class ADC extends AtmelInternalDevice {
             positiveInputIndex = POS_INPUT[mux];
             negativeInputIndex = NEG_INPUT[mux];
 
-            singleEndedInput = (val < 8 || val == 0x1e || val == 0x1f);
+            singleEndedInput = (mux < 8 || mux == 0x1e || mux == 0x1f);
         }
 
         protected void printStatus() {
-            devicePrinter.println("ADC: refs " + refs + ", adlar " + StringUtil.toBit(adlar) + ", mux: " + mux);
+            devicePrinter.println("ADC: refs " + refs + ", adlar " + StringUtil.toBit(adlar) + ", mux: " + mux + ", singleEnded: " + StringUtil.toBit(singleEndedInput));
         }
     }
 
@@ -249,7 +246,7 @@ public class ADC extends AtmelInternalDevice {
         boolean converting;
 
         ControlRegister() {
-            conversion = new ControlRegister.Conversion();
+            conversion = new Conversion();
         }
 
         private void unpostADCInterrupt() {
