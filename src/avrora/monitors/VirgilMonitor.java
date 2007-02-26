@@ -43,7 +43,6 @@ import avrora.arch.AbstractInstr;
 import avrora.arch.legacy.*;
 import cck.text.Terminal;
 import cck.text.StringUtil;
-import cck.util.Option;
 
 /**
  * The <code>VirgilMonitor</code> monitor prints a stack trace when the
@@ -59,12 +58,6 @@ public class VirgilMonitor extends MonitorFactory {
     public static final int ABORT_NULL_CODE = 126;
     public static final int ABORT_BOUNDS_CODE = 125;
     public static final int ABORT_DIV_CODE = 124;
-    public static final int ABORT_ALLOC_CODE = 123;
-    public static final int ABORT_UNIMP_CODE = 122;
-
-    public final Option.Long STATUS_ADDR = newOption("status-addr", 0x91,
-            "This option specifies the address in memory where the status register lies. " +
-                    "The status register is used to diagnose the cause of a program abort.");
 
     public class Mon implements Monitor {
         public final Simulator simulator;
@@ -93,12 +86,10 @@ public class VirgilMonitor extends MonitorFactory {
             public void fireBefore(State state, int pc) {
                 String idstr = SimUtil.getIDTimeString(simulator);
                 LegacyState s = (LegacyState) simulator.getState();
-                int code = s.getDataByte((int)STATUS_ADDR.get());
+                int code = s.getRegisterByte(LegacyRegister.getRegisterByNumber(0));
                 String name = "UnknownException";
                 String msg = "an unknown exception occurred";
                 switch (code) {
-                    case 0: // normal program return from main
-                        return;
                     case ABORT_TYPE_CODE:
                         name = "TypeCheckException";
                         msg = "type check exception in explicit cast";
@@ -114,14 +105,6 @@ public class VirgilMonitor extends MonitorFactory {
                     case ABORT_DIV_CODE:
                         name = "DivideByZeroException";
                         msg = "division by zero";
-                        break;
-                    case ABORT_ALLOC_CODE:
-                        name = "AllocationException";
-                        msg = "dynamic memory allocation failed";
-                        break;
-                    case ABORT_UNIMP_CODE:
-                        name = "UnimplementedException";
-                        msg = "method not implemented";
                         break;
                 }
                 Terminal.print(idstr);

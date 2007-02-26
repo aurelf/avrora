@@ -53,14 +53,14 @@ import cck.text.Terminal;
  */
 public class BreakMonitor extends MonitorFactory {
 
-    public class Mon implements avrora.monitors.Monitor {
+    public class Mon implements Monitor {
         public final Simulator simulator;
         public final CallTrace trace;
         public final CallStack stack;
         private final SourceMapping sourceMap;
 
         Mon(Simulator s) {
-            this.simulator = s;
+            simulator = s;
 
             trace = new CallTrace(s);
             stack = new CallStack();
@@ -116,7 +116,7 @@ public class BreakMonitor extends MonitorFactory {
                 "trace.");
     }
 
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
+    public Monitor newMonitor(Simulator s) {
         return new Mon(s);
     }
 }

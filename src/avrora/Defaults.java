@@ -108,6 +108,7 @@ public class Defaults {
             monitorMap.addClass("serial", SerialMonitor.class);
             monitorMap.addClass("trip-time", TripTimeMonitor.class);
             monitorMap.addClass("ioregs", IORegMonitor.class);
+            monitorMap.addClass("virgil", VirgilMonitor.class);
             monitorMap.addClass("real-time", RealTimeMonitor.class);
 
             HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
