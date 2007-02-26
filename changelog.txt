@@ -30,6 +30,7 @@
     1   sensor  update-node-id with ELF must use flash, not RAM address
     1    input  Grammar for new objdump version
     2    radio  Detect receives of radio bytes and notify radio probes
+    1      dev  SPIF flag in SPSR register
 
 ----------------------------------- Completed -----------------------------------------
     1    input  Workaround for objdump 2.16.1 bug                             1.7.74 
@@ -99,6 +100,7 @@
     2    probe  Event profiler that collects min, max, mean statistics
 
 ----------------------------------- Completed -----------------------------------------
+    1   probes  Added VirgilMonitor for watching for Virgil-level exceptions 1.7.76
     1     devs  Added ATMega169 from Anttu Koski                             1.7.70
     2     devs  Added new versions of ATMega, ATMegaTimer                    1.7.66
     1     devs  Added first version of ATMegaTimer class                     1.7.65

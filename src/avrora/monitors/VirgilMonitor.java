@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2006, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,30 +28,36 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Feb 26, 2007
  */
 
 package avrora.monitors;
 
-import avrora.arch.AbstractInstr;
-import avrora.arch.legacy.*;
-import avrora.core.Program;
-import avrora.core.SourceMapping;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.util.SimUtil;
-import cck.text.StringUtil;
+import avrora.core.SourceMapping;
+import avrora.core.Program;
+import avrora.arch.AbstractInstr;
+import avrora.arch.legacy.*;
 import cck.text.Terminal;
+import cck.text.StringUtil;
 
 /**
- * The <code>Break</code> monitor prints a stack trace when the
- * program being simulated executes a break instruction.  Breaks are
- * are good implementation for assertion failures and similar.
+ * The <code>VirgilMonitor</code> monitor prints a stack trace when the
+ * program being simulated executes a break instruction.  This version
+ * uses the code in R0 to determine the specific source-level exception
+ * that occurred.
  *
- * @author Reet D. Dhakal
- * @author John Regehr
  * @author Ben L. Titzer
  */
-public class BreakMonitor extends MonitorFactory {
+public class VirgilMonitor extends MonitorFactory {
+
+    public static final int ABORT_TYPE_CODE = 127;
+    public static final int ABORT_NULL_CODE = 126;
+    public static final int ABORT_BOUNDS_CODE = 125;
+    public static final int ABORT_DIV_CODE = 124;
 
     public class Mon implements Monitor {
         public final Simulator simulator;
@@ -79,13 +85,32 @@ public class BreakMonitor extends MonitorFactory {
 
             public void fireBefore(State state, int pc) {
                 String idstr = SimUtil.getIDTimeString(simulator);
-                Terminal.print(idstr);
-                Terminal.print("break instruction @ ");
-                Terminal.printBrightCyan(StringUtil.addrToString(pc));
-                Terminal.print(", r30:r31 = ");
                 LegacyState s = (LegacyState) simulator.getState();
-                int v = s.getRegisterWord(LegacyRegister.getRegisterByNumber(30));
-                Terminal.printGreen(StringUtil.to0xHex(v, 4));
+                int code = s.getRegisterByte(LegacyRegister.getRegisterByNumber(0));
+                String name = "UnknownException";
+                String msg = "an unknown exception occurred";
+                switch (code) {
+                    case ABORT_TYPE_CODE:
+                        name = "TypeCheckException";
+                        msg = "type check exception in explicit cast";
+                        break;
+                    case ABORT_NULL_CODE:
+                        name = "NullCheckException";
+                        msg = "null check exception";
+                        break;
+                    case ABORT_BOUNDS_CODE:
+                        name = "BoundsCheckException";
+                        msg = "array bounds check exception";
+                        break;
+                    case ABORT_DIV_CODE:
+                        name = "DivideByZeroException";
+                        msg = "division by zero";
+                        break;
+                }
+                Terminal.print(idstr);
+                Terminal.printRed(name);
+                Terminal.print(": "+msg+" @ ");
+                Terminal.printBrightCyan(StringUtil.addrToString(pc));
                 Terminal.nextln();
 
                 printStack(idstr);
@@ -96,7 +121,7 @@ public class BreakMonitor extends MonitorFactory {
             int depth = stack.getDepth();
             for (int cntr = depth - 1; cntr >= 0; cntr--) {
                 Terminal.print(idstr);
-                Terminal.print("      @ ");
+                Terminal.print("      in ");
                 int inum = stack.getInterrupt(cntr);
                 if ( inum >= 0 ) Terminal.printRed("#"+inum +" ");
                 Terminal.printGreen(sourceMap.getName(stack.getTarget(cntr)));
@@ -109,11 +134,10 @@ public class BreakMonitor extends MonitorFactory {
         }
     }
 
-    public BreakMonitor() {
-        super("The \"break\" monitor watches for execution of an AVR break " +
-                "instruction, which can be used to implement things like assertion " +
-                "failures.  When a break is executed the simulator prints a stack " +
-                "trace.");
+    public VirgilMonitor() {
+        super("The \"virgil\" monitor watches for execution of an AVR break " +
+                "instruction, which is used by the Virgil compiler to signal fatal " +
+                "exceptions.");
     }
 
     public Monitor newMonitor(Simulator s) {
