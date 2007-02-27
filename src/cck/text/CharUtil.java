@@ -81,6 +81,16 @@ public class CharUtil {
         return false;
     }
 
+    public static char toUpperHexChar(int digitValue) {
+        if ( digitValue < 10 ) return (char)(digitValue | '0');
+        return (char)('A' + digitValue - 10);
+    }
+
+    public static char toLowerHexChar(int digitValue) {
+        if ( digitValue < 10 ) return (char)(digitValue | '0');
+        return (char)('a' + digitValue - 10);
+    }
+
     /**
      * The <code>hexValueOf()</code> method converts a character into an integer
      * value according to the hexadecimal base system.
