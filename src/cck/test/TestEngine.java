@@ -258,7 +258,11 @@ public class TestEngine {
 
         if ( PROGRESS_REPORT ) Terminal.nextln();
 
-        tc.result = tc.match(exception);
+        try {
+            tc.result = tc.match(exception);
+        } catch (Throwable t) {
+            tc.result = new TestResult.UnexpectedException("exception in match routine: ", t);
+        }
         return tc;
     }
 

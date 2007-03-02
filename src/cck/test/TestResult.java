@@ -193,6 +193,11 @@ public abstract class TestResult {
             encountered = e;
         }
 
+        public UnexpectedException(String msg, Throwable e) {
+            super(msg + e.getClass(), e);
+            encountered = e;
+        }
+
         public void longReport() {
             Terminal.println("encountered unexpected exception");
             encountered.printStackTrace();
