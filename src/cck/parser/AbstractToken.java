@@ -70,4 +70,19 @@ public abstract class AbstractToken {
     public SourcePoint asSourcePoint(String f) {
         return new SourcePoint(f, beginLine, endLine, beginColumn, endColumn);
     }
+
+    public static AbstractToken newToken(String img, SourcePoint pt) {
+        AbstractToken t = new AbstractToken() {
+            public AbstractToken getNextToken() { return null; }
+        };
+        t.image = img;
+        if ( pt != null ) {
+            t.file = pt.file;
+            t.beginLine = pt.beginLine;
+            t.beginColumn = pt.beginColumn;
+            t.endLine = pt.endLine;
+            t.endColumn = pt.endColumn;
+        }
+        return t;
+    }
 }
