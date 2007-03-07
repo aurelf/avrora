@@ -43,22 +43,21 @@ import cck.util.Arithmetic;
  */
 public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTable.Notification {
 
-    // TODO: unpost SPI interrupt when fired
-
     final SPDReg SPDR_reg;
     final SPCRReg SPCR_reg;
     final SPSReg SPSR_reg;
 
     SPIDevice connectedDevice;
 
-    final TransmitReceive transmitReceive = new TransmitReceive();
+    final TransferEvent transferEvent = new TransferEvent();
 
     int SPR;
     boolean SPI2x;
     boolean master;
     boolean SPIenabled;
+    boolean spifAccessed;
 
-    final int interruptNum = 18;
+    int interruptNum;
 
     protected int period;
 
@@ -73,19 +72,19 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         }
     }
 
-    private final static Frame[] frames = new Frame[256];
+    private final static Frame[] frameCache = new Frame[256];
     public final static Frame ZERO_FRAME;
     public final static Frame FF_FRAME;
 
     static {
         for ( int cntr = 0; cntr < 256; cntr++ )
-            frames[cntr] = new Frame((byte)cntr);
-        ZERO_FRAME = frames[0];
-        FF_FRAME = frames[0xff];
+            frameCache[cntr] = new Frame((byte)cntr);
+        ZERO_FRAME = frameCache[0];
+        FF_FRAME = frameCache[0xff];
     }
 
     public static Frame newFrame(byte data) {
-        return frames[data & 0xff];
+        return frameCache[data & 0xff];
     }
 
     public void connect(SPIDevice d) {
@@ -94,8 +93,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
 
     public void receiveFrame(Frame frame) {
         SPDR_reg.receiveReg.write(frame.data);
-        if (!master && !transmitReceive.transmitting) SPSR_reg.writeBit(7, true); // flag interrupt
-
+        if (!master && !transferEvent.transmitting) postSPIInterrupt();
     }
 
     public Frame transmitFrame() {
@@ -107,6 +105,8 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         SPDR_reg = new SPDReg();
         SPCR_reg = new SPCRReg();
         SPSR_reg = new SPSReg();
+
+        interruptNum = m.getProperties().getInterrupt("SPI, STC");
 
         installIOReg("SPDR", SPDR_reg);
         installIOReg("SPSR", SPSR_reg);
@@ -120,42 +120,34 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
      */
     private void postSPIInterrupt() {
         interpreter.setPosted(interruptNum, true);
+        SPSR_reg.setSPIF();
     }
 
     private void unpostSPIInterrupt() {
         interpreter.setPosted(interruptNum, false);
+        SPSR_reg.clearSPIF();
     }
 
     private void calculatePeriod() {
         int divider = 0;
 
         switch (SPR) {
-            case 0:
-                divider = 4;
-                break;
-            case 1:
-                divider = 16;
-                break;
-            case 2:
-                divider = 64;
-                break;
-            case 3:
-                divider = 128;
-                break;
+            case 0: divider = 4; break;
+            case 1: divider = 16; break;
+            case 2: divider = 64; break;
+            case 3: divider = 128; break;
         }
 
-        if (SPI2x) {
-            divider /= 2;
-        }
+        if (SPI2x) divider /= 2;
 
         period = divider * 8;
     }
 
 
     /**
-     * The SPI transfer event.
+     * The SPI transfer event. Upon firing delivers frames in both directions.
      */
-    protected class TransmitReceive implements Simulator.Event {
+    protected class TransferEvent implements Simulator.Event {
 
         Frame myFrame;
         Frame connectedFrame;
@@ -192,12 +184,11 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
     }
 
     public void force(int inum) {
-        // TODO: set SPIF
+        SPSR_reg.setSPIF();
     }
 
     public void invoke(int inum) {
         unpostSPIInterrupt();
-        SPSR_reg.clearSPIF();
     }
 
     /**
@@ -206,26 +197,8 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
      */
     class SPDReg implements ActiveRegister {
 
-        protected final ReceiveRegister receiveReg;
+        protected final RWRegister receiveReg;
         protected final TransmitRegister transmitReg;
-
-        protected class ReceiveRegister extends RWRegister {
-
-            // TODO: there is no need for a special class to print out debugging information
-            public byte read() {
-                byte val = super.read();
-                if (devicePrinter.enabled)
-                    devicePrinter.println("SPI: read " + StringUtil.toMultirepString(val, 8) + " from SPDR ");
-                return val;
-
-            }
-
-            public boolean readBit(int bit) {
-                if (devicePrinter.enabled)
-                    devicePrinter.println("SPI: read bit " + bit + " from SPDR");
-                return super.readBit(bit);
-            }
-        }
 
         protected class TransmitRegister extends RWRegister {
 
@@ -239,7 +212,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
 
                 // the enableTransfer method has the necessary checks to make sure a transfer at this point
                 // is necessary
-                transmitReceive.enableTransfer();
+                transferEvent.enableTransfer();
 
             }
 
@@ -247,14 +220,13 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
                 if (devicePrinter.enabled)
                     devicePrinter.println("SPI: wrote " + val + " to SPDR, bit " + bit);
                 super.writeBit(bit, val);
-                transmitReceive.enableTransfer();
+                transferEvent.enableTransfer();
             }
 
         }
 
         SPDReg() {
-
-            receiveReg = new ReceiveRegister();
+            receiveReg = new RWRegister();
             transmitReg = new TransmitRegister();
         }
 
@@ -264,6 +236,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
          * @return the value from the receive buffer
          */
         public byte read() {
+            if ( spifAccessed ) unpostSPIInterrupt();
             return receiveReg.read();
         }
 
@@ -273,6 +246,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
          * @param val the value to transmit buffer
          */
         public void write(byte val) {
+            // TODO: implement write collision detection
             transmitReg.write(val);
         }
 
@@ -283,6 +257,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
          * @return false
          */
         public boolean readBit(int num) {
+            if ( spifAccessed ) unpostSPIInterrupt();
             return receiveReg.readBit(num);
 
         }
@@ -312,7 +287,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         static final int SPR1 = 1;
         static final int SPR0 = 0;
         //OL: remember old state of spi enable bit
-        boolean SPIEnable = false;
+        boolean SPIEnable;
 
         public void write(byte val) {
             if (devicePrinter.enabled)
@@ -355,9 +330,8 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
             SPR |= Arithmetic.getBit(val, SPR0) ? 0x01 : 0;
             calculatePeriod();
 
-            if (!oldMaster && master) {
-                transmitReceive.enableTransfer();
-            }
+            // if we just became the master, enable transfer
+            if (master && !oldMaster) transferEvent.enableTransfer();
         }
 
     }
@@ -366,8 +340,6 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
      * SPI status register.
      */
     class SPSReg extends RWRegister {
-        // TODO: implement write collision
-        // TODO: finish implementing interrupt
 
         static final int SPIF = 7;
         static final int WCOL = 6;
@@ -386,6 +358,16 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
             decode(value);
         }
 
+        public boolean readBit(int num) {
+            if ( getSPIF() ) spifAccessed = true;
+            return super.readBit(num);
+        }
+
+        public byte read() {
+            if ( getSPIF() ) spifAccessed = true;
+            return super.read();
+        }
+
         byte oldVal;
 
         protected void decode(byte val) {
@@ -393,25 +375,24 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
             if (!Arithmetic.getBit(oldVal, SPIF) && Arithmetic.getBit(val, SPIF)) {
                 postSPIInterrupt();
             }
-            // TODO: handle write collisions
 
+            spifAccessed = false;
             SPI2x = Arithmetic.getBit(value, 0);
             oldVal = val;
         }
 
         public void setSPIF() {
-            writeBit(SPIF, true);
+            value = Arithmetic.setBit(value, SPIF);
+            spifAccessed = false;
         }
 
         public void clearSPIF() {
-            writeBit(SPIF, false);
+            value = Arithmetic.clearBit(value, SPIF);
+            spifAccessed = false;
         }
 
         public boolean getSPIF() {
-            return readBit(SPIF);
+            return Arithmetic.getBit(value, SPIF);
         }
-
     }
-
-
 }

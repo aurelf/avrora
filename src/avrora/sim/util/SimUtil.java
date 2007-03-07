@@ -97,7 +97,7 @@ public class SimUtil {
                 synchronized ( Terminal.class ) {
                     // synchronize on the terminal to prevent interleaved output
                     StringBuffer buf = new StringBuffer(s.length()+30);
-                    SimUtil.getIDTimeString(buf, simulator);
+                    getIDTimeString(buf, simulator);
                     buf.append(s);
                     Terminal.println(buf.toString());
                 }

@@ -136,7 +136,7 @@ public class USART extends AtmelInternalDevice {
 
     public USARTDevice connectedDevice;
 
-    int period = 0;
+    int period;
     int UBRRMultiplier = 16;
     int frameSize = 8; // does this default to 5?
 
@@ -175,11 +175,11 @@ public class USART extends AtmelInternalDevice {
         /**
          * Constructor for a USARTFrame. The <code>high</code> bit is used for 9 bit frame sizes.
          */
-        public Frame(byte low, boolean high, int size) {
+        public Frame(byte low, boolean high, int sz) {
             int val = low;
-            if ( size > 8 ) val = Arithmetic.setBit(val, 8, high);
-            this.value = val;
-            this.size = size;
+            if ( sz > 8 ) val = Arithmetic.setBit(val, 8, high);
+            value = val;
+            size = sz;
         }
 
         public String toString() {
@@ -235,8 +235,8 @@ public class USART extends AtmelInternalDevice {
     }
 
     protected class Transmitter {
-        boolean transmitting = false;
-        Transmitter.Transmit transmit = new Transmitter.Transmit();
+        boolean transmitting;
+        Transmitter.Transmit transmit = new Transmit();
 
         protected void enableTransmit() {
             if (!transmitting) {
@@ -275,8 +275,8 @@ public class USART extends AtmelInternalDevice {
 
     protected class Receiver {
 
-        boolean receiving = false;
-        Receiver.Receive receive = new Receiver.Receive();
+        boolean receiving;
+        Receiver.Receive receive = new Receive();
 
         protected void enableReceive() {
             if (!receiving) {
@@ -315,7 +315,7 @@ public class USART extends AtmelInternalDevice {
 
         DataRegister() {
             transmitRegister = new RWRegister();
-            receiveRegister = new DataRegister.TwoLevelFIFO();
+            receiveRegister = new TwoLevelFIFO();
         }
 
         public void write(byte val) {
@@ -359,9 +359,9 @@ public class USART extends AtmelInternalDevice {
             TwoLevelFIFO() {
                 readyQueue = new LinkedList();
                 waitQueue = new LinkedList();
-                waitQueue.add(new DataRegister.TwoLevelFIFO.USARTFrameWrapper());
-                waitQueue.add(new DataRegister.TwoLevelFIFO.USARTFrameWrapper());
-                waitQueue.add(new DataRegister.TwoLevelFIFO.USARTFrameWrapper());
+                waitQueue.add(new USARTFrameWrapper());
+                waitQueue.add(new USARTFrameWrapper());
+                waitQueue.add(new USARTFrameWrapper());
             }
 
             public boolean readBit(int bit) {
@@ -373,7 +373,7 @@ public class USART extends AtmelInternalDevice {
                 if (readyQueue.isEmpty()) {
                     return (byte)0;
                 }
-                DataRegister.TwoLevelFIFO.USARTFrameWrapper current = (DataRegister.TwoLevelFIFO.USARTFrameWrapper)readyQueue.removeLast();
+                USARTFrameWrapper current = (USARTFrameWrapper)readyQueue.removeLast();
                 if (readyQueue.isEmpty()) {
                     UCSRnA_reg.RXC_flag.unflag();
                 }
@@ -387,7 +387,7 @@ public class USART extends AtmelInternalDevice {
                     // data overrun. drop frame
                     UCSRnA_reg.writeBit(DORn, true);
                 } else {
-                    DataRegister.TwoLevelFIFO.USARTFrameWrapper current = (DataRegister.TwoLevelFIFO.USARTFrameWrapper)(waitQueue.removeLast());
+                    USARTFrameWrapper current = (USARTFrameWrapper)(waitQueue.removeLast());
                     current.frame = frame;
                     readyQueue.addFirst(current);
                 }
@@ -521,7 +521,7 @@ public class USART extends AtmelInternalDevice {
      * The high three bits are actually interrupt mask bits.
      */
     protected class ControlRegisterB extends ATMegaFamily.MaskRegister {
-        int count = 0;
+        int count;
 
         ControlRegisterB() {
             super(USART.this.interpreter, properties.interruptMapping);
@@ -578,7 +578,6 @@ public class USART extends AtmelInternalDevice {
             }
             decode(value);
         }
-
     }
 
     /**
@@ -624,7 +623,7 @@ public class USART extends AtmelInternalDevice {
 
         char[] stream = {'h', 'e', 'l', 'l', 'o', 'w', 'o', 'r', 'l', 'd'};
 
-        int count = 0;
+        int count;
 
         public Frame transmitFrame() {
             return new Frame((byte)stream[count++ % stream.length], false, 8);
@@ -632,16 +631,6 @@ public class USART extends AtmelInternalDevice {
 
         public void receiveFrame(Frame frame) {
             if (serialPrinter.enabled) serialPrinter.println("Serial Printer " + frame.toString());
-        }
-
-        SerialPrinter() {
-            SerialPrinter.PrinterTicker printerTicker = new SerialPrinter.PrinterTicker();
-        }
-
-        private class PrinterTicker implements Simulator.Event {
-            public void fire() {
-                if (UCSRnB_reg.readBit(RXENn)) receiver.enableReceive();
-            }
         }
     }
 

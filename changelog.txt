@@ -30,10 +30,10 @@
     1   sensor  update-node-id with ELF must use flash, not RAM address
     1    input  Grammar for new objdump version
     2    radio  Detect receives of radio bytes and notify radio probes
-    1      dev  SPIF flag in SPSR register
 
 ----------------------------------- Completed -----------------------------------------
-    1    input  Workaround for objdump 2.16.1 bug                             1.7.74 
+    1      dev  SPIF flag in SPSR register                                    1.7.77
+    1    input  Workaround for objdump 2.16.1 bug                             1.7.74
     1      gdb  Switched gdb monitor to use lowercase hex [Tim Auton]         1.7.73
     1      dev  Fixed problem with ADC conversion simulation                  1.7.72
     1      sim  Enable / Disable interrupts on write to SREG                  1.7.69
@@ -100,6 +100,7 @@
     2    probe  Event profiler that collects min, max, mean statistics
 
 ----------------------------------- Completed -----------------------------------------
+    1   probes  [Sascha Silbe] added support for multiple USART connx        1.7.77
     1   probes  Added VirgilMonitor for watching for Virgil-level exceptions 1.7.76
     1     devs  Added ATMega169 from Anttu Koski                             1.7.70
     2     devs  Added new versions of ATMega, ATMegaTimer                    1.7.66
