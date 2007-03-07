@@ -42,6 +42,8 @@ import avrora.sim.platform.SerialForwarder;
 import cck.util.*;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.HashSet;
 
 
 /**
@@ -108,11 +110,17 @@ public class SerialMonitor extends MonitorFactory {
          * @param s Simulator
          */
         Monitor(Simulator s) {
-            Connection conn = (Connection)portMap.get(new Integer(s.getID()));
-            if ( conn != null ) {
-                AtmelMicrocontroller mcu = (AtmelMicrocontroller)s.getMicrocontroller();
-                USART usart = (USART)mcu.getDevice("usart" + conn.usart);
-                conn.connect(usart);
+            Set conns = (Set)portMap.get(new Integer(s.getID()));
+            if ( conns != null ) {
+                Iterator i = conns.iterator();
+                while ( i.hasNext() ) {
+                    Connection conn = (Connection)i.next();
+                    AtmelMicrocontroller mcu = (AtmelMicrocontroller)s.getMicrocontroller();
+                    USART usart = (USART)mcu.getDevice("usart" + conn.usart);
+                    if ( usart == null && conn.usart == 0 )
+                        usart = (USART)mcu.getDevice("usart");
+                    conn.connect(usart);
+                }
             }
         }
 
@@ -151,7 +159,7 @@ public class SerialMonitor extends MonitorFactory {
             SocketConnection conn = new SocketConnection();
             conn.usart = uart;
             conn.port = port;
-            portMap.put(new Integer(nid), conn);
+            addConnection(nid, conn);
         }
     }
 
@@ -169,8 +177,18 @@ public class SerialMonitor extends MonitorFactory {
             conn.usart = uart;
             conn.infile = inf;
             conn.outfile = outf;
-            portMap.put(new Integer(nid), conn);
+            addConnection(nid, conn);
         }
+    }
+
+    private void addConnection(int nid, Connection ucon) {
+        Integer nidI = new Integer(nid);
+        Set set = (Set)portMap.get(nidI);
+        if (set == null) {
+            set = new HashSet();
+            portMap.put(nidI, set);
+        }
+        set.add(ucon);
     }
 
     /**

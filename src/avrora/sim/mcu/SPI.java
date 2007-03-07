@@ -33,7 +33,6 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
-import avrora.sim.state.*;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
 
@@ -52,6 +51,10 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
 
     final TransferEvent transferEvent = new TransferEvent();
 
+    int SPR;
+    boolean SPI2x;
+    boolean master;
+    boolean SPIenabled;
     boolean spifAccessed;
 
     int interruptNum;
@@ -69,9 +72,9 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         }
     }
 
-    private static final Frame[] frameCache = new Frame[256];
-    public static final Frame ZERO_FRAME;
-    public static final Frame FF_FRAME;
+    private final static Frame[] frameCache = new Frame[256];
+    public final static Frame ZERO_FRAME;
+    public final static Frame FF_FRAME;
 
     static {
         for ( int cntr = 0; cntr < 256; cntr++ )
@@ -88,15 +91,13 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         connectedDevice = d;
     }
 
-    public Frame exchange(Frame frame) {
-        Frame result = newFrame(SPDR_reg.transmitReg.read());
-        receive(frame);
-        return result;
+    public void receiveFrame(Frame frame) {
+        SPDR_reg.receiveReg.write(frame.data);
+        if (!master && !transferEvent.transmitting) postSPIInterrupt();
     }
 
-    public void receive(Frame frame) {
-        SPDR_reg.receiveReg.write(frame.data);
-        if (!SPCR_reg._master.getValue() && !transferEvent.transmitting) postSPIInterrupt();
+    public Frame transmitFrame() {
+        return newFrame(SPDR_reg.transmitReg.read());
     }
 
     public SPI(AtmelMicrocontroller m) {
@@ -127,30 +128,55 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         SPSR_reg.clearSPIF();
     }
 
+    private void calculatePeriod() {
+        int divider = 0;
+
+        switch (SPR) {
+            case 0: divider = 4; break;
+            case 1: divider = 16; break;
+            case 2: divider = 64; break;
+            case 3: divider = 128; break;
+        }
+
+        if (SPI2x) divider /= 2;
+
+        period = divider * 8;
+    }
+
 
     /**
      * The SPI transfer event. Upon firing delivers frames in both directions.
      */
     protected class TransferEvent implements Simulator.Event {
 
-        Frame frame;
+        Frame myFrame;
+        Frame connectedFrame;
         boolean transmitting;
 
         protected void enableTransfer() {
 
-            if (SPCR_reg._master.getValue() && SPCR_reg._enabled.getValue() && !transmitting) {
+            if (master && SPIenabled && !transmitting) {
                 if (devicePrinter.enabled) {
                     devicePrinter.println("SPI: Master mode. Enabling transfer. ");
                 }
                 transmitting = true;
-                frame = newFrame(SPDR_reg.transmitReg.read());
+                myFrame = transmitFrame();
+                connectedFrame = connectedDevice.transmitFrame();
                 mainClock.insertEvent(this, period);
             }
         }
 
+
+        /**
+         * Notes. The way this delay is setup right now, when the ATMega128 is in master mode and
+         * transmits, the connected device has a delayed receive. For the radio, this is not a
+         * problem, as the radio is the master and is responsible for ensuring correct delivery time
+         * for the SPI.
+         */
         public void fire() {
-            if (SPCR_reg._enabled.getValue()) {
-                receive(connectedDevice.exchange(frame));
+            if (SPIenabled) {
+                connectedDevice.receiveFrame(myFrame);
+                receiveFrame(connectedFrame);
                 transmitting = false;
                 postSPIInterrupt();
             }
@@ -176,8 +202,24 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
 
         protected class TransmitRegister extends RWRegister {
 
+            byte oldData;
+
             public void write(byte val) {
+                if (devicePrinter.enabled && oldData != val)
+                    devicePrinter.println("SPI: wrote " + StringUtil.toMultirepString(val, 8) + " to SPDR");
                 super.write(val);
+                oldData = val;
+
+                // the enableTransfer method has the necessary checks to make sure a transfer at this point
+                // is necessary
+                transferEvent.enableTransfer();
+
+            }
+
+            public void writeBit(int bit, boolean val) {
+                if (devicePrinter.enabled)
+                    devicePrinter.println("SPI: wrote " + val + " to SPDR, bit " + bit);
+                super.writeBit(bit, val);
                 transferEvent.enableTransfer();
             }
 
@@ -207,6 +249,28 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
             // TODO: implement write collision detection
             transmitReg.write(val);
         }
+
+        /**
+         * The <code>readBit()</code> method
+         *
+         * @param num
+         * @return false
+         */
+        public boolean readBit(int num) {
+            if ( spifAccessed ) unpostSPIInterrupt();
+            return receiveReg.readBit(num);
+
+        }
+
+        /**
+         * The <code>writeBit()</code>
+         *
+         * @param num
+         */
+        public void writeBit(int num, boolean val) {
+            transmitReg.writeBit(num, val);
+
+        }
     }
 
     /**
@@ -216,47 +280,58 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
 
         static final int SPIE = 7;
         static final int SPE = 6;
+        static final int DORD = 5; // does not really matter, because we are fastforwarding data
         static final int MSTR = 4;
+        static final int CPOL = 3; // does not really matter, because we are fastforwarding data
+        static final int CPHA = 2; // does not really matter, because we are fastforwarding data
         static final int SPR1 = 1;
         static final int SPR0 = 0;
-
-        boolean prev_spie;
-
-        final BooleanView _master = RegisterUtil.booleanView(this, MSTR);
-        final BooleanView _enabled = RegisterUtil.booleanView(this, SPE);
-        final RegisterView _spr = RegisterUtil.bitRangeView(this, SPR0, SPR1);
+        //OL: remember old state of spi enable bit
+        boolean SPIEnable;
 
         public void write(byte val) {
             if (devicePrinter.enabled)
                 devicePrinter.println("SPI: wrote " + StringUtil.toMultirepString(val, 8) + " to SPCR");
             super.write(val);
             decode(val);
+
+        }
+
+        public void writeBit(int bit, boolean val) {
+            if (devicePrinter.enabled)
+                devicePrinter.println("SPI: wrote " + val + " to SPCR, bit " + bit);
+            super.writeBit(bit, val);
+            decode(value);
         }
 
         protected void decode(byte val) {
 
-            // Reset spi interrupt flag when enabling SPI interrupt
+            SPIenabled = Arithmetic.getBit(val, SPE);
+
+            //OL: reset spi interrupt flag, when enabling SPI
+            //this is not described in the Atmega128 handbook
+            //however, the chip seems to work like this, as S-Mac
+            //does not work without it
             boolean spie = Arithmetic.getBit(val, SPIE);
             interpreter.setEnabled(interruptNum, spie);
-            if (spie && !prev_spie) {
-                prev_spie = true;
-                SPSR_reg.clearSPIF();
+            if (spie && !SPIEnable) {
+                SPIEnable = true;
+                SPSR_reg.writeBit(SPSReg.SPIF, false);
             }
-            if (!spie && prev_spie) {
-                prev_spie = false;
-            }
+            if (!spie && SPIEnable)
+                SPIEnable = false;
+            //end OL
 
-            // calculate the period of the clock
-            int divider = 0;
-            switch (_spr.getValue()) {
-                case 0: divider = 4; break;
-                case 1: divider = 16; break;
-                case 2: divider = 64; break;
-                case 3: divider = 128; break;
-            }
+            boolean oldMaster = master;
+            master = Arithmetic.getBit(val, MSTR);
 
-            if (SPSR_reg._spi2x.getValue()) divider /= 2;
-            period = divider * 8;
+            SPR = 0;
+            SPR |= Arithmetic.getBit(val, SPR1) ? 0x02 : 0;
+            SPR |= Arithmetic.getBit(val, SPR0) ? 0x01 : 0;
+            calculatePeriod();
+
+            // if we just became the master, enable transfer
+            if (master && !oldMaster) transferEvent.enableTransfer();
         }
 
     }
@@ -269,11 +344,6 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         static final int SPIF = 7;
         static final int WCOL = 6;
 
-        final BooleanView _spif = RegisterUtil.booleanView(this, SPIF);
-        final BooleanView _spi2x = RegisterUtil.booleanView(this, 0);
-
-        byte prev_value;
-
         public void write(byte val) {
             if (devicePrinter.enabled)
                 devicePrinter.println("SPI: wrote " + val + " to SPSR");
@@ -281,30 +351,48 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
             decode(val);
         }
 
+        public void writeBit(int bit, boolean val) {
+            if (devicePrinter.enabled)
+                devicePrinter.println("SPI: wrote " + val + " to SPSR " + bit);
+            super.writeBit(bit, val);
+            decode(value);
+        }
+
+        public boolean readBit(int num) {
+            if ( getSPIF() ) spifAccessed = true;
+            return super.readBit(num);
+        }
+
         public byte read() {
-            if (_spif.getValue()) spifAccessed = true;
+            if ( getSPIF() ) spifAccessed = true;
             return super.read();
         }
 
+        byte oldVal;
+
         protected void decode(byte val) {
 
-            if (!Arithmetic.getBit(prev_value, SPIF) && Arithmetic.getBit(val, SPIF)) {
+            if (!Arithmetic.getBit(oldVal, SPIF) && Arithmetic.getBit(val, SPIF)) {
                 postSPIInterrupt();
             }
 
             spifAccessed = false;
-            prev_value = val;
+            SPI2x = Arithmetic.getBit(value, 0);
+            oldVal = val;
         }
 
         public void setSPIF() {
-            _spif.setValue(true);
+            value = Arithmetic.setBit(value, SPIF);
             spifAccessed = false;
         }
 
         public void clearSPIF() {
-            _spif.setValue(false);
+            value = Arithmetic.clearBit(value, SPIF);
             spifAccessed = false;
         }
 
+        public boolean getSPIF() {
+            return Arithmetic.getBit(value, SPIF);
+        }
     }
 }
