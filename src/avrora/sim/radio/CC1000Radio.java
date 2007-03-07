@@ -1061,7 +1061,6 @@ public class CC1000Radio implements Radio {
 
                 if (tickerOn) {
                     clock.insertEvent(this, Radio.TRANSFER_TIME);
-
                 }
             }
         }
