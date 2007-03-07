@@ -34,7 +34,8 @@ package avrora.sim.platform;
 
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
-import avrora.sim.mcu.USART;
+import avrora.sim.mcu.SPI;
+import avrora.sim.mcu.SPIDevice;
 import cck.text.Terminal;
 import cck.util.Util;
 import java.io.*;
@@ -48,30 +49,38 @@ import java.net.Socket;
  * @author Olaf Landsiedel
  * @author Ben L. Titzer
  */
-public class SerialForwarder implements USART.USARTDevice {
+public class SPIForwarder implements SPIDevice {
 
     public static final int BPS = 2400;
 
     private ServerSocket serverSocket;
+    protected int portNumber;
     private Socket socket;
+
     private OutputStream out;
     private InputStream in;
-    private USART usart;
+
+    private SPI spi;
     private SFTicker ticker;
-    private byte[] data;
-    protected int portNumber;
+    private byte[] buffer;
+    protected int bitsPerSecond;
 
-    public SerialForwarder(USART usart, int pn) {
-        usart.connect(this);
+    public SPIForwarder(SPI spdv, int pn, int bps, boolean master) {
+        spdv.connect(this);
 
-        this.usart = usart;
-        this.portNumber = pn;
-        ticker = new SFTicker(usart.getClock(), BPS);
-        ticker.start();
-        data = new byte[1];
+        spi = spdv;
+        portNumber = pn;
+        bitsPerSecond = bps;
+        buffer = new byte[1];
+
+        if ( master ) {
+            ticker = new SFTicker(spdv.getClock());
+            ticker.start();
+        }
+
         try {
             serverSocket = new ServerSocket(portNumber);
-            Terminal.print("Waiting for serial connection on port " + portNumber + "...");
+            Terminal.print("Waiting for spi connection on port " + portNumber + "...");
             Terminal.flush();
             socket = serverSocket.accept();
             Terminal.println("connected to " + socket.getRemoteSocketAddress());
@@ -82,77 +91,32 @@ public class SerialForwarder implements USART.USARTDevice {
         }
     }
 
-    /**
-     * Connect the traffic of an USART device to a device in the host system.
-     *
-     * @param usdv  USART device to redirect
-     * @param infile the name of the file (which could be a UNIX device) that specifies the input file
-     * @param outfile the name of the file (which could be a UNIX device) taht specifies the output file
-     */
-    public SerialForwarder(USART usdv, String infile, String outfile) {
-        usart = usdv;
-        portNumber = 0;
-        data = new byte[1];
 
+    public SPI.Frame transmitFrame() {
         try {
-            if (!infile.equals(outfile) ) {
-                in = new FileInputStream(infile);
-                out = new FileOutputStream(outfile);
-            } else {
-                RandomAccessFile handle = new RandomAccessFile(infile, "rw");
-                in = new FileInputStream(handle.getFD());
-                out = new FileOutputStream(handle.getFD());
+            // called when we are expected to supply data to the SPI.
+            byte data = 0;
+            if ( in.available() > 0 ) {
+                // if there is something available in the socket, transfer it
+                if ( in.read(buffer, 0, 1) > 0 ) data = buffer[0];
             }
-        } catch (IOException e) {
-            throw Util.unexpected(e);
-        }
-
-        ticker = new SFTicker(usdv.getClock(), BPS);
-        ticker.start();
-        usdv.connect(this);
-    }
-
-    /**
-     * Connect the traffic of an USART device to an external process.
-     *
-     * @param usdv   USART device to redirect
-     * @param command Command line tokens
-     */
-    public SerialForwarder(USART usdv, String[] command) {
-        usart = usdv;
-        portNumber = 0;
-        data = new byte[1];
-
-        try {
-            Process p = Runtime.getRuntime().exec(command);
-            in = p.getInputStream();
-            out = p.getOutputStream();
-        } catch (IOException e) {
-            throw Util.unexpected(e);
-        }
-
-        ticker = new SFTicker(usdv.getClock(), BPS);
-        ticker.start();
-        usdv.connect(this);
-    }
-
-
-    public USART.Frame transmitFrame() {
-        try {
-            int len = in.read(data, 0, 1);
-            return new USART.Frame(data[0], false, 8);
+            return SPI.newFrame(data);
         } catch (IOException e) {
             throw Util.unexpected(e);
         }
     }
 
 
-    public void receiveFrame(USART.Frame frame) {
+    public void receiveFrame(SPI.Frame frame) {
         try {
-            out.write((byte)frame.value);
+            out.write(frame.data);
         } catch (IOException e) {
             throw Util.unexpected(e);
         }
+    }
+
+    public void connect(SPIDevice d) {
+        // do nothing.
     }
 
     private class SFTicker implements Simulator.Event {
@@ -160,15 +124,20 @@ public class SerialForwarder implements USART.USARTDevice {
         private final long delta;
         private final Clock clock;
 
-        SFTicker(Clock c, int bps) {
-            delta = c.getHZ() / bps;
+        SFTicker(Clock c) {
+            delta = c.getHZ() / bitsPerSecond;
             clock = c;
         }
 
         public void fire() {
             try {
                 if (in.available() >= 1) {
-                    usart.startReceive();
+                    // ask the SPI to send us a frame
+                    SPI.Frame frame = spi.transmitFrame();
+                    // receive the frame ourselves
+                    receiveFrame(frame);
+                    // send our frame to the SPI
+                    spi.receiveFrame(transmitFrame());
                 }
             } catch (IOException e) {
                 throw Util.unexpected(e);
