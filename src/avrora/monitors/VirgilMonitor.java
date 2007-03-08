@@ -58,6 +58,7 @@ public class VirgilMonitor extends MonitorFactory {
     public static final int ABORT_NULL_CODE = 126;
     public static final int ABORT_BOUNDS_CODE = 125;
     public static final int ABORT_DIV_CODE = 124;
+    public static final int ABORT_ALLOC_CODE = 123;
 
     public class Mon implements Monitor {
         public final Simulator simulator;
@@ -105,6 +106,10 @@ public class VirgilMonitor extends MonitorFactory {
                     case ABORT_DIV_CODE:
                         name = "DivideByZeroException";
                         msg = "division by zero";
+                        break;
+                    case ABORT_ALLOC_CODE:
+                        name = "AllocationException";
+                        msg = "dynamic memory allocation failed";
                         break;
                 }
                 Terminal.print(idstr);
