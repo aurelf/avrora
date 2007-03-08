@@ -58,7 +58,7 @@ public class MiniParser {
 
     // IDENT: String "{lchar:[a-z,A-z,_]}{tchar:[a-z,A-z,_,0-9]*}" -> literal(lchar, tchar)
 
-    // STRING: String "{DQUOTE}{ch:StrChar*}{DQUOTE}"  -> new String(ch)
+    // STRING: String "{DQUOTE}{ch:StrChar*}{DQUOTE}"  -> new Symbol(ch)
     // StrChar-slash: "{BSLASH}{BSLASH}"               -> '\\'
     // StrChar-nl:    "{BSLASH}n"                      -> '\n'
     // StrChar-tab:   "{BSLASH}t"                      -> '\t'
