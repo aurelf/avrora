@@ -250,19 +250,26 @@ public class TestEngine {
         Throwable exception = null;
 
         try {
-            if ( PROGRESS_REPORT ) Terminal.print("Running "+fname+"...");
+            if ( PROGRESS_REPORT ) {
+                Terminal.print("Running "+fname+"...");
+                Terminal.flush();
+            }
             tc.run();
         } catch (Throwable t) {
             exception = t;
         }
-
-        if ( PROGRESS_REPORT ) Terminal.nextln();
 
         try {
             tc.result = tc.match(exception);
         } catch (Throwable t) {
             tc.result = new TestResult.UnexpectedException("exception in match routine: ", t);
         }
+        if ( PROGRESS_REPORT ) {
+            if ( tc.result.isSuccess() ) Terminal.printGreen("passed");
+            else Terminal.printRed("failed");
+            Terminal.nextln();
+        }
+
         return tc;
     }
 
