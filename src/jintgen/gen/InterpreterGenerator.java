@@ -234,7 +234,7 @@ public class InterpreterGenerator extends Generator {
         }
 
         public void visit(ConversionExpr e) {
-            print("("+renderType(e.typeRef)+")");
+            print('(' +renderType(e.typeRef)+ ')');
             inner(e.expr, Expr.PREC_TERM);
         }
 

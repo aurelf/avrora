@@ -63,9 +63,9 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
 	    TCNTn_reg = new TCNTnRegister("TCNT" + n, m.getIOReg("TCNT" + n));
 	    m.installIOReg(TCNTn_reg.name, TCNTn_reg);
 
-	    final AtmelMicrocontroller.Pin pin = 
+	    AtmelMicrocontroller.Pin pin =
 		(AtmelMicrocontroller.Pin)m.getPin("OC" + timerNumber);
-	    final int interrupt = m.properties.getInterrupt(acfName);
+	    int interrupt = m.properties.getInterrupt(acfName);
 	    addComparator(Comparator._, new OutputCompareUnit(n, m, Comparator._, interrupt, pin));
 
 	    modes = new Mode[]{
@@ -90,7 +90,7 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
 	    OutputCompareUnit(int timerNumber, AtmelMicrocontroller m, String unit, int interruptNumber,
 			      AtmelMicrocontroller.Pin pin) {
 		super(unit, m.getRegisterSet(), interruptNumber, pin);
-		final String name = "OCR" + timerNumber + unit;
+		String name = "OCR" + timerNumber + unit;
 		OCRn_reg = new BufferedRegister(m.getIOReg(name));
 		m.installIOReg(name, OCRn_reg);
 	    }
@@ -122,25 +122,25 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
 						      
 	    
 	    {
-		final AtmelMicrocontroller.Pin pin = 
+		AtmelMicrocontroller.Pin pin =
 		    (AtmelMicrocontroller.Pin)m.getPin("IC" + timerNumber);
 		int interrupt = m.properties.getInterrupt(cfn[0]);
 		addComparator(Comparator.I, new InputCompareUnit(n, m, Comparator._, interrupt, pin));
 	    }
 	    {
-		final AtmelMicrocontroller.Pin pin = 
+		AtmelMicrocontroller.Pin pin =
 		    (AtmelMicrocontroller.Pin)m.getPin("OC" + timerNumber + "A");
 		int interrupt = m.properties.getInterrupt(cfn[1]);
 		addComparator(Comparator.A, new OutputCompareUnit(n, m, Comparator.A, interrupt, pin));
 	    }
 	    {
-		final AtmelMicrocontroller.Pin pin = 
+		AtmelMicrocontroller.Pin pin =
 		    (AtmelMicrocontroller.Pin)m.getPin("OC" + timerNumber + "B");
 		int interrupt = m.properties.getInterrupt(cfn[2]);
 		addComparator(Comparator.B, new OutputCompareUnit(n, m, Comparator.B, interrupt, pin));
 	    }
 	    {
-		final AtmelMicrocontroller.Pin pin = 
+		AtmelMicrocontroller.Pin pin =
 		    (AtmelMicrocontroller.Pin)m.getPin("OC" + timerNumber + "C");
 		int interrupt = m.properties.getInterrupt(cfn[3]);
 		addComparator(Comparator.C, new OutputCompareUnit(n, m, Comparator.C, interrupt, pin));
@@ -190,7 +190,7 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
 			      int interruptNumber, AtmelMicrocontroller.Pin pin) {
 		super(unit, m.getRegisterSet(), interruptNumber, pin);
 
-		final String name = "OCR" + timerNumber + unit;
+		String name = "OCR" + timerNumber + unit;
 		OCRnX_reg  = new BufferedRegister(new RW16Register());
 		OCRnXH_reg = (HighRegister)m.installIOReg(name + "H", new OCRnxHighRegister(OCRnX_reg));
 		OCRnXL_reg = (LowRegister) m.installIOReg(name + "L", new LowRegister(OCRnX_reg));
@@ -217,7 +217,7 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
 			      int interruptNumber, AtmelMicrocontroller.Pin pin) {
 		super(unit, m.getRegisterSet(), interruptNumber, pin);
 
-		final String name = "ICR" + timerNumber + unit;
+		String name = "ICR" + timerNumber + unit;
 		OCRnX_reg  = new BufferedRegister(new RW16Register());
 		OCRnXH_reg = (HighRegister)m.installIOReg(name + "H", new OCRnxHighRegister(OCRnX_reg));
 		OCRnXL_reg = (LowRegister) m.installIOReg(name + "L", new LowRegister(OCRnX_reg));

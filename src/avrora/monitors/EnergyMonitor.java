@@ -324,7 +324,7 @@ public class EnergyMonitor extends MonitorFactory {
                 //for (int i = 0; i < consumer.size(); ++i) {
                 while( it.hasNext() ){
                     Energy en = (Energy)it.next();
-                    double ampere = (en != energy) ? en.getCurrentAmpere() : en.getOldAmpere();
+                    double ampere = (en == energy) ? en.getOldAmpere() : en.getCurrentAmpere();
 
                     total += ampere;
                     write(ampere + " ");

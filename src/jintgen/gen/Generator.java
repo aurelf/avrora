@@ -97,19 +97,19 @@ public abstract class Generator extends GenBase {
         Printer printer = new Printer(new PrintStream(f));
         String pname = this.DEST_PACKAGE.get();
         if ( !"".equals(pname) ) {
-            printer.println("package "+pname+";");
+            printer.println("package "+pname+ ';');
             printer.nextln();
         }
         String pabs = ABSTRACT.get();
         if ( !"".equals(pabs))
             printer.println("import "+pabs+".*;");
         if ( imports != null ) for ( String s : imports ) {
-            printer.println("import "+s+";");
+            printer.println("import "+s+ ';');
         }
         if ( jdoc != null )
             generateJavaDoc(printer, jdoc);
         String ec = sup == null ? "" : " extends "+sup;
-        printer.print("public "+type+" "+name+ec+' ');
+        printer.print("public "+type+ ' ' +name+ec+' ');
         if ( impl != null ) {
             printer.beginList("implements ");
             for ( String str : impl ) printer.print(str);

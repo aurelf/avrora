@@ -681,7 +681,7 @@ public class MSP430Disassembler implements AbstractDisassembler {
      * addressing mode or instruction) that is executed when the node is
      * reached. Actions on the root node are not executed.
      */
-    static abstract class DTNode {
+    abstract static class DTNode {
         final int left_bit;
         final int mask;
         final Action action;
@@ -756,7 +756,7 @@ public class MSP430Disassembler implements AbstractDisassembler {
      * when the decoder reaches a particular node in the tree. The action may
      * be to fix the instruction or addressing mode, or to signal an error.
      */
-    static abstract class Action {
+    abstract static class Action {
         abstract void execute(MSP430Disassembler d);
     }
     
@@ -834,7 +834,7 @@ public class MSP430Disassembler implements AbstractDisassembler {
      * will fire that sets the operand reader which is used to read the
      * operands from the bit pattern.
      */
-    static abstract class OperandReader {
+    abstract static class OperandReader {
         abstract MSP430AddrMode read(MSP430Disassembler d);
     }
     

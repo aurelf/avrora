@@ -2126,10 +2126,10 @@ public class ISDLParser implements ISDLParserConstants {
     public boolean lookingAhead = false;
     private boolean jj_semLA;
     private int jj_gen;
-    final private int[] jj_la1 = new int[66];
-    static private int[] jj_la1_0;
-    static private int[] jj_la1_1;
-    static private int[] jj_la1_2;
+    private final int[] jj_la1 = new int[66];
+    private static int[] jj_la1_0;
+    private static int[] jj_la1_1;
+    private static int[] jj_la1_2;
 
     static {
         jj_la1_0();
@@ -2164,7 +2164,7 @@ public class ISDLParser implements ISDLParserConstants {
                 0x80c, 0x0, 0x40000, 0x0, 0x0, 0x800, };
     }
 
-    final private JJCalls[] jj_2_rtns = new JJCalls[5];
+    private final JJCalls[] jj_2_rtns = new JJCalls[5];
     private boolean jj_rescan = false;
     private int jj_gc = 0;
 
@@ -2266,11 +2266,11 @@ public class ISDLParser implements ISDLParserConstants {
         throw generateParseException();
     }
 
-    static private final class LookaheadSuccess extends Error {
+    private static final class LookaheadSuccess extends Error {
 
     }
 
-    final private LookaheadSuccess jj_ls = new LookaheadSuccess();
+    private final LookaheadSuccess jj_ls = new LookaheadSuccess();
 
     private boolean jj_scan_token(int kind) {
         if (jj_scanpos == jj_lastpos) {
@@ -2391,12 +2391,6 @@ public class ISDLParser implements ISDLParserConstants {
             exptokseq[i] = (int[])jj_expentries.elementAt(i);
         }
         return new ParseException(token, exptokseq, tokenImage);
-    }
-
-    public void enable_tracing() {
-    }
-
-    public void disable_tracing() {
     }
 
     private void jj_rescan_token() {

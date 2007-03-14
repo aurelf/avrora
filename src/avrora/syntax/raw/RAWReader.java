@@ -154,7 +154,7 @@ public class RAWReader extends ProgramReader {
     }
 
     private Record readRecord(char ch, int lineno, CharacterIterator i) throws Exception {
-        if (!StringUtil.isHexDigit(ch)) Util.userError("syntax error @ " + lineno + ":" + i.getIndex());
+        if (!StringUtil.isHexDigit(ch)) Util.userError("syntax error @ " + lineno + ':' + i.getIndex());
 
         Record record = new Record(readAddress(i, ch));
         record.code = inCode;

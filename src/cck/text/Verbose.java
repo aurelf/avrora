@@ -45,8 +45,8 @@ public class Verbose {
 
     static boolean ALL;
 
-    final static HashMap printerMap = new HashMap();
-    final static Printer verbosePrinter = getVerbosePrinter("verbose");
+    static final HashMap printerMap = new HashMap();
+    static final Printer verbosePrinter = getVerbosePrinter("verbose");
 
     public static Printer getVerbosePrinter(String category) {
         Printer p = getPrinter(category);

@@ -103,7 +103,7 @@ public final class Terminal {
     static {
         HTML_STRINGS = new String[HTML_COLORS.length];
         for (int cntr = 0; cntr < HTML_STRINGS.length; cntr++)
-            HTML_STRINGS[cntr] = "<font color=" + HTML_COLORS[cntr] + ">";
+            HTML_STRINGS[cntr] = "<font color=" + HTML_COLORS[cntr] + '>';
     }
 
     public static final int ERROR_COLOR = COLOR_RED;

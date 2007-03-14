@@ -241,7 +241,7 @@ public class ADC extends AtmelInternalDevice {
 
         int prescalerDivider = 2;
 
-        final ControlRegister.Conversion conversion;
+        final Conversion conversion;
 
         boolean converting;
 

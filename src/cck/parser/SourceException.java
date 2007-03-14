@@ -77,11 +77,11 @@ public class SourceException extends SourceError {
     public void report() {
         Terminal.print("");
         Terminal.printRed(errorType);
-        Terminal.println(": " + message + " ");
+        Terminal.println(": " + message + ' ');
         for (StackTrace tr = trace; tr != null; tr = tr.prev) {
             Terminal.print("\t");
             Terminal.print("in ");
-            Terminal.printGreen(tr.getMethod() + " ");
+            Terminal.printGreen(tr.getMethod() + ' ');
             SourcePoint p = tr.getSourcePoint();
             if (p != null) p.report();
             Terminal.nextln();

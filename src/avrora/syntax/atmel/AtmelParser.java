@@ -2051,13 +2051,13 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     public boolean lookingAhead = false;
     private boolean jj_semLA;
     private int jj_gen;
-    final private int[] jj_la1 = new int[40];
-    static private int[] jj_la1_0;
-    static private int[] jj_la1_1;
-    static private int[] jj_la1_2;
-    static private int[] jj_la1_3;
-    static private int[] jj_la1_4;
-    static private int[] jj_la1_5;
+    private final int[] jj_la1 = new int[40];
+    private static int[] jj_la1_0;
+    private static int[] jj_la1_1;
+    private static int[] jj_la1_2;
+    private static int[] jj_la1_3;
+    private static int[] jj_la1_4;
+    private static int[] jj_la1_5;
 
     static {
         jj_la1_0();
@@ -2106,7 +2106,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
                 0x18000, 0x18000, 0x0, 0x0, 0x60000, 0x60000, 0x180000, 0x380000, 0x200000, 0x0, };
     }
 
-    final private JJCalls[] jj_2_rtns = new JJCalls[6];
+    private final JJCalls[] jj_2_rtns = new JJCalls[6];
     private boolean jj_rescan = false;
     private int jj_gc = 0;
 
@@ -2318,12 +2318,6 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
             exptokseq[i] = (int[])jj_expentries.elementAt(i);
         }
         return new ParseException(token, exptokseq, tokenImage);
-    }
-
-    public void enable_tracing() {
-    }
-
-    public void disable_tracing() {
     }
 
     private void jj_rescan_token() {

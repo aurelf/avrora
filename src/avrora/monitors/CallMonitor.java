@@ -68,19 +68,17 @@ public class CallMonitor extends MonitorFactory {
 
     class Mon implements Monitor, CallTrace.Monitor {
 
-        private final CallTrace trace;
         private final CallStack stack;
         private final Simulator simulator;
         private final MCUProperties props;
         private final SourceMapping sourceMap;
 
-        private String[] longNames;
         private String[] shortNames;
 
         Mon(Simulator s) {
             simulator = s;
             sourceMap = s.getProgram().getSourceMapping();
-            trace = new CallTrace(s);
+            CallTrace trace = new CallTrace(s);
             props = simulator.getMicrocontroller().getProperties();
             trace.attachMonitor(this);
             buildInterruptNames();
@@ -89,7 +87,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         private void buildInterruptNames() {
-            longNames = new String[props.num_interrupts+1];
+            String[] longNames = new String[props.num_interrupts + 1];
             for ( int cntr = 0; cntr < props.num_interrupts; cntr++ )
                 longNames[cntr] = getLongInterruptName(cntr);
             shortNames = new String[props.num_interrupts+1];

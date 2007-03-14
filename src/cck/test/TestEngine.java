@@ -281,10 +281,10 @@ public class TestEngine {
             String buffer = r.readLine();
             if (buffer == null) break;
 
-            int index = buffer.indexOf("@");
+            int index = buffer.indexOf('@');
             if (index < 0) break;
 
-            int index2 = buffer.indexOf(":");
+            int index2 = buffer.indexOf(':');
             if (index2 < 0) break;
 
             String var = buffer.substring(index + 1, index2).trim();

@@ -69,7 +69,7 @@ public class SubroutineDecl extends Item {
     public final TypeRef ret;
     public final boolean inline;
     public final CodeRegion code;
-    public final List<SubroutineDecl.Parameter> params;
+    public final List<Parameter> params;
 
     public SubroutineDecl(boolean i, Token n, List<Parameter> pl, TypeRef r, List<Stmt> s) {
         super(n);

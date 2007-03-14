@@ -83,7 +83,7 @@ public class DisassemblerTestGenerator{
 
         private void putSubValues(HashMap<String, String> map, HashMap<String, String> props, String name) {
             for ( Map.Entry<String, String> e: map.entrySet() ) {
-                props.put(name+"."+e.getKey(), e.getValue());
+                props.put(name+ '.' +e.getKey(), e.getValue());
             }
         }
 
@@ -165,7 +165,7 @@ public class DisassemblerTestGenerator{
         StringBuffer buf = new StringBuffer();
         for ( AddrModeDecl.Operand o : am.operands ) {
             if ( buf.length() == 0 ) buf.append(", ");
-            buf.append("%");
+            buf.append('%');
             buf.append(o.name.image);
         }
         return buf.toString();
@@ -173,7 +173,7 @@ public class DisassemblerTestGenerator{
 
     void generate(InstrDecl d, String syntax, HashMap<String, String> props) {
         for ( Map.Entry<String, String> e : props.entrySet() ) {
-            syntax = syntax.replaceAll("%"+e.getKey(), e.getValue());
+            syntax = syntax.replaceAll('%' +e.getKey(), e.getValue());
         }
         printer.print(d.name+" "+syntax);
     }

@@ -176,7 +176,7 @@ public class TraceMonitor extends MonitorFactory {
             Iterator i = FROMTO.get().iterator();
             while (i.hasNext()) {
                 String str = (String)i.next();
-                int ind = str.indexOf(":");
+                int ind = str.indexOf(':');
                 if (ind <= 0)
                     throw Util.failure("invalid address format: " + StringUtil.quote(str));
                 String src = str.substring(0, ind);

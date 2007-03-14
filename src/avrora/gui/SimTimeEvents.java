@@ -33,6 +33,7 @@
 package avrora.gui;
 
 import avrora.sim.Simulator;
+import avrora.sim.radio.SimpleAir;
 
 /**
  * In order to speed up and slow down the simulator, we insert events
@@ -51,6 +52,15 @@ public class SimTimeEvents {
      * This PauseEvent can be inserted in the sim directly
      */
     public PauseEvent pause;
+
+    /**
+     * @param psA The class needs to know about the Toplogy used in the sim
+     */
+    public SimTimeEvents(SimpleAir psA) {
+        SimpleAir simpleAir = psA;
+
+        pause = new PauseEvent();
+    }
 
     /**
      * An instance of this class can be inserted into the sim

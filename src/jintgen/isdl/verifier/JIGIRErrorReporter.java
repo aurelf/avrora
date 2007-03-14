@@ -108,7 +108,7 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
     }
 
     public void RedefinedLocal(Token var) {
-        String report = "Local variable" + " " + StringUtil.quote(var.image) + " already defined in this scope";
+        String report = "Local variable" + ' ' + StringUtil.quote(var.image) + " already defined in this scope";
         error("RedefinedLocal", var.getSourcePoint(), report, var.image);
     }
 
@@ -163,24 +163,23 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
     }
 
     public void RangeOutOfBounds(Expr e, int low, int high, int limit) {
-	String report = "Fixed range indices are out of bounds: [" + low + ":"
-	    + high + "]; should be between within [0:" + limit + ")";
+	String report = "Fixed range indices are out of bounds: [" + low + ':' + high + "]; should be between within [0:" + limit + ')';
 	error("RangeOutOfBounds", e.getSourcePoint(), report);
     }
 
     public void InvalidRange(Expr e, int low, int high) {
 	String report = "Low index (" + low + ") should be less than high "
-	    + "index (" + high + ")";
+	    + "index (" + high + ')';
 	error("InvalidRange", e.getSourcePoint(), report);
     }
 
     public void UnresolvedOperator(Token op, Type lt, Type rt) {
-        String report = "Unresolved operator "+StringUtil.quote(op)+ " on types ("+lt.getTypeCon()+","+rt.getTypeCon()+")";
+        String report = "Unresolved operator "+StringUtil.quote(op)+ " on types ("+lt.getTypeCon()+ ',' +rt.getTypeCon()+ ')';
         error("UnresolvedOperator", op.getSourcePoint(), report);
     }
 
     public void UnresolvedOperator(Token op, Type lt) {
-        String report = "Unresolved operator "+StringUtil.quote(op)+ " on type ("+lt.getTypeCon()+")";
+        String report = "Unresolved operator "+StringUtil.quote(op)+ " on type ("+lt.getTypeCon()+ ')';
         error("UnresolvedOperator", op.getSourcePoint(), report);
     }
 

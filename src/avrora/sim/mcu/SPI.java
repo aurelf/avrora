@@ -72,9 +72,9 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         }
     }
 
-    private final static Frame[] frameCache = new Frame[256];
-    public final static Frame ZERO_FRAME;
-    public final static Frame FF_FRAME;
+    private static final Frame[] frameCache = new Frame[256];
+    public static final Frame ZERO_FRAME;
+    public static final Frame FF_FRAME;
 
     static {
         for ( int cntr = 0; cntr < 256; cntr++ )

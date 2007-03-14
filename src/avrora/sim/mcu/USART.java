@@ -236,7 +236,7 @@ public class USART extends AtmelInternalDevice {
 
     protected class Transmitter {
         boolean transmitting;
-        Transmitter.Transmit transmit = new Transmit();
+        Transmit transmit = new Transmit();
 
         protected void enableTransmit() {
             if (!transmitting) {
@@ -276,7 +276,7 @@ public class USART extends AtmelInternalDevice {
     protected class Receiver {
 
         boolean receiving;
-        Receiver.Receive receive = new Receive();
+        Receive receive = new Receive();
 
         protected void enableReceive() {
             if (!receiving) {
@@ -311,7 +311,7 @@ public class USART extends AtmelInternalDevice {
      */
     protected class DataRegister extends RWRegister {
         RWRegister transmitRegister;
-        DataRegister.TwoLevelFIFO receiveRegister;
+        TwoLevelFIFO receiveRegister;
 
         DataRegister() {
             transmitRegister = new RWRegister();

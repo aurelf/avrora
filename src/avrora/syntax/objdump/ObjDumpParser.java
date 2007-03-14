@@ -1453,12 +1453,12 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     public boolean lookingAhead = false;
     private boolean jj_semLA;
     private int jj_gen;
-    final private int[] jj_la1 = new int[23];
-    static private int[] jj_la1_0;
-    static private int[] jj_la1_1;
-    static private int[] jj_la1_2;
-    static private int[] jj_la1_3;
-    static private int[] jj_la1_4;
+    private final int[] jj_la1 = new int[23];
+    private static int[] jj_la1_0;
+    private static int[] jj_la1_1;
+    private static int[] jj_la1_2;
+    private static int[] jj_la1_3;
+    private static int[] jj_la1_4;
 
     static {
         jj_la1_0();
@@ -1494,7 +1494,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xe000, 0x2000, 0x101fbc, 0x200000, 0x200000, 0x60000000, };
     }
 
-    final private JJCalls[] jj_2_rtns = new JJCalls[8];
+    private final JJCalls[] jj_2_rtns = new JJCalls[8];
     private boolean jj_rescan = false;
     private int jj_gc = 0;
 
@@ -1596,11 +1596,11 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         throw generateParseException();
     }
 
-    static private final class LookaheadSuccess extends Error {
+    private static final class LookaheadSuccess extends Error {
 
     }
 
-    final private LookaheadSuccess jj_ls = new LookaheadSuccess();
+    private final LookaheadSuccess jj_ls = new LookaheadSuccess();
 
     private boolean jj_scan_token(int kind) {
         if (jj_scanpos == jj_lastpos) {
@@ -1727,12 +1727,6 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
             exptokseq[i] = (int[])jj_expentries.elementAt(i);
         }
         return new ParseException(token, exptokseq, tokenImage);
-    }
-
-    public void enable_tracing() {
-    }
-
-    public void disable_tracing() {
     }
 
     private void jj_rescan_token() {

@@ -131,7 +131,7 @@ public abstract class TestCase {
             if ("PASS".equals(result)) shouldPass = true;
             else {
                 // format = "$id @ $num:$num"
-                int i = result.indexOf("@");
+                int i = result.indexOf('@');
                 if (i >= 0) error = result.substring(0, i).trim();
                 else error = result;
             }
