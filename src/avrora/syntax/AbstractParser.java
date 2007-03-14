@@ -48,4 +48,10 @@ public abstract class AbstractParser {
      */
     protected Module module;
 
+    /**
+     * The <code>Module()</code> method causes the parser to begin parsing the module.
+     *
+     * @throws AbstractParseException if the program does not parse correctly
+     */
+    public abstract void Module() throws AbstractParseException;
 }

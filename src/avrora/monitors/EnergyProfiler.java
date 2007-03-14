@@ -143,7 +143,7 @@ public class EnergyProfiler extends MonitorFactory {
             Iterator it = program.getSourceMapping().getIterator();
             while (it.hasNext()) {
                 SourceMapping.Location tempLoc = (SourceMapping.Location)it.next();
-                if ( tempLoc.segment.equals(".text") )
+                if (".text".equals(tempLoc.segment) )
                     profiles.add(new EnergyProfile(tempLoc));
             }
         }
@@ -226,7 +226,7 @@ public class EnergyProfiler extends MonitorFactory {
             /**
              * fired before the basic block is entered, it logs the previos state
              *
-             * @see avrora.sim.Simulator.Probe#fireBefore(avrora.sim.State,int)
+             * @see Simulator.Probe#fireBefore(State,int)
              */
             public void fireBefore(State s, int pc) {
                 long cycles = simulator.getState().getCycles() - lastChange;
@@ -255,7 +255,7 @@ public class EnergyProfiler extends MonitorFactory {
             /**
              * fired before a sleep mode is entered, it logs the previos state
              *
-             * @see avrora.sim.Simulator.Probe#fireBefore(avrora.sim.State,int)
+             * @see Simulator.Probe#fireBefore(State,int)
              */
             public void fireBefore(State s, int pc) {
                 long cycles = simulator.getState().getCycles() - lastChange;

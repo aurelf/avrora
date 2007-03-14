@@ -150,9 +150,9 @@ public class PacketMonitor extends MonitorFactory {
     /**
      * create a new monitor, calls the constructor
      *
-     * @see avrora.monitors.MonitorFactory#newMonitor(avrora.sim.Simulator)
+     * @see MonitorFactory#newMonitor(Simulator)
      */
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
+    public Monitor newMonitor(Simulator s) {
         return new Mon(s);
     }
 }

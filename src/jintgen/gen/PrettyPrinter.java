@@ -107,7 +107,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(AssignStmt.FixedRange s) {
         s.dest.accept(this);
-        printer.print("["+s.high_bit+ ':' +s.low_bit+"] = ");
+        printer.print("["+s.high_bit+":"+s.low_bit+"] = ");
         s.expr.accept(this);
         printer.println(";");
     }

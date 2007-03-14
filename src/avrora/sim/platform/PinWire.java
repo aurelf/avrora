@@ -228,10 +228,7 @@ public class PinWire {
          */
         public boolean read() {
             // read the current state and return boolean value
-            if (state.getCurrentState() == 1)
-                return true;
-            else
-                return false;
+            return state.getCurrentState() == 1;
         }
     }
 

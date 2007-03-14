@@ -43,7 +43,7 @@ import avrora.sim.State;
  * following the branch, then the branch was taken.
  *
  * @author Ben L. Titzer
- * @see avrora.sim.util.Counter
+ * @see Counter
  */
 public class BranchCounter extends Simulator.Probe.Empty {
 

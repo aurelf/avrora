@@ -51,9 +51,9 @@ import avrora.sim.clock.ClockDomain;
 public class ATMega88 extends ATMegaX8 {
 
     public static final int ATMEGA88_IOREG_SIZE  = ATMEGAX8_IOREG_SIZE;
-    public static final int ATMEGA88_SRAM_SIZE   = 1 * _1kb;
+    public static final int ATMEGA88_SRAM_SIZE   = _1kb;
     public static final int ATMEGA88_FLASH_SIZE  = 8 * _1kb;
-    public static final int ATMEGA88_EEPROM_SIZE = 1 * _512b;
+    public static final int ATMEGA88_EEPROM_SIZE = _512b;
     public static final int ATMEGA88_NUM_PINS    = ATMEGAX8_NUM_PINS;
     public static final int ATMEGA88_NUM_INTS    = ATMEGAX8_NUM_INTS;
 

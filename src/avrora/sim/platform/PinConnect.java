@@ -350,6 +350,7 @@ public class PinConnect {
     protected class PinLink {
 
         protected LinkedList pinWires;
+        protected static final int DELAY = 1000;
         protected int currentDelay;
         
         public PinNode outputNode;

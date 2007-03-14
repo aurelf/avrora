@@ -6,14 +6,33 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import cck.parser.SimpleCharStream;
-
 public class ObjDumpParser extends AbstractParser implements ObjDumpParserConstants {
 
     protected RawModule rawModule;
 
+    public ObjDumpParser(InputStream stream, RawModule m, String fname) {
+        this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
+
+        module = m;
+        rawModule = m;
+    }
+
+    public void ReInit(InputStream stream, RawModule m, String fname) {
+        ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
+
+        module = m;
+        rawModule = m;
+    }
+
     public ObjDumpParser(Reader stream, RawModule m, String fname) {
-        this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1, 4096), fname));
+        this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
+
+        module = m;
+        rawModule = m;
+    }
+
+    public void ReInit(Reader stream, RawModule m, String fname) {
+        ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
         module = m;
         rawModule = m;
@@ -26,7 +45,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         label_1:
         while (true) {
             Section();
-            switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+            switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case START:
                     break;
                 default:
@@ -38,7 +57,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     }
 
     public void Header() throws ParseException {
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case PROGRAM:
                 jj_consume_token(PROGRAM);
                 jj_consume_token(STRING_LITERAL);
@@ -50,7 +69,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         label_2:
         while (true) {
             SectionDecl();
-            switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+            switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case SECTION:
                     break;
                 default:
@@ -79,6 +98,12 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         rawModule.newSection(name, vma, lma);
     }
 
+    public void Property() throws ParseException {
+        jj_consume_token(IDENTIFIER);
+        jj_consume_token(155);
+        jj_consume_token(INTEGER_LITERAL);
+    }
+
     public void Section() throws ParseException {
         Token sect;
         jj_consume_token(START);
@@ -87,7 +112,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         rawModule.enterSection(sect);
         label_3:
         while (true) {
-            switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+            switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case INTEGER_LITERAL:
                 case LABEL:
                     break;
@@ -100,7 +125,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     }
 
     public void Statement() throws ParseException {
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case LABEL:
                 Label();
                 break;
@@ -121,7 +146,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         rawModule.setAddress(addr);
         RawData();
         rawModule.setAddress(addr);
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case ADD:
             case ADC:
             case ADIW:
@@ -252,7 +277,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         if (jj_2_1(3)) {
             Raw4();
         } else {
-            switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+            switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case INTEGER_LITERAL:
                     Raw2();
                     break;
@@ -281,7 +306,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     }
 
     public void Instruction() throws ParseException {
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case ADD:
             case ADC:
             case AND:
@@ -440,7 +465,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
 
     public Token OpcodeGPRGPR() throws ParseException {
         Token t;
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case ADD:
                 t = jj_consume_token(ADD);
                 break;
@@ -514,7 +539,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
 
     public Token OpcodeGPR() throws ParseException {
         Token t;
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case COM:
                 t = jj_consume_token(COM);
                 break;
@@ -582,7 +607,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
 
     public Token OpcodeGPRIMM() throws ParseException {
         Token t;
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case ADIW:
                 t = jj_consume_token(ADIW);
                 break;
@@ -641,7 +666,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
 
     public Token OpcodeIMM() throws ParseException {
         Token t;
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case RJMP:
                 t = jj_consume_token(RJMP);
                 break;
@@ -735,7 +760,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
 
     public Token OpcodeIMMIMM() throws ParseException {
         Token t;
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case SBIC:
                 t = jj_consume_token(SBIC);
                 break;
@@ -764,7 +789,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     }
 
     public void InstrLoad() throws ParseException {
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case LDI:
                 InstrLDI();
                 break;
@@ -805,7 +830,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         } else if (jj_2_3(4)) {
             InstrLDPD();
         } else {
-            switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+            switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case LD:
                     InstrLD();
                     break;
@@ -879,7 +904,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         } else if (jj_2_5(3)) {
             InstrLPMGPRGPR();
         } else {
-            switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+            switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case ELPM:
                 case LPM:
                     InstrLPMBARE();
@@ -921,7 +946,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
 
     public Token OpcodeLPM() throws ParseException {
         Token t;
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case LPM:
                 t = jj_consume_token(LPM);
                 break;
@@ -938,7 +963,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     }
 
     public void InstrStore() throws ParseException {
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case ST:
                 InstrST_variant();
                 break;
@@ -961,7 +986,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         } else if (jj_2_7(3)) {
             InstrSTPI();
         } else {
-            switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+            switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case ST:
                     InstrSTPD();
                     break;
@@ -1031,7 +1056,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
 
     public void InstrBARE() throws ParseException {
         Token t;
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case IJMP:
                 t = jj_consume_token(IJMP);
                 break;
@@ -1165,7 +1190,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         if (jj_2_8(2147483647)) {
             e = RelExpr();
         } else {
-            switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+            switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case INTEGER_LITERAL:
                 case IDENTIFIER:
                     e = Term();
@@ -1183,7 +1208,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     public Expr Term() throws ParseException {
         Token tok;
         Expr e;
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case IDENTIFIER:
                 tok = jj_consume_token(IDENTIFIER);
                 e = new Expr.Variable(tok);
@@ -1214,7 +1239,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
 
     public Token BinOp() throws ParseException {
         Token tok;
-        switch (jj_ntk == -1 ? jj_ntk() : jj_ntk) {
+        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case 157:
                 tok = jj_consume_token(157);
                 break;
@@ -1331,7 +1356,9 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     }
 
     private boolean jj_3R_8() {
-        return jj_3R_12() || jj_3R_11() || jj_scan_token(156);
+        if (jj_3R_12()) return true;
+        if (jj_3R_11()) return true;
+        return jj_scan_token(156);
     }
 
     private boolean jj_3_2() {
@@ -1339,11 +1366,16 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     }
 
     private boolean jj_3R_6() {
-        return jj_scan_token(LD) || jj_3R_11() || jj_scan_token(156) || jj_scan_token(158);
+        if (jj_scan_token(LD)) return true;
+        if (jj_3R_11()) return true;
+        if (jj_scan_token(156)) return true;
+        return jj_scan_token(158);
     }
 
     private boolean jj_3R_10() {
-        return jj_scan_token(ST) || jj_3R_11() || jj_scan_token(157);
+        if (jj_scan_token(ST)) return true;
+        if (jj_3R_11()) return true;
+        return jj_scan_token(157);
     }
 
     private boolean jj_3_1() {
@@ -1380,15 +1412,20 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         if (jj_scan_token(LD)) return true;
         if (jj_3R_11()) return true;
         if (jj_scan_token(156)) return true;
-        return jj_3R_11() || jj_scan_token(157);
+        if (jj_3R_11()) return true;
+        return jj_scan_token(157);
     }
 
     private boolean jj_3R_9() {
-        return jj_scan_token(ST) || jj_3R_11() || jj_scan_token(156);
+        if (jj_scan_token(ST)) return true;
+        if (jj_3R_11()) return true;
+        return jj_scan_token(156);
     }
 
     private boolean jj_3R_4() {
-        return jj_scan_token(INTEGER_LITERAL) || jj_scan_token(INTEGER_LITERAL) || jj_scan_token(INTEGER_LITERAL);
+        if (jj_scan_token(INTEGER_LITERAL)) return true;
+        if (jj_scan_token(INTEGER_LITERAL)) return true;
+        return jj_scan_token(INTEGER_LITERAL);
     }
 
     private boolean jj_3_7() {
@@ -1398,7 +1435,9 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     private boolean jj_3R_7() {
         if (jj_3R_12()) return true;
         if (jj_3R_11()) return true;
-        return jj_scan_token(156) || jj_3R_11() || jj_scan_token(157);
+        if (jj_scan_token(156)) return true;
+        if (jj_3R_11()) return true;
+        return jj_scan_token(157);
     }
 
     private boolean jj_3_6() {
@@ -1406,17 +1445,20 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     }
 
     public ObjDumpParserTokenManager token_source;
+    SimpleCharStream jj_input_stream;
     public Token token, jj_nt;
     private int jj_ntk;
     private Token jj_scanpos, jj_lastpos;
     private int jj_la;
+    public boolean lookingAhead = false;
+    private boolean jj_semLA;
     private int jj_gen;
-    private final int[] jj_la1 = new int[23];
-    private static int[] jj_la1_0;
-    private static int[] jj_la1_1;
-    private static int[] jj_la1_2;
-    private static int[] jj_la1_3;
-    private static int[] jj_la1_4;
+    final private int[] jj_la1 = new int[23];
+    static private int[] jj_la1_0;
+    static private int[] jj_la1_1;
+    static private int[] jj_la1_2;
+    static private int[] jj_la1_3;
+    static private int[] jj_la1_4;
 
     static {
         jj_la1_0();
@@ -1452,11 +1494,76 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xe000, 0x2000, 0x101fbc, 0x200000, 0x200000, 0x60000000, };
     }
 
-    private final JJCalls[] jj_2_rtns = new JJCalls[8];
+    final private JJCalls[] jj_2_rtns = new JJCalls[8];
     private boolean jj_rescan = false;
     private int jj_gc = 0;
 
+    public ObjDumpParser(InputStream stream) {
+        this(stream, null);
+    }
+
+    public ObjDumpParser(InputStream stream, String encoding) {
+        try {
+            jj_input_stream = new SimpleCharStream(stream, encoding, 1, 1);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        token_source = new ObjDumpParserTokenManager(jj_input_stream);
+        token = new Token();
+        jj_ntk = -1;
+        jj_gen = 0;
+        for (int i = 0; i < 23; i++) jj_la1[i] = -1;
+        for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    }
+
+    public void ReInit(InputStream stream) {
+        ReInit(stream);
+    }
+
+    public void ReInit(InputStream stream, String encoding) {
+        try {
+            jj_input_stream.ReInit(stream, encoding, 1, 1);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        token_source.ReInit(jj_input_stream);
+        token = new Token();
+        jj_ntk = -1;
+        jj_gen = 0;
+        for (int i = 0; i < 23; i++) jj_la1[i] = -1;
+        for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    }
+
+    public ObjDumpParser(Reader stream) {
+        jj_input_stream = new SimpleCharStream(stream, 1, 1);
+        token_source = new ObjDumpParserTokenManager(jj_input_stream);
+        token = new Token();
+        jj_ntk = -1;
+        jj_gen = 0;
+        for (int i = 0; i < 23; i++) jj_la1[i] = -1;
+        for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    }
+
+    public void ReInit(Reader stream) {
+        jj_input_stream.ReInit(stream, 1, 1);
+        token_source.ReInit(jj_input_stream);
+        token = new Token();
+        jj_ntk = -1;
+        jj_gen = 0;
+        for (int i = 0; i < 23; i++) jj_la1[i] = -1;
+        for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    }
+
     public ObjDumpParser(ObjDumpParserTokenManager tm) {
+        token_source = tm;
+        token = new Token();
+        jj_ntk = -1;
+        jj_gen = 0;
+        for (int i = 0; i < 23; i++) jj_la1[i] = -1;
+        for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
+    }
+
+    public void ReInit(ObjDumpParserTokenManager tm) {
         token_source = tm;
         token = new Token();
         jj_ntk = -1;
@@ -1489,11 +1596,11 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         throw generateParseException();
     }
 
-    private static class LookaheadSuccess extends Error {
+    static private final class LookaheadSuccess extends Error {
 
     }
 
-    private final LookaheadSuccess jj_ls = new LookaheadSuccess();
+    final private LookaheadSuccess jj_ls = new LookaheadSuccess();
 
     private boolean jj_scan_token(int kind) {
         if (jj_scanpos == jj_lastpos) {
@@ -1520,9 +1627,26 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         return false;
     }
 
+    public Token getNextToken() {
+        if (token.next != null) token = token.next;
+        else token = token.next = token_source.getNextToken();
+        jj_ntk = -1;
+        jj_gen++;
+        return token;
+    }
+
+    public Token getToken(int index) {
+        Token t = lookingAhead ? jj_scanpos : token;
+        for (int i = 0; i < index; i++) {
+            if (t.next != null) t = t.next;
+            else t = t.next = token_source.getNextToken();
+        }
+        return t;
+    }
+
     private int jj_ntk() {
-        if ((jj_nt = token.next) == null) return jj_ntk = (token.next = token_source.getNextToken()).kind;
-        else return jj_ntk = jj_nt.kind;
+        if ((jj_nt = token.next) == null) return (jj_ntk = (token.next = token_source.getNextToken()).kind);
+        else return (jj_ntk = jj_nt.kind);
     }
 
     private Vector jj_expentries = new Vector();
@@ -1540,7 +1664,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
             System.arraycopy(jj_lasttokens, 0, jj_expentry, 0, jj_endpos);
             boolean exists = false;
             for (Enumeration e = jj_expentries.elements(); e.hasMoreElements();) {
-                int[] oldentry = (int[]) e.nextElement();
+                int[] oldentry = (int[])(e.nextElement());
                 if (oldentry.length == jj_expentry.length) {
                     exists = true;
                     for (int i = 0; i < jj_expentry.length; i++) {
@@ -1570,19 +1694,19 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         for (int i = 0; i < 23; i++) {
             if (jj_la1[i] == jj_gen) {
                 for (int j = 0; j < 32; j++) {
-                    if ((jj_la1_0[i] & 1 << j) != 0) {
+                    if ((jj_la1_0[i] & (1 << j)) != 0) {
                         la1tokens[j] = true;
                     }
-                    if ((jj_la1_1[i] & 1 << j) != 0) {
+                    if ((jj_la1_1[i] & (1 << j)) != 0) {
                         la1tokens[32 + j] = true;
                     }
-                    if ((jj_la1_2[i] & 1 << j) != 0) {
+                    if ((jj_la1_2[i] & (1 << j)) != 0) {
                         la1tokens[64 + j] = true;
                     }
-                    if ((jj_la1_3[i] & 1 << j) != 0) {
+                    if ((jj_la1_3[i] & (1 << j)) != 0) {
                         la1tokens[96 + j] = true;
                     }
-                    if ((jj_la1_4[i] & 1 << j) != 0) {
+                    if ((jj_la1_4[i] & (1 << j)) != 0) {
                         la1tokens[128 + j] = true;
                     }
                 }
@@ -1603,6 +1727,12 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
             exptokseq[i] = (int[])jj_expentries.elementAt(i);
         }
         return new ParseException(token, exptokseq, tokenImage);
+    }
+
+    public void enable_tracing() {
+    }
+
+    public void disable_tracing() {
     }
 
     private void jj_rescan_token() {
@@ -1663,7 +1793,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         p.arg = xla;
     }
 
-    static class JJCalls {
+    static final class JJCalls {
 
         int gen;
         Token first;

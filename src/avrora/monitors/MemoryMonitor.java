@@ -90,7 +90,7 @@ public class MemoryMonitor extends MonitorFactory {
 
         private void insertWatches() {
 
-            if ( LOCATIONS.get().size() > 0 ) {
+            if (!LOCATIONS.get().isEmpty() ) {
                 // instrument only the locations specified
                 List l = LOCATIONS.get();
                 List loc = SimAction.getLocationList(program, l);

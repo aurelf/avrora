@@ -47,6 +47,7 @@ import java.util.HashMap;
 public class RawModule extends Module {
 
     private class Section {
+
         final AbstractToken name;
         final int vma_start;
         final int lma_start;
@@ -111,6 +112,7 @@ public class RawModule extends Module {
      * can appear in program, data, or eeprom sections.
      */
     public static class RawLabel extends Item {
+
         private final AbstractToken name;
         private final int byteAddress;
 

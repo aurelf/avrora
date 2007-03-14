@@ -66,6 +66,11 @@ public class AVRErrorReporter extends ErrorReporter {
         error("InstructionCannotBeInSegment", point(instr), report);
     }
 
+    public void UnknownInstruction(AbstractToken instr) {
+        String report = "unknown instruction " + StringUtil.quote(instr);
+        error("UnknownInstruction", point(instr), report);
+    }
+
     public void RegisterExpected(SyntacticOperand o) {
         String report = "register expected";
         error("RegisterExpected", point(o), report);

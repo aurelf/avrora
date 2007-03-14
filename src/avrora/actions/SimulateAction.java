@@ -64,7 +64,7 @@ public class SimulateAction extends SimAction {
      * The <code>run()</code> method is called by the main class.
      *
      * @param args the command line arguments after the options have been stripped out
-     * @throws java.lang.Exception if there is a problem loading the program, or an exception occurs during
+     * @throws Exception if there is a problem loading the program, or an exception occurs during
      *                             simulation
      */
     public void run(String[] args) throws Exception {

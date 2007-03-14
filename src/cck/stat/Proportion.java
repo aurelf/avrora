@@ -135,6 +135,6 @@ public class Proportion implements DataItem {
      * Return true if this proportion has any information available.
      */
     public boolean empty() {
-        return (shares.size() == 0);
+        return (shares.isEmpty());
     }
 }

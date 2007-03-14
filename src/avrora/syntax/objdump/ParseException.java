@@ -39,6 +39,11 @@ public class ParseException extends AbstractParseException {
         specialConstructor = false;
     }
 
+    public ParseException(String message) {
+        super(message);
+        specialConstructor = false;
+    }
+
 
     /**
      * This method has the standard behavior when this object has been created using the standard

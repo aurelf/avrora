@@ -53,7 +53,7 @@ public abstract class Item {
      */
     public abstract void simplify();
 
-    protected Item(Module.Seg seg) {
+    public Item(Module.Seg seg) {
         byteAddress = seg.getCurrentAddress();
         segment = seg;
         module = seg.getModule();
@@ -166,7 +166,7 @@ public abstract class Item {
         }
 
         public void simplify() {
-            segment.addLabel(name.image, byteAddress, byteAddress);
+            segment.addLabel(byteAddress, name.image);
         }
 
         public int getByteAddress() {

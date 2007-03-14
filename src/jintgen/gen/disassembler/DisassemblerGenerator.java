@@ -282,7 +282,7 @@ public class DisassemblerGenerator extends Generator {
             nname = nodeName(dt);
             def = d;
             length = dt.right_bit - dt.left_bit + 1;
-            left = DisassemblerGenerator.nativeBitOrder(dt.left_bit, length);
+            left = nativeBitOrder(dt.left_bit, length);
             mask = Arithmetic.getBitRangeMask(0, length - 1);
             action = act;
         }

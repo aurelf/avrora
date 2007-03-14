@@ -750,7 +750,7 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      *
      * @param address the byte address to read
      * @return the value of the data memory at the specified address
-     * @throws java.lang.ArrayIndexOutOfBoundsException
+     * @throws ArrayIndexOutOfBoundsException
      *          if the specified address is not the valid memory range
      */
     public byte getDataByte(int address) {
@@ -839,7 +839,7 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      *
      * @param address the byte address at which to read
      * @return the byte value of the program memory at the specified address
-     * @throws avrora.sim.InterpreterError.AddressOutOfBoundsException if the specified address is not the valid program memory range
+     * @throws InterpreterError.AddressOutOfBoundsException if the specified address is not the valid program memory range
      */
     public byte getFlashByte(int address) {
         return flash.read(address);
@@ -1039,8 +1039,8 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      * @param val
      */
     public void setSP(int val) {
-        SPL_reg.value = (Arithmetic.low(val));
-        SPH_reg.value = (Arithmetic.high(val));
+        SPL_reg.value = Arithmetic.low(val);
+        SPH_reg.value = Arithmetic.high(val);
     }
 
     /**

@@ -33,7 +33,8 @@
 package avrora.syntax;
 
 import avrora.arch.legacy.*;
-import avrora.core.*;
+import avrora.core.LabelMapping;
+import avrora.core.Program;
 import avrora.syntax.atmel.AtmelParser;
 import cck.parser.AbstractParseException;
 import cck.parser.AbstractToken;
@@ -70,7 +71,7 @@ public class Module implements Context {
     static Verbose.Printer modulePrinter = Verbose.getVerbosePrinter("loader");
 
     private static final SyntacticOperand[] NO_OPERANDS = { };
-    private SourceMapping sourceMapping;
+    private LabelMapping labelMapping;
 
     protected class Seg {
 
@@ -101,22 +102,22 @@ public class Module implements Context {
         }
 
         public void writeDataBytes(ASTNode loc, int baddr, byte[] b) {
-            if (acceptsData) newprogram.writeProgramBytes(b, baddr);
-            else ERROR.DataCannotBeInSegment(name, loc);
+            if (!acceptsData) ERROR.DataCannotBeInSegment(name, loc);
+            else newprogram.writeProgramBytes(b, baddr);
         }
 
         public void writeDataByte(ASTNode loc, int baddr, byte b) {
-            if (acceptsData) newprogram.writeProgramByte(b, baddr);
-            else ERROR.DataCannotBeInSegment(name, loc);
+            if (!acceptsData) ERROR.DataCannotBeInSegment(name, loc);
+            else newprogram.writeProgramByte(b, baddr);
         }
 
         public void writeInstr(AbstractToken loc, int baddr, LegacyInstr i) {
-            if (acceptsInstrs) newprogram.writeInstr(i, baddr);
-            else ERROR.InstructionCannotBeInSegment(name, loc);
+            if (!acceptsInstrs) ERROR.InstructionCannotBeInSegment(name, loc);
+            else newprogram.writeInstr(i, baddr);
         }
 
-        public void addLabel(String name, int vma_addr, int lma_addr) {
-            sourceMapping.newLocation(this.name, name, vma_addr, lma_addr);
+        public void addLabel(int baddr, String labelname) {
+            labelMapping.newLocation(name, labelname, baddr);
         }
 
         public void setOrigin(int org) {
@@ -283,6 +284,13 @@ public class Module implements Context {
         labels.put(name.image.toLowerCase(), li);
     }
 
+    public void addQuotedLabel(AbstractToken name) {
+        name.image = StringUtil.trimquotes(name.image);
+        Item.Label li = new Item.Label(segment, name);
+        addItem(li);
+        labels.put(name.image.toLowerCase(), li);
+    }
+
     private void makeInstr(String variant, AbstractToken name, SyntacticOperand[] o) {
         LegacyInstrProto proto = LegacyInstrSet.getPrototype(variant);
         addItem(new Item.Instruction(segment, variant, name, proto, o));
@@ -292,8 +300,8 @@ public class Module implements Context {
     public Program build() {
         newprogram = new Program(LegacyArchitecture.INSTANCE, programSegment.lowest_address, programSegment.highest_address);
 
-        sourceMapping = new SourceMapping(newprogram);
-        newprogram.setSourceMapping(sourceMapping);
+        labelMapping = new LabelMapping(newprogram);
+        newprogram.setSourceMapping(labelMapping);
         Iterator i = itemList.iterator();
         while (i.hasNext()) {
             Item pos = (Item)i.next();

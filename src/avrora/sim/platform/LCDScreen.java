@@ -123,7 +123,7 @@ public class LCDScreen implements USART.USARTDevice {
     }
 
     /**
-     * The <code>exchange()</code> method receives a frame from the USART that this device is
+     * The <code>receiveFrame()</code> method receives a frame from the USART that this device is
      * connected to. It then decodes the command, performs the specified action, and updates the
      * character memory accordingly.
      * @param frame the USART frame to receive

@@ -150,7 +150,7 @@ public class Main {
     }
 
     private static void loadFile(String fname) throws IOException {
-        Main.checkFileExists(fname);
+        checkFileExists(fname);
         File f = new File(fname);
         Properties defs = new Properties();
         defs.load(new FileInputStream(f));
@@ -314,7 +314,7 @@ public class Main {
         Terminal.print("[");
         Terminal.printBrightBlue(Version.TAG.toString());
         Terminal.print("]");
-        Terminal.print(" - (c) 2003-2006 UCLA Compilers Group\n\n");
+        Terminal.print(" - (c) 2003-2007 UCLA Compilers Group\n\n");
     }
 
     /**

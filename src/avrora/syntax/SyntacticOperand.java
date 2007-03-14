@@ -54,7 +54,7 @@ public abstract class SyntacticOperand extends ASTNode implements LegacyOperand 
     protected final AbstractToken left;
     protected final AbstractToken right;
 
-    protected SyntacticOperand(AbstractToken l, AbstractToken r) {
+    SyntacticOperand(AbstractToken l, AbstractToken r) {
         left = l;
         right = r;
     }
@@ -76,7 +76,7 @@ public abstract class SyntacticOperand extends ASTNode implements LegacyOperand 
     }
 
     /**
-     * The <code>SyntacticOperand.Register</code> class represents a register operand at the source
+     * The <code>SyntacticOperand.LegacyRegister</code> class represents a register operand at the source
      * level. This may be an actual register name (e.g. "r21") or it could be a symbolic name for a register
      * that has been renamed by an assembler directive.
      */
@@ -143,9 +143,11 @@ public abstract class SyntacticOperand extends ASTNode implements LegacyOperand 
 
         public int getValueAsWord() {
             if (!simplified) throw Util.failure("expression operand not yet simplified: " + expr);
-            if (useByteAddress) {
+            if (!useByteAddress) // already using a word address for this.
+                return value;
+            else {
                 return (value >> 1);
-            } else return value;
+            }
         }
 
         public void simplify(int nextByteAddress, Context c) {

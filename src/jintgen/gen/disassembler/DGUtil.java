@@ -70,19 +70,19 @@ public class DGUtil {
         for ( int cntr = 0; cntr < ei.bitStates.length; cntr++ ) {
             switch ( ei.bitStates[cntr] ) {
                 case EncodingInst.ENC_ZERO:
-                    buf.append('0');
+                    buf.append("0");
                     break;
                 case EncodingInst.ENC_ONE:
-                    buf.append('1');
+                    buf.append("1");
                     break;
                 case EncodingInst.ENC_MATCHED_ONE:
-                    buf.append('U');
+                    buf.append("U");
                     break;
                 case EncodingInst.ENC_MATCHED_ZERO:
-                    buf.append('u');
+                    buf.append("u");
                     break;
                 case EncodingInst.ENC_VAR:
-                    buf.append('.');
+                    buf.append(".");
                     break;
             }
         }
@@ -108,20 +108,20 @@ public class DGUtil {
      * @param depth the indenting depth
      */
     public static void printTree(HashSet<DTNode> nodes, Printer p, DTNode dt, int depth) {
-        p.print("#"+dt.number+ ' ');
+        p.print("#"+dt.number+" ");
         if ( nodes.contains(dt) ) {
             p.nextln();
             return;
         }
         nodes.add(dt);
         String label = dt.getLabel();
-        if ( label != null ) p.print(label+ ' ');
+        if ( label != null ) p.print(label+" ");
         if ( dt.isLeaf() ) {
             printLeaf(dt, p);
             return;
         }
         int length = dt.right_bit - dt.left_bit + 1;
-        p.println("decode["+dt.left_bit+ ':' +dt.right_bit+"]: ");
+        p.println("decode["+dt.left_bit+":"+dt.right_bit+"]: ");
         DTNode def = null;
         for ( Map.Entry<Integer, DTNode> e : dt.getSortedEdges() ) {
             DTNode cdt = e.getValue();
@@ -182,7 +182,7 @@ public class DGUtil {
         long nstate = getBitStates(state, dt);
         int length = dt.right_bit - dt.left_bit + 1;
         String name = getName(dt, state);
-        p.println(name+ ';');
+        p.println(name+";");
         for ( Map.Entry<Integer, DTNode> e : dt.getEdges() ) {
             int value = e.getKey();
             DTNode cdt = e.getValue();

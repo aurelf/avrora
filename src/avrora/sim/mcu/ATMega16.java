@@ -56,9 +56,9 @@ public class ATMega16 extends ATMegaFamily {
     public static final int _512b = 512;
 
     public static final int ATMEGA16_IOREG_SIZE = 64;
-    public static final int ATMEGA16_SRAM_SIZE = 1 * _1kb;
+    public static final int ATMEGA16_SRAM_SIZE = _1kb;
     public static final int ATMEGA16_FLASH_SIZE = 16 * _1kb;
-    public static final int ATMEGA16_EEPROM_SIZE = 1 * _512b;
+    public static final int ATMEGA16_EEPROM_SIZE = _512b;
     public static final int ATMEGA16_NUM_PINS = 41;
     public static final int ATMEGA16_NUM_INTS = 22;
 

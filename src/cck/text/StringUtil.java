@@ -251,9 +251,9 @@ public class StringUtil {
     }
 
     public static void expectKeyword(CharacterIterator i, String kw) {
-        String str = StringUtil.readIdentifier(i);
+        String str = readIdentifier(i);
         if (!str.equals(kw))
-            Util.failure("parse error at " + i.getIndex() + ", expected keyword " + StringUtil.quote(kw));
+            Util.failure("parse error at " + i.getIndex() + ", expected keyword " + quote(kw));
     }
 
 
@@ -1090,7 +1090,7 @@ public class StringUtil {
 
     public static List toList(String val) {
         LinkedList list = new LinkedList();
-        if (val.equals("")) return list;
+        if ("".equals(val)) return list;
 
         CharacterIterator i = new StringCharacterIterator(val);
         StringBuffer buf = new StringBuffer(32);

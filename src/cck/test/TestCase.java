@@ -128,7 +128,7 @@ public abstract class TestCase {
         public ExpectSourceError(String fname, Properties props) {
             super(fname, props);
             String result = StringUtil.trimquotes(props.getProperty("Result"));
-            if (result.equals("PASS")) shouldPass = true;
+            if ("PASS".equals(result)) shouldPass = true;
             else {
                 // format = "$id @ $num:$num"
                 int i = result.indexOf("@");

@@ -395,9 +395,9 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
      * @param p the last character of the port name
      */
     protected void buildPort(char p) {
-        ATMegaFamily.Pin[] portPins = new ATMegaFamily.Pin[8];
+        Pin[] portPins = new Pin[8];
         for (int cntr = 0; cntr < 8; cntr++)
-            portPins[cntr] = (ATMegaFamily.Pin)getPin("P" + p + cntr);
+            portPins[cntr] = (Pin)getPin("P" + p + cntr);
         installIOReg("PORT"+p, new PortRegister(portPins));
         installIOReg("DDR"+p, new DirectionRegister(portPins));
         installIOReg("PIN"+p, new PinRegister(portPins));

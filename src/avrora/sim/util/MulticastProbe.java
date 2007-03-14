@@ -56,7 +56,6 @@ public class MulticastProbe extends TransactionalList implements Simulator.Probe
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.Probe)pos.object).fireBefore(state, pc);
-        endTransaction();
     }
 
     /**
@@ -68,7 +67,6 @@ public class MulticastProbe extends TransactionalList implements Simulator.Probe
      * @param pc the address at which this instruction resides
      */
     public void fireAfter(State state, int pc) {
-        beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.Probe)pos.object).fireAfter(state, pc);
         endTransaction();

@@ -62,7 +62,7 @@ public abstract class Action extends HelpCategory {
      * arguments after options have been stripped out.
      *
      * @param args the command line arguments
-     * @throws java.lang.Exception
+     * @throws Exception
      */
     public abstract void run(String[] args) throws Exception;
 

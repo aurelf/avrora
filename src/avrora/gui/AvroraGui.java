@@ -34,6 +34,7 @@ package avrora.gui;
 
 import avrora.Version;
 import avrora.sim.Simulation;
+import avrora.sim.radio.SimpleAir;
 import avrora.sim.types.SensorSimulation;
 import cck.util.Options;
 import cck.util.Util;
@@ -148,6 +149,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
         masterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         simulation = new SensorSimulation();
+        simulation.setAir(new SimpleAir());
 
         args = a;
 

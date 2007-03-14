@@ -65,7 +65,7 @@ public class AddrModeDecl extends Item {
         }
     }
 
-    public final List<Operand> operands;
+    public final List<AddrModeDecl.Operand> operands;
     public final List<FormatDecl> encodings;
     public final List<AddrModeSetDecl> sets;
 

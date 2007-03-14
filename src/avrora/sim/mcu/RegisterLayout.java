@@ -178,7 +178,7 @@ public class RegisterLayout {
      * LegacyRegister name for this microcontroller.
      * @param n the name of the IO register such as "TCNT0"
      * @return an integer representing the IO register number if it exists
-     * @throws java.util.NoSuchElementException if the specified IO register name does not have an assignment
+     * @throws NoSuchElementException if the specified IO register name does not have an assignment
      */
     public int getIOReg(String n) {
         RegisterInfo i = (RegisterInfo)ioregAssignments.get(n);

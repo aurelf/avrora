@@ -89,6 +89,19 @@ public class TokenMgrError extends Error {
         return ("Lexical error at line " + errorLine + ", column " + errorColumn + ".  Encountered: " + (EOFSeen ? "<EOF> " : ('\"' + addEscapes(String.valueOf(curChar)) + '\"') + " (" + (int)curChar + "), ") + "after : \"" + addEscapes(errorAfter) + '\"');
     }
 
+    /**
+     * You can also modify the body of this method to customize your error messages. For example, cases like
+     * LOOP_DETECTED and INVALID_LEXICAL_STATE are not of end-users concern, so you can return something like
+     * :
+     * <p/>
+     * "Internal Error : Please file a bug report .... "
+     * <p/>
+     * from this method for such cases in the release version of your parser.
+     */
+    public String getMessage() {
+        return super.getMessage();
+    }
+
     /*
      * Constructors of various flavors follow.
      */

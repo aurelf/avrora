@@ -66,6 +66,10 @@ public class ParseException extends AbstractParseException {
     public ParseException() {
     }
 
+    public ParseException(String message) {
+        super(message);
+    }
+
     /**
      * This method has the standard behavior when this object has been created using the standard
      * constructors. Otherwise, it uses "currentToken" and "expectedTokenSequences" to generate a parse error

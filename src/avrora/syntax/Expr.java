@@ -68,6 +68,7 @@ public abstract class Expr extends ASTNode {
      * multiplication, etc. It contains two internal expressions, the left and right.
      */
     public static class BinOp extends Expr {
+
         /**
          * The <code>op</code> field records the token that corresponds to the actual arithmetic operator.
          */
@@ -147,6 +148,7 @@ public abstract class Expr extends ASTNode {
      * complement, etc.
      */
     public static class UnOp extends Expr {
+
         public final AbstractToken op;
         public final Expr operand;
 
@@ -194,6 +196,7 @@ public abstract class Expr extends ASTNode {
      * logarithm, etc.
      */
     public static class Func extends Expr {
+
         public final AbstractToken func;
         public final Expr argument;
         public final AbstractToken last;
@@ -280,6 +283,7 @@ public abstract class Expr extends ASTNode {
      * token.
      */
     public abstract static class Term extends Expr {
+
         public final AbstractToken token;
 
         Term(AbstractToken tok) {
@@ -327,6 +331,7 @@ public abstract class Expr extends ASTNode {
      * The <code>Constant</code> class represents a integer literal (a constant) within the program.
      */
     public static class Constant extends Term {
+
         public final int value;
 
         public Constant(AbstractToken tok) {
@@ -350,12 +355,12 @@ public abstract class Expr extends ASTNode {
             if (val.charAt(0) == '$')                          // hexadecimal
                 return Integer.parseInt(val.substring(1), 16);
             else {
-		try {
-		    return StringUtil.evaluateIntegerLiteral(val);
-		} catch ( Exception e ) {
-		    throw Util.unexpected(e);
-		}
-	    }
+                try {
+                    return StringUtil.evaluateIntegerLiteral(val);
+                } catch (Exception e) {
+                    throw Util.unexpected(e);
+                }
+            }
         }
     }
 
@@ -364,15 +369,16 @@ public abstract class Expr extends ASTNode {
      * integer value.
      */
     public static class CharLiteral extends Term {
+
         public final int value;
 
         public CharLiteral(AbstractToken tok) {
             super(tok);
-	    try {
-		value = StringUtil.evaluateCharLiteral(tok.image);
-	    } catch ( Exception e ) {
-		throw Util.unexpected(e);
-	    }
+            try {
+                value = StringUtil.evaluateCharLiteral(tok.image);
+            } catch (Exception e) {
+                throw Util.unexpected(e);
+            }
         }
 
         /**
@@ -395,15 +401,16 @@ public abstract class Expr extends ASTNode {
      * evaluated to an integer. It is treated specifially in the simplification phase.
      */
     public static class StringLiteral extends Term {
+
         public final String value;
 
         public StringLiteral(AbstractToken tok) {
             super(tok);
-	    try {
-		value = StringUtil.evaluateStringLiteral(tok.image);
-	    } catch ( Exception e ) {
-		throw Util.unexpected(e);
-	    }
+            try {
+                value = StringUtil.evaluateStringLiteral(tok.image);
+            } catch (Exception e) {
+                throw Util.unexpected(e);
+            }
         }
 
         /**
@@ -413,7 +420,7 @@ public abstract class Expr extends ASTNode {
          * @param currentByteAddress the current byte address within the program
          * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
-         * @throws cck.util.Util.InternalError because a string cannot be evaluated to a 32-bit integer
+         * @throws Util.InternalError because a string cannot be evaluated to a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {
             throw Util.failure("cannot evaluate a string to an integer");

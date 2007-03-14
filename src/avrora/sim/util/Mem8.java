@@ -43,7 +43,7 @@ import cck.text.Terminal;
  */
 public class Mem8 {
     public final int[] values;
-    public final int max = 16;
+    public static final int max = 16;
     public int count = 0;
 
     public Mem8() {

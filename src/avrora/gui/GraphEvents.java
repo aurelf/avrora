@@ -80,8 +80,13 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
      */
     public SpinnerNumberModel stepsizeVisual;
 
+    //options not done yet
+    private Color lineColor; //color of line that is drawn
     private Color backColor; //color of background
     private Color tickColor; //color of tick marks/graph lines
+    private int xAxisMajorTickMark; //number of plot points before drawing major tick mark
+    private int minvalue;
+    private int maxvalue;
 
 
     //The min and max values of the data in question: for VERTICAL sizing
@@ -103,12 +108,12 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
         }
 
         //Set option defaults
-        Color lineColor = Color.GREEN;
+        lineColor = Color.GREEN; //default line color is green
         backColor = Color.BLACK; //default background color is black
         tickColor = Color.LIGHT_GRAY; //default tick mark color is gray
-        int xAxisMajorTickMark = 20;
-        int minvalue = pminvalue;
-        int maxvalue = pmaxvalue;
+        xAxisMajorTickMark = 20; //go 20 plot points before drawing x-axis tick mark
+        minvalue = pminvalue; //min and max values for the y-axis
+        maxvalue = pmaxvalue;
         stepsize = pstepsize; //x-axis step size
     }
 

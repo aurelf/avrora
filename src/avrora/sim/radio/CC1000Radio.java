@@ -1404,7 +1404,7 @@ public class CC1000Radio implements Radio {
     /**
      * get the transmission power
      *
-     * @see avrora.sim.radio.Radio#getPower()
+     * @see Radio#getPower()
      */
     public int getPower() {
         return PA_POW_reg.getPower();
@@ -1413,7 +1413,7 @@ public class CC1000Radio implements Radio {
     /**
      * get transmission frequency
      *
-     * @see avrora.sim.radio.Radio#getFrequency()
+     * @see Radio#getFrequency()
      */
     public double getFrequency() {
         // according to CC1000 handbook
