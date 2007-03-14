@@ -219,7 +219,7 @@ public abstract class Literal extends Expr {
         }
 
         public String toString() {
-            return enumDecl.name.image+"."+token;
+            return enumDecl.name.image+ '.' +token;
         }
 
         public int getPrecedence() {

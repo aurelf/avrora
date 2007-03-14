@@ -417,11 +417,6 @@ public class CC2420Radio implements Radio {
                 receiving = true;
             }
             // TODO: Figure out how radio really resets..
-            if (resetn && !Arithmetic.getBit(oldVal, RESETn)) {
-                oldVal = val;
-                //resetRadio();
-                return;
-            }
             oldVal = val;
         }
 

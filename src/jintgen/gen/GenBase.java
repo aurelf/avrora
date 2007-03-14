@@ -161,7 +161,7 @@ public class GenBase {
 
     protected LinkedList<String> nameTypeList(String t, String n, List<AddrModeDecl.Operand> ol) {
         LinkedList<String> list = new LinkedList<String>();
-        list.add(t+" "+n);
+        list.add(t+ ' ' +n);
         for ( AddrModeDecl.Operand o : ol ) list.add("$operand."+o.typeRef.getTypeConName()+' '+o.name.image);
         return list;
     }

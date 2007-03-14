@@ -136,7 +136,7 @@ public class DTBuilder {
         // scan from the left for the bit that is most often concrete
         int max = getLeftBit(set);
 
-        verbose.println("result: decode["+set.left_bit+":"+set.right_bit+"]");
+        verbose.println("result: decode["+set.left_bit+ ':' +set.right_bit+ ']');
 
         // problem: no encodings have any concrete bits left
         if ( max == 0 ) {

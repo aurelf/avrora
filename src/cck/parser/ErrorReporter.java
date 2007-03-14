@@ -63,13 +63,13 @@ public class ErrorReporter {
 
     public void redefined(String type, String thing, AbstractToken prevdecl, AbstractToken newdecl) {
         type = "Redefined" + type;
-        String report = thing + " " + StringUtil.quote(prevdecl.image) + " previously defined at " + pos(prevdecl);
+        String report = thing + ' ' + StringUtil.quote(prevdecl.image) + " previously defined at " + pos(prevdecl);
         error(type, newdecl.getSourcePoint(), report, prevdecl.image);
     }
 
     public void unresolved(String type, String thing, AbstractToken where) {
         type = "Unresolved" + type;
-        String report = "Unresolved " + thing + " " + StringUtil.quote(where.image);
+        String report = "Unresolved " + thing + ' ' + StringUtil.quote(where.image);
         error(type, where.getSourcePoint(), report, where.image);
     }
 

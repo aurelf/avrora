@@ -196,8 +196,7 @@ public class Arith {
         }
         public Type typeCheck(TypeEnv env, Typeable inner) {
             // JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
-            JIGIRTypeEnv.TYPE_int it = (JIGIRTypeEnv.TYPE_int)inner.getType();
-            return it;
+            return (JIGIRTypeEnv.TYPE_int)inner.getType();
         }
         public Literal evaluate(Literal inner) {
             int ll = ((Literal.IntExpr)inner).value;

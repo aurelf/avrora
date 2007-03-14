@@ -445,7 +445,7 @@ public class GDBServer extends MonitorFactory {
             int cksum = 0;
             for ( int cntr = 0; cntr < bytes.length; cksum += bytes[cntr++] ) ;
 
-            String np = "$"+packet+"#"+StringUtil.toLowHex(cksum & 0xff, 2);
+            String np = '$' +packet+ '#' +StringUtil.toLowHex(cksum & 0xff, 2);
             if ( printer.enabled )
                 printer.println("   <-- "+np+"");
 

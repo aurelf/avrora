@@ -194,8 +194,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
             ce.setDecl(s);
             return ce;
         } else {
-            CallExpr ce = newCallExpr(token("$read_poly_"+ getTypeString(accessor.type)), new VarExpr(e.operand));
-            return ce;
+            return newCallExpr(token("$read_poly_"+ getTypeString(accessor.type)), new VarExpr(e.operand));
         }
     }
 
@@ -377,8 +376,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
             cs.setDecl(sub);
             return cs;
         } else {
-            CallStmt cs = newCallStmt(token("$write_poly_"+ getTypeString(accessor.type)), new VarExpr(s.operand), promote(s.expr, machineType(accessor.type), 0));
-            return cs;
+            return newCallStmt(token("$write_poly_"+ getTypeString(accessor.type)), new VarExpr(s.operand), promote(s.expr, machineType(accessor.type), 0));
         }
     }
 

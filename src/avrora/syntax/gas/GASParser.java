@@ -1903,19 +1903,16 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         if (jj_3R_20()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(157)) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
     private boolean jj_3_3() {
         if (jj_3R_15()) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
     private boolean jj_3_2() {
         if (jj_3R_14()) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
@@ -1925,7 +1922,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         if (jj_3R_20()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(156)) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
@@ -1935,25 +1931,21 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         if (jj_3R_20()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(157)) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
     private boolean jj_3_5() {
         if (jj_3R_17()) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
     private boolean jj_3_4() {
         if (jj_3R_16()) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
     private boolean jj_3R_20() {
         if (jj_scan_token(IDENTIFIER)) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
@@ -1963,25 +1955,21 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         if (jj_3R_20()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(156)) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
     private boolean jj_3R_23() {
         if (jj_scan_token(ELPM)) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
     private boolean jj_3_7() {
         if (jj_3R_19()) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
     private boolean jj_3_6() {
         if (jj_3R_18()) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
@@ -1993,19 +1981,16 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         if (jj_scan_token(156)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(158)) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
     private boolean jj_3_1() {
         if (jj_3R_13()) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
     private boolean jj_3R_22() {
         if (jj_scan_token(LPM)) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
@@ -2016,7 +2001,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             jj_scanpos = xsp;
             if (jj_3R_23()) return true;
             if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-        } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+        }
         return false;
     }
 
@@ -2030,7 +2015,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         if (jj_3R_20()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(157)) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
@@ -2038,7 +2022,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         if (jj_scan_token(IDENTIFIER)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(160)) return true;
-        if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
@@ -2051,13 +2034,13 @@ public class GASParser extends AbstractParser implements GASParserConstants {
     public boolean lookingAhead = false;
     private boolean jj_semLA;
     private int jj_gen;
-    final private int[] jj_la1 = new int[42];
-    static private int[] jj_la1_0;
-    static private int[] jj_la1_1;
-    static private int[] jj_la1_2;
-    static private int[] jj_la1_3;
-    static private int[] jj_la1_4;
-    static private int[] jj_la1_5;
+    private final int[] jj_la1 = new int[42];
+    private static int[] jj_la1_0;
+    private static int[] jj_la1_1;
+    private static int[] jj_la1_2;
+    private static int[] jj_la1_3;
+    private static int[] jj_la1_4;
+    private static int[] jj_la1_5;
 
     static {
         jj_la1_0();
@@ -2108,7 +2091,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 0x1e00, 0x6000, 0x6000, 0x0, 0x0, 0x18000, 0x18000, 0x60000, 0xe0000, 0x80000, 0x0, };
     }
 
-    final private JJCalls[] jj_2_rtns = new JJCalls[7];
+    private final JJCalls[] jj_2_rtns = new JJCalls[7];
     private boolean jj_rescan = false;
     private int jj_gc = 0;
 
@@ -2320,12 +2303,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             exptokseq[i] = (int[])jj_expentries.elementAt(i);
         }
         return new ParseException(token, exptokseq, tokenImage);
-    }
-
-    public void enable_tracing() {
-    }
-
-    public void disable_tracing() {
     }
 
     private void jj_rescan_token() {

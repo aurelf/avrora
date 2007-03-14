@@ -48,8 +48,6 @@ import avrora.sim.radio.SimpleAir;
  */
 public class SimTimeEvents {
 
-    private SimpleAir simpleAir;
-
     /**
      * This PauseEvent can be inserted in the sim directly
      */
@@ -59,7 +57,7 @@ public class SimTimeEvents {
      * @param psA The class needs to know about the Toplogy used in the sim
      */
     public SimTimeEvents(SimpleAir psA) {
-        simpleAir = psA;
+        SimpleAir simpleAir = psA;
 
         pause = new PauseEvent();
     }

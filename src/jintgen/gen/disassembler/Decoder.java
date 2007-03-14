@@ -499,7 +499,7 @@ abstract class Decoder extends GenBase {
             generateJavaDoc("The <code>word"+word+"</code> field stores a word-sized chunk of the instruction " +
                     "stream. It is used by the decoders instead of repeatedly accessing the array. This implementation " +
                     "has been configured with "+DisassemblerGenerator.WORD_SIZE+"-bit words.");
-            println("private int word"+word+";");
+            println("private int word"+word+ ';');
         }
     }
 
@@ -549,7 +549,7 @@ abstract class Decoder extends GenBase {
         }
         int i = (elemSize / 8);
         String scale = i > 1 ? " * "+i : "";
-        println("pc = base + index"+scale+";");
+        println("pc = base + index"+scale+ ';');
         println("return decode_root();");
         endblock();
         println("");
@@ -588,7 +588,7 @@ abstract class Decoder extends GenBase {
         String last = def;
         for ( DTNode n : DGUtil.topologicalOrder(dt) )
             last = generateDecodingNode(n, ag, def);
-        println("return "+last+";");
+        println("return "+last+ ';');
         endblock();
         generateJavaDoc(tr("The <code>$1</code> field stores a reference to the root of " +
                 "a decoding tree. It is the starting point for decoding a bit pattern.", treeName));
@@ -603,7 +603,7 @@ abstract class Decoder extends GenBase {
 
     String shift(String str, int s) {
         if ( s == 0 ) return str;
-        else return "("+str+" << "+s+")";
+        else return '(' +str+" << "+s+ ')';
     }
 
     String generateDecodingNode(DTNode n, ActionGetter ag, String def) {
@@ -703,7 +703,7 @@ abstract class Decoder extends GenBase {
         if ( insts.size() == 1 ) {
             // label all the children
             EncodingInst ei = insts.iterator().next();
-            dt.setLabel(ei.instr.innerClassName+"x"+dGen.reader.getName(ei.encoding));
+            dt.setLabel(ei.instr.innerClassName+ 'x' +dGen.reader.getName(ei.encoding));
             for ( DTNode cdt : dt.getChildren() )
             labelTree("*", cdt);
         } else {

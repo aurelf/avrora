@@ -171,14 +171,14 @@ public class TypeCon {
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append(name);
-        buf.append("(");
+        buf.append('(');
         boolean first = true;
         for ( Dimension d : dimensions.values() ) {
             if ( !first ) buf.append(", ");
             buf.append(d.name);
             first = false;
         }
-        buf.append("(");
+        buf.append('(');
         return name;
     }
 

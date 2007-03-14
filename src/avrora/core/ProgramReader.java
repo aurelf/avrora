@@ -88,7 +88,7 @@ public abstract class ProgramReader extends HelpCategory {
         Iterator i = INDIRECT_EDGES.get().iterator();
         while (i.hasNext()) {
             String s = (String)i.next();
-            int ind = s.indexOf(":");
+            int ind = s.indexOf(':');
             if (ind <= 0)
                 throw Util.failure("invalid indirect edge format: " + StringUtil.quote(s));
             SourceMapping sm = p.getSourceMapping();

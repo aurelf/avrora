@@ -326,7 +326,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             int value = getCounter();
             if (devicePrinter.enabled) {
                 devicePrinter.println(name + " [" + getCounterName() + " = " + value);
-                final Iterator i = comparators.values().iterator();
+                Iterator i = comparators.values().iterator();
                 for (Comparator c = (Comparator)i.next(); c != null; c = (Comparator)i.next()) {
                     devicePrinter.println(", " + c + "(actual) = " + c.read() + ", " + c + "(buffer) = " + c.readBuffer() + ']');
                 }
@@ -337,7 +337,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             // the compare match should be performed in any case.
             // XXX: Check that this is OK; is using count ok
             if (!compareMatchBlocked) {
-                final Iterator i = comparators.values().iterator();
+                Iterator i = comparators.values().iterator();
                 while (i.hasNext()) ((Comparator)i.next()).compare(value);
 
             }
@@ -526,7 +526,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             type = t;
             unit = u;
             pin = p;
-            final InterruptTable it = interpreter.getInterruptTable();
+            InterruptTable it = interpreter.getInterruptTable();
             flag = new FlagField(it, true, interruptNumber);
             rset.installField(type + "F" + timerNumber + unit, flag);
         }

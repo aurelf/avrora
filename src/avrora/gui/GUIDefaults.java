@@ -46,8 +46,8 @@ import java.util.List;
  */
 public class GUIDefaults {
 
-    final static ClassMap monitorMap; // map of default MonitorFactory's for GUI
-    final static List options;
+    static final ClassMap monitorMap; // map of default MonitorFactory's for GUI
+    static final List options;
 
     static {
         monitorMap = new ClassMap("Monitor", Simulation.Monitor.class);  //for regular monitors

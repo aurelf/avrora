@@ -65,8 +65,6 @@ public class Energy implements FiniteStateMachine.Probe {
     private long lastChange;
     // voltage, needed for computation of energy consumption
     private static final double voltage = 3.0d;
-    // mcu frequecy
-    private int freq;
     // time one mcu cycle takes
     private double cycleTime;
     //the state machine handles the sate of the device
@@ -90,7 +88,7 @@ public class Energy implements FiniteStateMachine.Probe {
         this.ampere = modeAmpere;
         this.stateMachine = fsm;
         this.currentMode = fsm.getStartState();
-        this.freq = (int)clock.getHZ();
+        int freq=(int)clock.getHZ();
         this.cycleTime = 1.0d / freq;
         this.instance = EnergyControl.getCurrentInstance();
 

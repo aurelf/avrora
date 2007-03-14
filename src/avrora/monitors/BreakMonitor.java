@@ -98,7 +98,7 @@ public class BreakMonitor extends MonitorFactory {
                 Terminal.print(idstr);
                 Terminal.print("      @ ");
                 int inum = stack.getInterrupt(cntr);
-                if ( inum >= 0 ) Terminal.printRed("#"+inum +" ");
+                if ( inum >= 0 ) Terminal.printRed("#"+inum + ' ');
                 Terminal.printGreen(sourceMap.getName(stack.getTarget(cntr)));
                 Terminal.nextln();
             }

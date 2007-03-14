@@ -690,7 +690,7 @@ public class AVRDisassembler implements AbstractDisassembler {
      * branches to other nodes based on the value. Each node may also have an action (such as fixing the addressing mode
      * or instruction) that is executed when the node is reached. Actions on the root node are not executed.
      */
-    static abstract class DTNode {
+    abstract static class DTNode {
 
         final int left_bit;
         final int mask;
@@ -776,7 +776,7 @@ public class AVRDisassembler implements AbstractDisassembler {
      * The <code>Action</code> class represents an action that can happen when the decoder reaches a particular node in
      * the tree. The action may be to fix the instruction or addressing mode, or to signal an error.
      */
-    static abstract class Action {
+    abstract static class Action {
 
         abstract void execute(AVRDisassembler d);
     }
@@ -854,7 +854,7 @@ public class AVRDisassembler implements AbstractDisassembler {
      * When the addressing mode is finally known, an action will fire that sets the operand reader which is used to read
      * the operands from the bit pattern.
      */
-    static abstract class OperandReader {
+    abstract static class OperandReader {
 
         abstract AVRAddrMode read(AVRDisassembler d);
     }

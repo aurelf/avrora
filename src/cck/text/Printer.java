@@ -112,7 +112,7 @@ public class Printer {
 
     public void endblock(String s) {
         unindent();
-        println("}" + s);
+        println('}' + s);
     }
 
     public void close() {

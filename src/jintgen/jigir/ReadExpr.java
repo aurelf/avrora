@@ -98,7 +98,7 @@ public class ReadExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return "read : "+typeRef +" ("+operand+")";
+        return "read : "+typeRef +" ("+operand+ ')';
     }
 
     /**

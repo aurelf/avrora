@@ -404,7 +404,7 @@ public class Defaults {
                 Util.userError("input type \"auto\" accepts only one file at a time.");
 
             String n = args[0];
-            int offset = n.lastIndexOf(".");
+            int offset = n.lastIndexOf('.');
             if (offset < 0)
                 Util.userError("file " + StringUtil.quote(n) + " does not have an extension");
 

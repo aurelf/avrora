@@ -103,7 +103,7 @@ public class RegisterSet {
         }
     }
 
-    static abstract class SubRegWriter {
+    abstract static class SubRegWriter {
         final int ior_low_bit;
         final int mask;
         final int length;

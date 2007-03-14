@@ -112,8 +112,8 @@ public class Logical {
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
-            if ( jenv.COMPARABLE.contains(typeConOf(left), typeConOf(right)) ) return jenv.BOOLEAN;
-            else jenv.ERROR.TypesCannotBeCompared(left, right);
+            if (jenv.COMPARABLE.contains(typeConOf(left), typeConOf(right))) return jenv.BOOLEAN;
+            jenv.ERROR.TypesCannotBeCompared(left, right);
             return null;
         }
         public Literal evaluate(Literal left, Literal right) {
