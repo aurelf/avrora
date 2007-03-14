@@ -34,6 +34,7 @@ package avrora.gui;
 
 import avrora.core.Program;
 import avrora.monitors.MonitorFactory;
+import avrora.monitors.Monitor;
 import avrora.sim.Simulator;
 import avrora.sim.util.ProgramProfiler;
 import javax.swing.*;
@@ -175,7 +176,7 @@ public class VisualRadioMonitor extends MonitorFactory {
      * @param s the simulator to create a monitor for
      * @return an instance of the <code>Monitor</code> interface for the specified simulator
      */
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
+    public Monitor newMonitor(Simulator s) {
         return new VisualMonitor(s);
     }
 }

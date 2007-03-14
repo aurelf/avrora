@@ -32,7 +32,7 @@
 
 package avrora.syntax;
 
-import avrora.arch.legacy.LegacyOperand;
+import avrora.arch.legacy.*;
 import cck.parser.AbstractToken;
 import cck.util.Util;
 
@@ -44,8 +44,8 @@ import cck.util.Util;
  * constraints specified in the Atmel instruction set reference.
  *
  * @author Ben L. Titzer
- * @see avrora.arch.legacy.LegacyOperand
- * @see avrora.arch.legacy.LegacyInstrProto
+ * @see LegacyOperand
+ * @see LegacyInstrProto
  */
 public abstract class SyntacticOperand extends ASTNode implements LegacyOperand {
 
@@ -76,14 +76,15 @@ public abstract class SyntacticOperand extends ASTNode implements LegacyOperand 
     }
 
     /**
-     * The <code>SyntacticOperand.LegacyRegister</code> class represents a register operand at the source level.
-     * This may be an actual register name (e.g. "r21") or it could be a symbolic name for a register that has
-     * been renamed by an assembler directive.
+     * The <code>SyntacticOperand.LegacyRegister</code> class represents a register operand at the source
+     * level. This may be an actual register name (e.g. "r21") or it could be a symbolic name for a register
+     * that has been renamed by an assembler directive.
      */
     public static class Register extends SyntacticOperand implements LegacyOperand.Register {
+
         public final AbstractToken name;
         private boolean simplified;
-        private avrora.arch.legacy.LegacyRegister register;
+        private LegacyRegister register;
 
         public Register(AbstractToken n) {
             super(n, n);
@@ -94,7 +95,7 @@ public abstract class SyntacticOperand extends ASTNode implements LegacyOperand 
             return this;
         }
 
-        public avrora.arch.legacy.LegacyRegister getRegister() {
+        public LegacyRegister getRegister() {
             // sanity check to avoid possibly hard to find bugs in the future
             if (!simplified) throw Util.failure("register operand not yet simplified: " + name);
             return register;
@@ -117,6 +118,7 @@ public abstract class SyntacticOperand extends ASTNode implements LegacyOperand 
      * actual value is known.
      */
     public static class Expr extends SyntacticOperand implements LegacyOperand.Constant {
+
         public final avrora.syntax.Expr expr;
         private boolean simplified;
         private boolean useByteAddress;

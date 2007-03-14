@@ -57,7 +57,7 @@ public class Verbose {
     }
 
     public static void setVerbose(String category, boolean on) {
-        if (category.equals("all")) {
+        if ("all".equals(category)) {
             ALL = on;
             Iterator i = printerMap.values().iterator();
             while (i.hasNext()) {

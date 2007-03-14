@@ -37,8 +37,7 @@ import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
 import cck.util.Util;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 
 /**
  * The <code>AtmelProgramReader</code> is an implementation of the <code>ProgramReader</code> that reads
@@ -55,17 +54,14 @@ public class AtmelProgramReader extends ProgramReader {
      *
      * @param args the string arguments representing the names of the files to read
      * @return a program obtained by parsing and building the file
-     * @throws avrora.syntax.atmel.ParseException
-     *                             if the file does not parse correctly
-     * @throws java.io.IOException if there is a problem reading from the files
+     * @throws ParseException if the file does not parse correctly
+     * @throws IOException    if there is a problem reading from the files
      */
     public Program read(String[] args) throws Exception {
-        if (args.length == 0)
-            Util.userError("no input files");
-        if (args.length != 1)
-            Util.userError("input type \"atmel\" accepts only one file at a time.");
+        if (args.length == 0) Util.userError("no input files");
+        if (args.length != 1) Util.userError("input type \"atmel\" accepts only one file at a time.");
 
-        if ( getArchitecture() != LegacyArchitecture.INSTANCE )
+        if (getArchitecture() != LegacyArchitecture.INSTANCE)
             Util.userError("input type  \"atmel\" parses only the \"legacy\" architecture.");
 
         File f = new File(args[0]);
@@ -83,9 +79,7 @@ public class AtmelProgramReader extends ProgramReader {
     }
 
     public AtmelProgramReader() {
-        super("The \"atmel\" input format reads programs that are written in " +
-                "assembly language in the format supported by the Atmel assembler. " +
-                "Nearly all of the directives are supported, except macros.");
+        super("The \"atmel\" input format reads programs that are written in " + "assembly language in the format supported by the Atmel assembler. " + "Nearly all of the directives are supported, except macros.");
     }
 
 }

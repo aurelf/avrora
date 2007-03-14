@@ -150,7 +150,7 @@ public class SimUtil {
 
     public static void warning(Simulator s, String w, String m) {
         StringBuffer buf = new StringBuffer(40 + w.length() + m.length());
-        SimUtil.getIDTimeString(buf, s);
+        getIDTimeString(buf, s);
         Terminal.append(Terminal.WARN_COLOR, buf, w);
         buf.append(": ");
         buf.append(m);

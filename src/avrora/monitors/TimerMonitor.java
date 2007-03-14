@@ -45,7 +45,7 @@ public class TimerMonitor extends MonitorFactory {
 
     public class Monitor implements avrora.monitors.Monitor {
         public final MemTimer memprofile;
-        private final int BASE = 2999;
+        private static final int BASE = 2999;
 
         Monitor(Simulator s) {
             memprofile = new MemTimer(BASE);

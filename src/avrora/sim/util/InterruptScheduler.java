@@ -49,7 +49,7 @@ import java.io.*;
 public class InterruptScheduler {
     final Simulator simulator;
     final File schedFile;
-    final java.io.StreamTokenizer tokens;
+    final StreamTokenizer tokens;
 
     private int currentLine;
     private final int maxInt;
@@ -64,8 +64,8 @@ public class InterruptScheduler {
 
         try {
             Terminal.println("Loading interrupt schedule from " + schedFile+"...");
-            java.io.FileReader inf_reader = new java.io.FileReader(schedFile);
-            tokens = new java.io.StreamTokenizer(inf_reader);
+            FileReader inf_reader = new FileReader(schedFile);
+            tokens = new StreamTokenizer(inf_reader);
             scheduleNextInterrupt();
         } catch ( IOException e ) {
             throw Util.unexpected(e);

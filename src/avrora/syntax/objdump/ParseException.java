@@ -20,9 +20,7 @@ public class ParseException extends AbstractParseException {
      * class with the empty string to force the "toString" method of parent class "Throwable" to print the
      * error message in the form: ParseException: <result of getMessage>
      */
-    public ParseException(Token currentTokenVal,
-                          int[][] expectedTokenSequencesVal,
-                          String[] tokenImageVal) {
+    public ParseException(Token currentTokenVal, int[][] expectedTokenSequencesVal, String[] tokenImageVal) {
         super("");
         specialConstructor = true;
         currentToken = currentTokenVal;
@@ -38,7 +36,6 @@ public class ParseException extends AbstractParseException {
      */
 
     public ParseException() {
-        super();
         specialConstructor = false;
     }
 
@@ -138,7 +135,6 @@ public class ParseException extends AbstractParseException {
                     } else {
                         retval.append(ch);
                     }
-                    continue;
             }
         }
         return retval.toString();

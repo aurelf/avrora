@@ -286,7 +286,7 @@ class CFGBuilder implements LegacyInstrVisitor {
     }
 
 
-    public final void visit(LegacyInstr.ADC i) { // add register to register with carry
+    public void visit(LegacyInstr.ADC i) { // add register to register with carry
         add(i);
     }
 

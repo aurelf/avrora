@@ -174,6 +174,6 @@ public class EncodingInst {
 
     public boolean isConcrete(int bit) {
         byte bitState = bitStates[bit];
-        return bitState == EncodingInst.ENC_ONE || bitState == EncodingInst.ENC_ZERO;
+        return bitState == ENC_ONE || bitState == ENC_ZERO;
     }
 }

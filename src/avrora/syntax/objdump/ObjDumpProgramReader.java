@@ -48,9 +48,7 @@ import java.io.*;
  */
 public class ObjDumpProgramReader extends ProgramReader {
 
-    protected final Option.List SECTIONS = newOptionList("sections",".text,.data",
-            "This option specifies a list of sections that the loader should load from " +
-            "the output.");
+    protected final Option.List SECTIONS = newOptionList("sections", ".text,.data", "This option specifies a list of sections that the loader should load from " + "the output.");
 
     /**
      * The <code>read()</code> method takes the command line arguments passed to main and interprets it as a
@@ -59,16 +57,13 @@ public class ObjDumpProgramReader extends ProgramReader {
      *
      * @param args the string arguments representing the names of the files to read
      * @return a program obtained by parsing and building the file
-     * @throws avrora.syntax.objdump.ParseException
-     *                             if the file does not parse correctly
-     * @throws java.io.IOException if there is a problem reading from the files
+     * @throws ParseException if the file does not parse correctly
+     * @throws IOException    if there is a problem reading from the files
      */
     public Program read(String[] args) throws Exception {
-        if (args.length == 0)
-            Util.userError("no input files");
-        if (args.length != 1)
-            Util.userError("input type \"objdump\" accepts only one file at a time.");
-        if ( getArchitecture() != LegacyArchitecture.INSTANCE )
+        if (args.length == 0) Util.userError("no input files");
+        if (args.length != 1) Util.userError("input type \"objdump\" accepts only one file at a time.");
+        if (getArchitecture() != LegacyArchitecture.INSTANCE)
             Util.userError("input type  \"objdump\" parses only the \"legacy\" architecture.");
 
 
@@ -89,12 +84,7 @@ public class ObjDumpProgramReader extends ProgramReader {
     }
 
     public ObjDumpProgramReader() {
-        super("The \"objdump\" input format reads programs that are the " +
-                "output of the \"avr-objdump\" utility provided with avr-binutils. " +
-                "For example, an ELF file must first be disassembled with " +
-                "\"avr-objdump -zhD\" to create a text file readable by this input " +
-                "format. The \"-zhD\" options are very important: the output will " +
-                "not be parseable otherwise.");
+        super("The \"objdump\" input format reads programs that are the " + "output of the \"avr-objdump\" utility provided with avr-binutils. " + "For example, an ELF file must first be disassembled with " + "\"avr-objdump -zhD\" to create a text file readable by this input " + "format. The \"-zhD\" options are very important: the output will " + "not be parseable otherwise.");
     }
 
 }

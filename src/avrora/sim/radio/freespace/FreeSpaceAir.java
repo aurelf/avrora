@@ -135,7 +135,7 @@ public class FreeSpaceAir implements RadioAir {
     /**
      * remove radio
      *
-     * @see avrora.sim.radio.RadioAir#removeRadio(avrora.sim.radio.Radio)
+     * @see RadioAir#removeRadio(Radio)
      */
     public synchronized void removeRadio(Radio r) {
         radios.remove(r);
@@ -150,7 +150,7 @@ public class FreeSpaceAir implements RadioAir {
     /**
      * transmit packet
      *
-     * @see avrora.sim.radio.RadioAir#transmit(avrora.sim.radio.Radio, avrora.sim.radio.Radio.Transmission)
+     * @see RadioAir#transmit(Radio, Radio.Transmission)
      */
     public synchronized void transmit(Radio r, Radio.Transmission f) {
         //compute transmission range, incl. noise
@@ -187,7 +187,7 @@ public class FreeSpaceAir implements RadioAir {
     /**
      * see simple air for more
      *
-     * @see avrora.sim.radio.RadioAir#sampleRSSI(avrora.sim.radio.Radio)
+     * @see RadioAir#sampleRSSI(Radio)
      */
     public int sampleRSSI(Radio r) {
         Simulator s = r.getSimulator();

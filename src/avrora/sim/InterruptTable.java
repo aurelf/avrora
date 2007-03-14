@@ -65,7 +65,7 @@ public class InterruptTable {
      *
      * As a user of the simulation, you SHOULD NOT implement a notification.
      *
-     * @see avrora.sim.Simulator.InterruptProbe for probing interrupts
+     * @see Simulator.InterruptProbe for probing interrupts
      */
     public interface Notification {
         public void force(int inum);

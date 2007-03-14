@@ -349,12 +349,12 @@ public class ManageSimInput {
             theOption.set(Boolean.toString(((JCheckBox) theComponent).isSelected()));
         } else if (theOption instanceof Option.Double) {
             //first get the spinnner model
-            SpinnerNumberModel tempSpinnerModel = ((SpinnerNumberModel) theComponent);
+            SpinnerNumberModel tempSpinnerModel = (SpinnerNumberModel)theComponent;
             //frikin types
             theOption.set(Double.toString(tempSpinnerModel.getNumber().doubleValue()));
         } else if (theOption instanceof Option.Str) {
             //it's a JTextField
-            JTextField theText = ((JTextField) theComponent);
+            JTextField theText = (JTextField)theComponent;
             theOption.set(theText.getText());
         }
 

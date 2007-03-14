@@ -53,9 +53,6 @@ public class MemPrint extends Simulator.Watch.Empty {
         max = m;
     }
 
-    public void fireBeforeRead(State state, int data_addr) {
-    }
-
     public void fireBeforeWrite(State state, int data_addr, byte value) {
 
         if (data_addr != base) {

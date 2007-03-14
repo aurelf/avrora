@@ -36,6 +36,7 @@ import avrora.arch.legacy.LegacyRegister;
 import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.monitors.MonitorFactory;
+import avrora.monitors.Monitor;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.util.ProgramProfiler;
@@ -145,7 +146,7 @@ public class VisualRegMonitor extends MonitorFactory {
      * @param s the simulator to create a monitor for
      * @return an instance of the <code>Monitor</code> interface for the specified simulator
      */
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
+    public Monitor newMonitor(Simulator s) {
         return new VisualMonitor(s);
     }
 }

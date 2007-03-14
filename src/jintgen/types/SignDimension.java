@@ -67,8 +67,8 @@ public class SignDimension extends TypeCon.Dimension {
     }
 
     private boolean isSigned(String str) {
-        if ( str.equals("+") ) return false;
-        if ( str.equals("-") ) return true;
+        if ("+".equals(str) ) return false;
+        if ("-".equals(str) ) return true;
         throw Util.failure("sign type dimension expects \"+\" or \"-\"");
     }
 }

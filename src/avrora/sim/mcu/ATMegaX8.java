@@ -357,7 +357,7 @@ public abstract class ATMegaX8 extends ATMegaFamilyNew {
     private static final int[] MCUCR_sm_perm = { 2, 4, 3 };
 
     protected int getSleepMode() {
-        byte value = (byte) MCUCR_reg.read();
+        byte value = MCUCR_reg.read();
         boolean sleepEnable = Arithmetic.getBit(value, 5);
 
         if ( sleepEnable )

@@ -307,7 +307,7 @@ public class Main {
         Terminal.print("[");
         Terminal.printBrightBlue(Version.TAG.toString());
         Terminal.print("]");
-        Terminal.print(" - (c) 2005 UCLA Compilers Group\n\n");
+        Terminal.print(" - (c) 2005-2007 UCLA Compilers Group\n\n");
     }
 
     /**

@@ -75,7 +75,7 @@ public class Topology {
      */
     private void parseLine(String line) {
         String nodeName = "";
-        int positions[] = new int[3];
+        int[] positions = new int[3];
 
         //check for comment
         if (!line.startsWith("#")) {

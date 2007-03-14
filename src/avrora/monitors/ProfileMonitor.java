@@ -64,7 +64,7 @@ public class ProfileMonitor extends MonitorFactory {
      * The <code>Monitor</code> inner class contains the probes and formatting code that
      * can report the profile for the program after it has finished executing.
      */
-    public class Mon implements avrora.monitors.Monitor {
+    public class Mon implements Monitor {
         public final Simulator simulator;
         public final Program program;
 
@@ -288,7 +288,7 @@ public class ProfileMonitor extends MonitorFactory {
                 "of the execution frequency for all instructions.");
     }
 
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
+    public Monitor newMonitor(Simulator s) {
         return new Mon(s);
     }
 }

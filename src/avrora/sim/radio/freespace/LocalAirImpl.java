@@ -95,7 +95,7 @@ public class LocalAirImpl {
      *
      */
     public synchronized void addNeighbor(LocalAirImpl r) {
-        Position position = r.getPosition();
+        Position position = r.position;
         double x = position.x - this.position.x;
         double y = position.y - this.position.y;
         double z = position.z - this.position.z;

@@ -129,7 +129,7 @@ public abstract class SourceMapping {
         public boolean equals(Object o) {
             if (o == this) return true;
             if (!(o instanceof Location)) return false;
-            Location l = ((Location)o);
+            Location l = (Location)o;
             return l.name.equals(this.name) && l.address == this.address;
         }
 

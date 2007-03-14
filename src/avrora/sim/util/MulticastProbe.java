@@ -40,7 +40,7 @@ import avrora.sim.State;
  * probe. It is useful for composing multiple probes into one and is used internally in the simulator.
  *
  * @author Ben L. Titzer
- * @see avrora.sim.Simulator
+ * @see Simulator
  */
 public class MulticastProbe extends TransactionalList implements Simulator.Probe {
 

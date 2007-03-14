@@ -280,7 +280,7 @@ public class EnergyMonitor extends MonitorFactory {
             /**
              * called when the state of the device changes this component logs these state changes
              *
-             * @see avrora.sim.energy.EnergyObserver#stateChange(avrora.sim.energy.Energy)
+             * @see EnergyObserver#stateChange(Energy)
              */
             public void stateChange(Energy energy) {
                 logOldState(energy);
@@ -350,7 +350,7 @@ public class EnergyMonitor extends MonitorFactory {
     /**
      * create a new monitor, calls the constructor
      *
-     * @see avrora.monitors.MonitorFactory#newMonitor(avrora.sim.Simulator)
+     * @see MonitorFactory#newMonitor(Simulator)
      */
     public avrora.monitors.Monitor newMonitor(Simulator s) {
         return new Monitor(s);

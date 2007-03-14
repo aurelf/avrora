@@ -53,6 +53,7 @@ import java.util.*;
 public class RAWReader extends ProgramReader {
 
     protected class Record {
+
         protected final int addr;
         protected boolean code;
         protected List bytes;
@@ -68,15 +69,12 @@ public class RAWReader extends ProgramReader {
     boolean inCode;
 
     public RAWReader() {
-        super("The \"raw\" program format reader reads programs that consist of small records of " +
-                "bytes and instructions.");
+        super("The \"raw\" program format reader reads programs that consist of small records of " + "bytes and instructions.");
     }
 
     public Program read(String[] args) throws Exception {
-        if (args.length == 0)
-            Util.userError("no input files");
-        if (args.length != 1)
-            Util.userError("input type \"raw\" accepts only one file at a time.");
+        if (args.length == 0) Util.userError("no input files");
+        if (args.length != 1) Util.userError("input type \"raw\" accepts only one file at a time.");
         AbstractArchitecture arch = getArchitecture();
         String fname = args[0];
         List records = parseFile(fname);
@@ -90,11 +88,11 @@ public class RAWReader extends ProgramReader {
         BufferedReader reader = new BufferedReader(new FileReader(fname));
         List records = new LinkedList();
         int cntr = 1;
-        while ( true ) {
+        while (true) {
             String line = reader.readLine();
-            if ( line == null ) break;
+            if (line == null) break;
             Record r = parse(cntr++, line);
-            if ( r != null ) records.add(r);
+            if (r != null) records.add(r);
         }
         return records;
     }
@@ -104,9 +102,9 @@ public class RAWReader extends ProgramReader {
         int min = 0;
         int max = 0;
         Iterator i = records.iterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             Record r = (Record)i.next();
-            if ( !init ) {
+            if (!init) {
                 init = true;
                 min = r.addr;
                 max = r.addr + r.bytes.size();
@@ -120,7 +118,7 @@ public class RAWReader extends ProgramReader {
 
     private void loadProgram(Program p, List records) {
         Iterator i = records.iterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             Record r = (Record)i.next();
             loadBytes(r, p);
             loadInstr(r, p);
@@ -130,15 +128,15 @@ public class RAWReader extends ProgramReader {
     private void loadBytes(Record r, Program p) {
         int pos = r.addr;
         Iterator b = r.bytes.iterator();
-        while ( b.hasNext() ) {
+        while (b.hasNext()) {
             Byte by = (Byte)b.next();
             p.writeProgramByte(by.byteValue(), pos++);
         }
     }
 
     private void loadInstr(Record r, Program p) {
-        if ( r.code ) {
-            for ( int pos = r.addr; pos < r.addr + r.bytes.size(); pos += 2 )
+        if (r.code) {
+            for (int pos = r.addr; pos < r.addr + r.bytes.size(); pos += 2)
                 p.disassembleInstr(pos);
         }
     }
@@ -149,29 +147,28 @@ public class RAWReader extends ProgramReader {
         StringUtil.skipWhiteSpace(i);
         char ch = i.current();
 
-        if ( ch == CharacterIterator.DONE ) return null; // empty line
-        if ( ch == ';' ) return null; // line consists of comment only
-        if ( ch == '.' ) return readDirective(i);
+        if (ch == CharacterIterator.DONE) return null; // empty line
+        if (ch == ';') return null; // line consists of comment only
+        if (ch == '.') return readDirective(i);
         else return readRecord(ch, lineno, i);
     }
 
     private Record readRecord(char ch, int lineno, CharacterIterator i) throws Exception {
-        if ( !StringUtil.isHexDigit(ch) )
-            Util.userError("syntax error @ "+lineno+":"+i.getIndex());
+        if (!StringUtil.isHexDigit(ch)) Util.userError("syntax error @ " + lineno + ":" + i.getIndex());
 
         Record record = new Record(readAddress(i, ch));
         record.code = inCode;
 
         StringUtil.expectChar(i, ':'); // expect a colon
 
-        while ( true ) { // read in the bytes and strings one by one
+        while (true) { // read in the bytes and strings one by one
             StringUtil.skipWhiteSpace(i);
             ch = i.current();
-            if ( StringUtil.isHexDigit(ch) ) readByte(record, i);
-            else if ( ch == '"' ) readString(record, i);
-            else if ( ch == ';' ) break;
-            else if ( ch == CharacterIterator.DONE ) break;
-            else Util.userError("syntax error at "+i.getIndex());
+            if (StringUtil.isHexDigit(ch)) readByte(record, i);
+            else if (ch == '"') readString(record, i);
+            else if (ch == ';') break;
+            else if (ch == CharacterIterator.DONE) break;
+            else Util.userError("syntax error at " + i.getIndex());
         }
         return record;
     }
@@ -180,13 +177,13 @@ public class RAWReader extends ProgramReader {
         // line consists of a directive
         i.next();
         String dir = StringUtil.readIdentifier(i);
-        if ( "code".equals(dir) ) inCode = true;
-        else if ( "data".equals(dir) ) inCode = false;
+        if ("code".equals(dir)) inCode = true;
+        else if ("data".equals(dir)) inCode = false;
         return null;
     }
 
     private int readAddress(CharacterIterator i, char ch) {
-        if ( ch == '0' ) {
+        if (ch == '0') {
             i.next();
             StringUtil.peekAndEat(i, 'x');
         }
@@ -196,15 +193,17 @@ public class RAWReader extends ProgramReader {
     private void readByte(Record record, CharacterIterator i) {
         int readByte = StringUtil.readHexValue(i, 2);
         record.bytes.add(new Byte((byte)readByte));
-        if ( StringUtil.isHexDigit(i.current()) )
-            Util.userError("constant too long");
+        if (StringUtil.isHexDigit(i.current())) Util.userError("constant too long");
     }
 
     private void readString(Record record, CharacterIterator i) {
         char ch;
         StringBuffer buf = new StringBuffer();
-        while ( (ch = i.next()) != CharacterIterator.DONE ) {
-            if ( ch == '"' ) { i.next(); break; }
+        while ((ch = i.next()) != CharacterIterator.DONE) {
+            if (ch == '"') {
+                i.next();
+                break;
+            }
             buf.append(ch);
         }
         record.strings.add(buf.toString());

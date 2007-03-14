@@ -51,7 +51,7 @@ public abstract class AbstractParser {
     /**
      * The <code>Module()</code> method causes the parser to begin parsing the module.
      *
-     * @throws cck.parser.AbstractParseException if the program does not parse correctly
+     * @throws AbstractParseException if the program does not parse correctly
      */
     public abstract void Module() throws AbstractParseException;
 }

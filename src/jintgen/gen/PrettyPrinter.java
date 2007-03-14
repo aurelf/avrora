@@ -147,7 +147,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         printer.startblock();
         visitStmtList(s.trueBranch);
         printer.endblock();
-        if ( s.falseBranch.size() > 0 ) {
+        if (!s.falseBranch.isEmpty() ) {
             printer.startblock("else");
             visitStmtList(s.falseBranch);
             printer.endblock();

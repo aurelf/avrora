@@ -37,8 +37,7 @@ import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.RawModule;
 import cck.util.Util;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 
 /**
  * The <code>ObjdumpProgramReader</code> is an implementation of the <code>ProgramReader</code> that reads
@@ -55,16 +54,13 @@ public class ObjDump2ProgramReader extends ProgramReader {
      *
      * @param args the string arguments representing the names of the files to read
      * @return a program obtained by parsing and building the file
-     * @throws ParseException
-     *                             if the file does not parse correctly
-     * @throws java.io.IOException if there is a problem reading from the files
+     * @throws ParseException if the file does not parse correctly
+     * @throws IOException    if there is a problem reading from the files
      */
     public Program read(String[] args) throws Exception {
-        if (args.length == 0)
-            Util.userError("no input files");
-        if (args.length != 1)
-            Util.userError("input type \"odpp\" accepts only one file at a time.");
-        if ( getArchitecture() != LegacyArchitecture.INSTANCE )
+        if (args.length == 0) Util.userError("no input files");
+        if (args.length != 1) Util.userError("input type \"odpp\" accepts only one file at a time.");
+        if (getArchitecture() != LegacyArchitecture.INSTANCE)
             Util.userError("input type  \"odpp\" parses only the \"legacy\" architecture.");
 
         File f = new File(args[0]);
@@ -82,9 +78,7 @@ public class ObjDump2ProgramReader extends ProgramReader {
     }
 
     public ObjDump2ProgramReader() {
-        super("The \"odpp\" input format reads programs that are the " +
-                "output of the \"avr-objdump\" utility provided with avr-binutils " +
-                "and that have been preprocessed with Avrora's preprocessor utility. ");
+        super("The \"odpp\" input format reads programs that are the " + "output of the \"avr-objdump\" utility provided with avr-binutils " + "and that have been preprocessed with Avrora's preprocessor utility. ");
     }
 
 }

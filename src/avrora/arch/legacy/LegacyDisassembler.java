@@ -325,7 +325,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_1(int word1) throws InvalidInstruction {
         // get value of bits logical[13:15]
-        int value = (word1 >> 0) & 0x00007;
+        int value = (word1) & 0x00007;
         switch ( value ) {
             case 0x00002: return decode_BRPL_0(word1);
             case 0x00004: return decode_BRGE_0(word1);
@@ -443,7 +443,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_3(int word1) throws InvalidInstruction {
         // get value of bits logical[13:15]
-        int value = (word1 >> 0) & 0x00007;
+        int value = (word1) & 0x00007;
         switch ( value ) {
             case 0x00002: return decode_BRMI_0(word1);
             case 0x00004: return decode_BRLT_0(word1);
@@ -501,7 +501,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_5(int word1) throws InvalidInstruction {
         // get value of bits logical[12:15]
-        int value = (word1 >> 0) & 0x0000F;
+        int value = (word1) & 0x0000F;
         switch ( value ) {
             case 0x00008: return decode_ST_1(word1);
             case 0x00000: return decode_ST_2(word1);
@@ -529,7 +529,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_6(int word1) throws InvalidInstruction {
         // get value of bits logical[12:15]
-        int value = (word1 >> 0) & 0x0000F;
+        int value = (word1) & 0x0000F;
         switch ( value ) {
             case 0x00008: return decode_LD_1(word1);
             case 0x00000: return decode_LD_2(word1);
@@ -854,7 +854,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_12(int word1) throws InvalidInstruction {
         // get value of bits logical[15:15]
-        int value = (word1 >> 0) & 0x00001;
+        int value = (word1) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_ICALL_0(word1);
             case 0x00000: return decode_RET_0(word1);
@@ -904,7 +904,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_13(int word1) throws InvalidInstruction {
         // get value of bits logical[15:15]
-        int value = (word1 >> 0) & 0x00001;
+        int value = (word1) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_EICALL_0(word1);
             case 0x00000: return decode_RETI_0(word1);
@@ -974,7 +974,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_14(int word1) throws InvalidInstruction {
         // get value of bits logical[15:15]
-        int value = (word1 >> 0) & 0x00001;
+        int value = (word1) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_EIJMP_0(word1);
             case 0x00000: return decode_SEZ_0(word1);
@@ -1050,7 +1050,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_15(int word1) throws InvalidInstruction {
         // get value of bits logical[15:15]
-        int value = (word1 >> 0) & 0x00001;
+        int value = (word1) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_IJMP_0(word1);
             case 0x00000: return decode_SEC_0(word1);
@@ -1121,7 +1121,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_17(int word1) throws InvalidInstruction {
         // get value of bits logical[15:15]
-        int value = (word1 >> 0) & 0x00001;
+        int value = (word1) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_INC_0(word1);
             case 0x00000: return decode_SWAP_0(word1);
@@ -1147,7 +1147,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_18(int word1) throws InvalidInstruction {
         // get value of bits logical[15:15]
-        int value = (word1 >> 0) & 0x00001;
+        int value = (word1) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_ROR_0(word1);
             case 0x00000: return decode_LSR_0(word1);
@@ -1197,7 +1197,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_19(int word1) throws InvalidInstruction {
         // get value of bits logical[15:15]
-        int value = (word1 >> 0) & 0x00001;
+        int value = (word1) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_NEG_0(word1);
             case 0x00000: return decode_COM_0(word1);
@@ -1330,7 +1330,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_22(int word1) throws InvalidInstruction {
         // get value of bits logical[12:15]
-        int value = (word1 >> 0) & 0x0000F;
+        int value = (word1) & 0x0000F;
         switch ( value ) {
             case 0x00002: return decode_STPD_2(word1);
             case 0x0000F: return decode_PUSH_0(word1);
@@ -1466,7 +1466,7 @@ public class LegacyDisassembler implements AbstractDisassembler {
     }
     private LegacyInstr decode_23(int word1) throws InvalidInstruction {
         // get value of bits logical[12:15]
-        int value = (word1 >> 0) & 0x0000F;
+        int value = (word1) & 0x0000F;
         switch ( value ) {
             case 0x0000F: return decode_POP_0(word1);
             case 0x00004: return decode_LPMD_0(word1);

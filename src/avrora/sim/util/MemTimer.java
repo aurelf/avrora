@@ -52,9 +52,6 @@ public class MemTimer extends Simulator.Watch.Empty {
         base = b;
     }
 
-    public void fireBeforeRead(State state, int data_addr) {
-    }
-
     public void fireBeforeWrite(State state, int data_addr, byte value) {
         if (data_addr != base) {
             Terminal.printRed("Unexpected interception by printer!");

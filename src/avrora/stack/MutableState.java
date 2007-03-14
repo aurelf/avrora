@@ -95,7 +95,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * The <code>hashCode()</code> method computes an integer hash code for this state. A good hash code is
      * needed to make hashtables in <code>StateSpace</code> efficient.
      *
-     * @throws cck.util.Util.InternalError
+     * @throws Util.InternalError
      */
     public int hashCode() {
         throw Util.failure("cannot compute hash code of MutableState");
@@ -106,7 +106,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * contract.
      *
      * @param o the object to test equality against.
-     * @throws cck.util.Util.InternalError
+     * @throws Util.InternalError
      */
     public boolean equals(Object o) {
         throw Util.failure("cannot perform .equals() on MutableState");

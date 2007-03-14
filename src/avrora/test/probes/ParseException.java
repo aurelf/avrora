@@ -47,8 +47,7 @@ public class ParseException extends Exception {
    */
 
   public ParseException() {
-    super();
-    specialConstructor = false;
+      specialConstructor = false;
   }
 
   public ParseException(String message) {
@@ -183,7 +182,6 @@ public class ParseException extends Exception {
               } else {
                  retval.append(ch);
               }
-              continue;
         }
       }
       return retval.toString();

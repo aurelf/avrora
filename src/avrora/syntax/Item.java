@@ -68,6 +68,7 @@ public abstract class Item {
      * computable value to a name.
      */
     public static class NamedConstant extends Item {
+
         private final AbstractToken name;
         private final Expr value;
 
@@ -92,6 +93,7 @@ public abstract class Item {
      * register. This can appear in program, data, and eeprom segments.
      */
     public static class RegisterAlias extends Item {
+
         private final AbstractToken name;
         private final AbstractToken register;
 
@@ -116,6 +118,7 @@ public abstract class Item {
      * and added to the program. This is generally only applicable to the program (code) section.
      */
     public static class Instruction extends Item {
+
         protected final String variant;
         protected final AbstractToken name;
         protected final SyntacticOperand[] operands;
@@ -132,8 +135,7 @@ public abstract class Item {
         public void simplify() {
 
             // TODO: define correct error for this
-            if ((byteAddress & 0x1) == 0x1)
-                throw Util.failure("misaligned instruction");
+            if ((byteAddress & 0x1) == 0x1) throw Util.failure("misaligned instruction");
 
             for (int cntr = 0; cntr < operands.length; cntr++)
                 operands[cntr].simplify(byteAddress + proto.getSize(), module);
@@ -155,6 +157,7 @@ public abstract class Item {
      * can appear in program, data, or eeprom sections.
      */
     public static class Label extends Item {
+
         private final AbstractToken name;
 
         Label(Module.Seg s, AbstractToken n) {
@@ -259,6 +262,7 @@ public abstract class Item {
      * (a reservation of space). This can appear in the program, data, or eeprom segments.
      */
     public static class UninitializedData extends Item {
+
         private final int length;
 
         UninitializedData(Module.Seg s, int l) {

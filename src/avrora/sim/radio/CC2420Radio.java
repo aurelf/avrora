@@ -50,7 +50,7 @@ import java.util.Arrays;
  * @author Keith Mayoral
  */
 public class CC2420Radio implements Radio {
-    protected RadioRegister registers [] = new RadioRegister[0x40];
+    protected RadioRegister[] registers  = new RadioRegister[0x40];
     protected TXFIFOBuffer TXFIFOBuf;
     protected RXFIFOBuffer RXFIFOBuf;
     protected boolean receiving;
@@ -382,12 +382,12 @@ public class CC2420Radio implements Radio {
      * The main register on the CC1000.
      */
     protected class MainRegister extends RadioRegister {
-        public final int RESETn = 15;        //Active low reset , equivelent to using RESETn pin
-        public final int ENC_RESETn = 14;    //Active low reset of encryp. module (test only)
-        public final int DEMOD_RESETn = 13;  //Active low reset of demodulator module (test only)
-        public final int MOD_RESETn = 12;    //Active low reset of modulator module (test only)
-        public final int FS_RESETn = 11;     //Active low reset of freq. synth. module (test only)
-        public final int XOSC16M_BYPASS = 0; //Bypassed the crystal oscillator and uses a buffered
+        public static final int RESETn = 15;        //Active low reset , equivelent to using RESETn pin
+        public static final int ENC_RESETn = 14;    //Active low reset of encryp. module (test only)
+        public static final int DEMOD_RESETn = 13;  //Active low reset of demodulator module (test only)
+        public static final int MOD_RESETn = 12;    //Active low reset of modulator module (test only)
+        public static final int FS_RESETn = 11;     //Active low reset of freq. synth. module (test only)
+        public static final int XOSC16M_BYPASS = 0; //Bypassed the crystal oscillator and uses a buffered
         //version of the signal on Q1 directly.
         boolean resetn;
         boolean encresetn;
@@ -450,8 +450,8 @@ public class CC2420Radio implements Radio {
     }
 
     protected class Modem1Register extends RadioRegister {
-        public final int DEMOD_AVG_MODE = 5;  //pin number 5
-        public final int MOD_MODE = 4;        //pin number 4
+        public static final int DEMOD_AVG_MODE = 5;  //pin number 5
+        public static final int MOD_MODE = 4;        //pin number 4
         boolean demodavg;   //mode 0, lock freq. offset filter after preamble match
         boolean modmode;    //mode 0, IEEE 802.15.4 compliant, mode 1 isn't  (reversed phase)
         int corrthr = 0x14;   // == #20 == 0b10100
@@ -481,11 +481,11 @@ public class CC2420Radio implements Radio {
      * 19.2 kBaud with manchester encoding, which translates into 9.6 kbps of data.
      */
     protected class Modem0Register extends RadioRegister {
-        public final int RSVRED_FRAME_MODE = 13;
-        public final int PAN_COORD = 12;
-        public final int ADR_DECODE = 11;
-        public final int AUTOCRC = 5;
-        public final int AUTOACK = 4;
+        public static final int RSVRED_FRAME_MODE = 13;
+        public static final int PAN_COORD = 12;
+        public static final int ADR_DECODE = 11;
+        public static final int AUTOCRC = 5;
+        public static final int AUTOACK = 4;
         boolean rsvrdframe;
         boolean pancoord;
         boolean adrdecode;
@@ -544,7 +544,7 @@ public class CC2420Radio implements Radio {
      */
     protected class TxCtrlRegister extends RadioRegister {
         //public final int TX_TURNAROUND = 13;
-        public final int RESERVED = 5;
+        public static final int RESERVED = 5;
         public final int[] TXMIXBUF_CUR = {690, 980, 1160, 1440};    //measured in uA
         public final int[] TX_TURNAROUND = {8, 12};    // measured in symbol periods 8 = 128 us, 12 = 192 us
         public final int[] TXMIX_CURRENT = {1720, 1880, 2050, 2210}; //measured in uA
@@ -618,10 +618,10 @@ public class CC2420Radio implements Radio {
      * receiver mixers output, and the RX mixer.  Also controls VCM level.
      */
     protected class RxCtrl1Register extends RadioRegister {
-        public final int LOW_LOWGAIN = 11;
-        public final int MED_LOWGAIN = 10;
-        public final int HIGH_HGM = 9;
-        public final int MED_HGM = 8;
+        public static final int LOW_LOWGAIN = 11;
+        public static final int MED_LOWGAIN = 10;
+        public static final int HIGH_HGM = 9;
+        public static final int MED_HGM = 8;
         public final int[] RXBPF_LOCUR = {4, 3};  //in uA
         public final double[] RXBPF_MIDCUR = {4, 3.5};  //in units of uA
         public final double[] LNA_CAP_ARRAY = {Double.NaN, 0.1, 0.2, 0.3}; // in units of pF
@@ -669,10 +669,10 @@ public class CC2420Radio implements Radio {
      * frequency synthesizer lock status.
      */
     protected class FreqSynthRegister extends RadioRegister {
-        public final int CAL_DONE = 13;
-        public final int CAL_RUNNING = 12;
-        public final int LOCK_LENGTH = 11;
-        public final int LOCK_STATUS = 10;
+        public static final int CAL_DONE = 13;
+        public static final int CAL_RUNNING = 12;
+        public static final int LOCK_LENGTH = 11;
+        public static final int LOCK_STATUS = 10;
         public final int[] LOCK_THR = {64, 128, 256, 512};
         boolean cal_done;
         boolean cal_running;
@@ -709,11 +709,11 @@ public class CC2420Radio implements Radio {
      * and the FIFOP threshold required to go high
      */
     protected class IORegister0 extends RadioRegister {
-        public final int BCN_ACCEPT = 11;
-        public final int FIFO_POLARITY = 10;
-        public final int FIFOP_POLARITY = 9;
-        public final int SFD_POLARITY = 8;
-        public final int CCA_POLARITY = 7;
+        public static final int BCN_ACCEPT = 11;
+        public static final int FIFO_POLARITY = 10;
+        public static final int FIFOP_POLARITY = 9;
+        public static final int SFD_POLARITY = 8;
+        public static final int CCA_POLARITY = 7;
         int fifop_thr;
         boolean bcn_accept;
         boolean fifo_polarity;
@@ -1190,39 +1190,39 @@ public class CC2420Radio implements Radio {
         private StartReceiving receivingBytes;
 
         public void setPinValue(String pin, boolean val) {
-            if (pin.equals("FIFO")) {
+            if ("FIFO".equals(pin)) {
                 pinReader.readValueFIFO = val;
                 pinReader.print("CC2420: writing " + val + " to FIFO pin");
             }
-            if (pin.equals("FIFOP")) {
+            if ("FIFOP".equals(pin)) {
                 pinReader.readValueFIFOP = val;
                 pinReader.print("CC2420: writing " + val + " to FIFOP pin");
             }
-            if (pin.equals("CCA")) {
+            if ("CCA".equals(pin)) {
                 pinReader.readValueCCA = val;
                 pinReader.print("CC2420: writing " + val + " to CCA pin");
             }
-            if (pin.equals("SFD")) {
+            if ("SFD".equals(pin)) {
                 pinReader.readValueSFD = val;
                 pinReader.print("CC2420: writing " + val + " to SFD pin");
             }
-            if (pin.equals("OldCS")) {
+            if ("OldCS".equals(pin)) {
                 pinReader.readOldCS = val;
             }
         }
 
         public boolean getPinValue(String pin) {
-            if (pin.equals("FIFO"))
+            if ("FIFO".equals(pin))
                 return pinReader.readValueFIFO;
-            if (pin.equals("FIFOP"))
+            if ("FIFOP".equals(pin))
                 return pinReader.readValueFIFOP;
-            if (pin.equals("CCA"))
+            if ("CCA".equals(pin))
                 return pinReader.readValueCCA;
-            if (pin.equals("SFD"))
+            if ("SFD".equals(pin))
                 return pinReader.readValueSFD;
-            if (pin.equals("CS"))
+            if ("CS".equals(pin))
                 return pinReader.readValueCS;
-            if (pin.equals("OldCS"))
+            if ("OldCS".equals(pin))
                 return pinReader.readOldCS;
             return false;
         }
@@ -1838,7 +1838,7 @@ public class CC2420Radio implements Radio {
     /**
      * get the transmission power
      *
-     * @see avrora.sim.radio.Radio#getPower()
+     * @see Radio#getPower()
      */
     public int getPower() {
         return TXCTRL_reg.pa_level;
@@ -1847,7 +1847,7 @@ public class CC2420Radio implements Radio {
     /**
      * get transmission frequency
      *
-     * @see avrora.sim.radio.Radio#getFrequency()
+     * @see Radio#getFrequency()
      */
     public double getFrequency() {
         // according to CC1000 handbook

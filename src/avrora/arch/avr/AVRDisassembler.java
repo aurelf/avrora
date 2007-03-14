@@ -1175,9 +1175,9 @@ public class AVRDisassembler implements AbstractDisassembler {
      *         valid instruction exists here; null otherwise
      */
     public AVRInstr decode(int base, int index, byte[] code) {
-        word0 = ((code[index + 0] & 0xFF) << 0) | ((code[index + 1] & 0xFF) << 8);
-        word1 = ((code[index + 2] & 0xFF) << 0) | ((code[index + 3] & 0xFF) << 8);
-        pc = base + index * 1;
+        word0 = ((code[index] & 0xFF)) | ((code[index + 1] & 0xFF) << 8);
+        word1 = ((code[index + 2] & 0xFF)) | ((code[index + 3] & 0xFF) << 8);
+        pc = base + index;
         return decode_root();
     }
 
@@ -1193,8 +1193,8 @@ public class AVRDisassembler implements AbstractDisassembler {
      *         valid instruction exists here; null otherwise
      */
     public AVRInstr decode(int base, int index, char[] code) {
-        word0 = (code[index + 0] << 0);
-        word1 = (code[index + 1] << 0);
+        word0 = (code[index]);
+        word1 = (code[index + 1]);
         pc = base + index * 2;
         return decode_root();
     }
@@ -1211,8 +1211,8 @@ public class AVRDisassembler implements AbstractDisassembler {
      *         valid instruction exists here; null otherwise
      */
     public AVRInstr decode(int base, int index, short[] code) {
-        word0 = ((code[index + 0] & 0xFFFF) << 0);
-        word1 = ((code[index + 1] & 0xFFFF) << 0);
+        word0 = ((code[index] & 0xFFFF));
+        word1 = ((code[index + 1] & 0xFFFF));
         pc = base + index * 2;
         return decode_root();
     }

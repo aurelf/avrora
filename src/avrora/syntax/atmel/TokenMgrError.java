@@ -2,9 +2,10 @@
 package avrora.syntax.atmel;
 
 public class TokenMgrError extends Error {
+
     /*
-     * Ordinals for various reasons why an Error of this type can be thrown.
-     */
+    * Ordinals for various reasons why an Error of this type can be thrown.
+    */
 
     /**
      * Lexical error occured.
@@ -34,7 +35,7 @@ public class TokenMgrError extends Error {
     /**
      * Replaces unprintable characters by their espaced (or unicode escaped) equivalents in the given string
      */
-    protected static final String addEscapes(String str) {
+    protected static String addEscapes(String str) {
         StringBuffer retval = new StringBuffer();
         char ch;
         for (int i = 0; i < str.length(); i++) {
@@ -72,7 +73,6 @@ public class TokenMgrError extends Error {
                     } else {
                         retval.append(ch);
                     }
-                    continue;
             }
         }
         return retval.toString();
@@ -86,11 +86,7 @@ public class TokenMgrError extends Error {
      * the offending character Note: You can customize the lexical error message by modifying this method.
      */
     protected static String LexicalError(boolean EOFSeen, int lexState, int errorLine, int errorColumn, String errorAfter, char curChar) {
-        return ("Lexical error at line " +
-                errorLine + ", column " +
-                errorColumn + ".  Encountered: " +
-                (EOFSeen ? "<EOF> " : ('\"' + addEscapes(String.valueOf(curChar)) + '\"') + " (" + (int)curChar + "), ") +
-                "after : \"" + addEscapes(errorAfter) + '\"');
+        return ("Lexical error at line " + errorLine + ", column " + errorColumn + ".  Encountered: " + (EOFSeen ? "<EOF> " : ('\"' + addEscapes(String.valueOf(curChar)) + '\"') + " (" + (int)curChar + "), ") + "after : \"" + addEscapes(errorAfter) + '\"');
     }
 
     /**

@@ -133,10 +133,6 @@ public class SimTestHarness implements TestEngine.Harness {
             predicate = pred;
         }
 
-        public void shortReport() {
-            Terminal.print(message);
-        }
-
         public void longReport() {
             Terminal.println(message);
             // TODO: print out complete state

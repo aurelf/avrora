@@ -42,7 +42,7 @@ import avrora.sim.State;
  * instruction.
  *
  * @author Ben L. Titzer
- * @see avrora.sim.util.Counter
+ * @see Counter
  */
 public class ProgramProfiler extends Simulator.Probe.Empty {
 

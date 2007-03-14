@@ -40,6 +40,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
+import java.util.List;
 
 /**
  * This class manages the dialog boxes for adding a monitor to the simulator.
@@ -53,11 +54,11 @@ import java.util.*;
  * @author UCLA Compilers Group
  */
 public class ManageMonitors {
-    
+
     JDialog chooseMonitorsDialog;
     JButton monitorsDialogUpdate;
     LinkedList checkBoxContainer;
-    
+
     /**
      * This should be called during the GUI init in order
      * to have "slots" for the various dialog boxes.  This function
@@ -123,13 +124,13 @@ public class ManageMonitors {
         chooseMonitorsDialog.pack();
     }
 
-    /** 
+    /**
      * This function gets the monitor list from AvroraGui, which in turn
      * gets it from GUIDefaults.  
      */
     private void addMonitorsFromClassMap(JPanel belowBannerPanel) {
         //Let's get a storted list of monitor names registered with the VisualAction
-        java.util.List monitorList = AvroraGui.instance.getMonitorList();
+        List monitorList = AvroraGui.instance.getMonitorList();
         Iterator monitorIter = monitorList.iterator();
 
         belowBannerPanel.setLayout(new GridLayout(monitorList.size(), 1));
@@ -156,15 +157,15 @@ public class ManageMonitors {
      */
     public boolean checkAndDispatch(ActionEvent e) {
         //if the manage monitors button was pushed...we have to load our dialog
-        
-        /* Monitor button no longer exists
-        if (e.getSource() == monitorsButton) {
-            createMonitorsDialog();
-            chooseMonitorsDialog.setLocationRelativeTo(null); //center on screen
-            chooseMonitorsDialog.setVisible(true);
 
-            return true;
-         */
+        /* Monitor button no longer exists
+       if (e.getSource() == monitorsButton) {
+           createMonitorsDialog();
+           chooseMonitorsDialog.setLocationRelativeTo(null); //center on screen
+           chooseMonitorsDialog.setVisible(true);
+
+           return true;
+        */
         if (e.getSource() == monitorsDialogUpdate) {
             //Our goal is to find all the selected
             //nodes.  For each node, if the monitor
@@ -177,7 +178,7 @@ public class ManageMonitors {
             Vector toMONITORS = new Vector();
             Iterator checkBoxIter = checkBoxContainer.iterator();
             while (checkBoxIter.hasNext()) {
-                JCheckBox currentBox = ((JCheckBox) checkBoxIter.next());
+                JCheckBox currentBox = (JCheckBox)checkBoxIter.next();
                 if (currentBox.isSelected()) {
                     //it's selected, so add it to our list
                     toMONITORS.add(currentBox.getText());
@@ -187,7 +188,7 @@ public class ManageMonitors {
             // for each selected monitor, give it a chance to attach to the nodes
             LinkedList nodes = getNodeList();
             for (int j = 0; j < toMONITORS.size(); j++) {
-                String currentMonitor = ((String) toMONITORS.elementAt(j));
+                String currentMonitor = (String)toMONITORS.elementAt(j);
                 Simulation.Monitor mf = getMonitorFactory(currentMonitor);
                 mf.attach(AvroraGui.instance.getSimulation(), nodes);
             }

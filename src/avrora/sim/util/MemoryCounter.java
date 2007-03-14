@@ -42,7 +42,7 @@ import avrora.sim.State;
  * of a particular instruction.
  *
  * @author Ben L. Titzer
- * @see avrora.sim.Simulator.Watch
+ * @see Simulator.Watch
  * @see Counter
  */
 public class MemoryCounter extends Simulator.Watch.Empty {

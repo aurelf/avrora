@@ -45,6 +45,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.List;
+import java.net.URL;
 
 /**
  * The <code> AvroraGUI </code> is the top level GUI component.  It should
@@ -80,34 +82,34 @@ public class AvroraGui implements ActionListener, ChangeListener {
     public String[] args;
 
     //High level elements of the GUI
-    
+
     /**
      * This is GUI - everything fits inside the master frame 
      */
     public JFrame masterFrame;
-    
+
     /**
      * This menu bar now contols most of the options specified by the GUI
      * (this is the file, edit, options menus)
      */
     public SimMenuBar topMenu;
-    
+
     /**
      * This handles the speed up/slow down, pause, stop, and start of a sim
      */
     public ManageSimTime simTimeBox;
-    
+
     /**
      * All information on node topology is displayed and set via this class 
      */
     public ManageTopology topologyBox;
-    
+
     /**
      * This holds all our monitor "chalkboards" for displaying the data they collect
      */
     public JTabbedPane monitorResults; //Holds all the different monitor results, as tabbed windows
-    
-    
+
+
     private JLabel versioningInfo; //holds the text that displays at the bottom of the GUI
     private JPanel monitorOptions; //holds the options for the current monitor
 
@@ -195,7 +197,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
         //Add blank JPanel so our button is right size
         JPanel blankPanel = new JPanel();
         southPanel.add(blankPanel, BorderLayout.CENTER);
-                
+
         southPanel.add(this.versioningInfo, BorderLayout.SOUTH);
         masterFrame.getContentPane().add(southPanel, BorderLayout.SOUTH);
     }
@@ -214,7 +216,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
      *
      * @return List of all monitors
      */
-    public java.util.List getMonitorList() {
+    public List getMonitorList() {
         return GUIDefaults.getMonitorList();
     }
 
@@ -223,7 +225,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
      *
      * @return List of all monitors
      */
-    public java.util.List getOptionList() {
+    public List getOptionList() {
         return GUIDefaults.getOptionList();
     }
 
@@ -236,9 +238,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
      */
     public void actionPerformed(ActionEvent e) {
         if (simTimeBox.checkAndDispatch(e)) {
-            return;
         } else if (topMenu.checkAndDispatch(e)) {
-            return;
         }
     }
 
@@ -252,7 +252,6 @@ public class AvroraGui implements ActionListener, ChangeListener {
      */
     public void stateChanged(ChangeEvent e) {
         if (simTimeBox.sliderAndSpinnerDispatch(e)) {
-            return;
         } else if (e.getSource() == monitorResults) {
             //whenever we change the tab pane we have to change
             //the monitor options panel to correspond with the
@@ -283,8 +282,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
             monitorOptions.validate();
 
         }
-        return;
-    }
+     }
 
     private MonitorPanel getMonitorPanel(JPanel monitorPanel) {
         MonitorPanel p = (MonitorPanel)monitorTabMap.get(monitorPanel);
@@ -412,7 +410,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
      * Returns an ImageIcon, or null if the path was invalid.
      */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imageURL = AvroraGui.class.getResource(path);
+        URL imageURL = AvroraGui.class.getResource(path);
 
         if (imageURL == null) {
             throw Util.failure("Resource not found: " + path);

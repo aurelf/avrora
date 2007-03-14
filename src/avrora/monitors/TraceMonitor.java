@@ -66,7 +66,7 @@ public class TraceMonitor extends MonitorFactory {
      * <code>ProgramProfiler</code> instance which is a probe that is executed after every instruction that
      * collects execution counts for every instruction in the program.
      */
-    public class Mon implements avrora.monitors.Monitor {
+    public class Mon implements Monitor {
         public final Simulator simulator;
         public final Program program;
         public final GlobalProbe PROBE;
@@ -98,7 +98,7 @@ public class TraceMonitor extends MonitorFactory {
                 traceNum++;
                 if ( nesting == 0 ) {
                     print("trace ("+pair+") begin: "+traceNum+" --------------------------");
-                    print(s, ((LegacyState)s).getInstr(addr));
+                    print(s, s.getInstr(addr));
                     simulator.insertProbe(PROBE);
                 } else {
                     print("nested ("+pair+") begin: "+traceNum+" --------------------------");

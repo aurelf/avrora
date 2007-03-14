@@ -256,7 +256,7 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
         }
 
         public boolean readBit(int bit) {
-            return (pins[bit] != null)? pins[bit].read(): false; // Disconnected read always zero
+            return (pins[bit] != null) && pins[bit].read(); // Disconnected read always zero
         }
 
         public void write(byte val) {

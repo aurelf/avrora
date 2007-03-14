@@ -70,10 +70,11 @@ public class Module implements Context {
 
     static Verbose.Printer modulePrinter = Verbose.getVerbosePrinter("loader");
 
-    private static final SyntacticOperand[] NO_OPERANDS = {};
+    private static final SyntacticOperand[] NO_OPERANDS = { };
     private LabelMapping labelMapping;
 
     protected class Seg {
+
         private final String name;
         private final boolean acceptsInstrs;
         private final boolean acceptsData;
@@ -101,24 +102,18 @@ public class Module implements Context {
         }
 
         public void writeDataBytes(ASTNode loc, int baddr, byte[] b) {
-            if (!acceptsData)
-                ERROR.DataCannotBeInSegment(name, loc);
-            else
-                newprogram.writeProgramBytes(b, baddr);
+            if (!acceptsData) ERROR.DataCannotBeInSegment(name, loc);
+            else newprogram.writeProgramBytes(b, baddr);
         }
 
         public void writeDataByte(ASTNode loc, int baddr, byte b) {
-            if (!acceptsData)
-                ERROR.DataCannotBeInSegment(name, loc);
-            else
-                newprogram.writeProgramByte(b, baddr);
+            if (!acceptsData) ERROR.DataCannotBeInSegment(name, loc);
+            else newprogram.writeProgramByte(b, baddr);
         }
 
         public void writeInstr(AbstractToken loc, int baddr, LegacyInstr i) {
-            if (!acceptsInstrs)
-                ERROR.InstructionCannotBeInSegment(name, loc);
-            else
-                newprogram.writeInstr(i, baddr);
+            if (!acceptsInstrs) ERROR.InstructionCannotBeInSegment(name, loc);
+            else newprogram.writeInstr(i, baddr);
         }
 
         public void addLabel(int baddr, String labelname) {
@@ -262,7 +257,7 @@ public class Module implements Context {
     public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1) {
         String v = StringUtil.quote(variant);
         print(StringUtil.embed("addInstr", v, o1), name);
-        SyntacticOperand[] o = {o1};
+        SyntacticOperand[] o = { o1 };
         makeInstr(variant, name, o);
     }
 
@@ -270,7 +265,7 @@ public class Module implements Context {
     public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2) {
         String v = StringUtil.quote(variant);
         print(StringUtil.embed("addInstr", v, o1, o2), name);
-        SyntacticOperand[] o = {o1, o2};
+        SyntacticOperand[] o = { o1, o2 };
         makeInstr(variant, name, o);
     }
 
@@ -278,7 +273,7 @@ public class Module implements Context {
     public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2, SyntacticOperand o3) {
         String v = StringUtil.quote(variant);
         print(StringUtil.embed("addInstr", v, o1, o2, o3), name);
-        SyntacticOperand[] o = {o1, o2, o3};
+        SyntacticOperand[] o = { o1, o2, o3 };
         makeInstr(variant, name, o);
     }
 
@@ -303,8 +298,7 @@ public class Module implements Context {
 
 
     public Program build() {
-        newprogram = new Program(LegacyArchitecture.INSTANCE, programSegment.lowest_address, programSegment.highest_address
-        );
+        newprogram = new Program(LegacyArchitecture.INSTANCE, programSegment.lowest_address, programSegment.highest_address);
 
         labelMapping = new LabelMapping(newprogram);
         newprogram.setSourceMapping(labelMapping);
@@ -344,8 +338,7 @@ public class Module implements Context {
 
     public void addRegisterName(String name, AbstractToken reg) {
         LegacyRegister register = LegacyRegister.getRegisterByName(reg.image);
-        if ( register == null )
-            ERROR.UnknownRegister(reg);
+        if (register == null) ERROR.UnknownRegister(reg);
 
         definitions.put(labelName(name), register);
     }
@@ -353,8 +346,7 @@ public class Module implements Context {
     public LegacyRegister getRegister(AbstractToken tok) {
         String name = labelName(tok);
         LegacyRegister reg = LegacyRegister.getRegisterByName(name);
-        if (reg == null)
-            reg = (LegacyRegister)definitions.get(name);
+        if (reg == null) reg = (LegacyRegister)definitions.get(name);
 
         if (reg == null) ERROR.UnknownRegister(tok);
         return reg;
@@ -367,12 +359,9 @@ public class Module implements Context {
         if (v == null) {
             Item.Label li = (Item.Label)labels.get(name);
             if (li == null) ERROR.UnknownVariable(tok);
-            if (li.segment == programSegment && !useByteAddresses)
-                return li.getByteAddress() >> 1;
-            else
-                return li.getByteAddress();
-        } else
-            return v.intValue();
+            if (li.segment == programSegment && !useByteAddresses) return li.getByteAddress() >> 1;
+            else return li.getByteAddress();
+        } else return v.intValue();
     }
 
     public SyntacticOperand.Expr newOperand(Expr e) {
@@ -394,17 +383,13 @@ public class Module implements Context {
     }
 
     private String labelName(AbstractToken tok) {
-        if (caseSensitivity)
-            return tok.image;
-        else
-            return tok.image.toLowerCase();
+        if (caseSensitivity) return tok.image;
+        else return tok.image.toLowerCase();
     }
 
     private String labelName(String n) {
-        if (caseSensitivity)
-            return n;
-        else
-            return n.toLowerCase();
+        if (caseSensitivity) return n;
+        else return n.toLowerCase();
     }
 
 

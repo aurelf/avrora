@@ -53,8 +53,8 @@ import java.util.Properties;
  * instances of the <code>TestCase</code> class that are collected by this framework.
  *
  * @author Ben L. Titzer
- * @see cck.test.TestCase
- * @see cck.test.TestResult
+ * @see TestCase
+ * @see TestResult
  */
 public class TestEngine {
 
@@ -107,10 +107,10 @@ public class TestEngine {
      * <code>TestCase</code>. Each test case is then run and the results are tabulated.
      *
      * @param fnames an array of the filenames of tests to run
-     * @throws java.io.IOException if there is a problem loading the test cases
+     * @throws IOException if there is a problem loading the test cases
      * @return true if all the tests pass
      */
-    public boolean runTests(String[] fnames) throws java.io.IOException {
+    public boolean runTests(String[] fnames) throws IOException {
         // record start time
         long time = System.currentTimeMillis();
 
@@ -245,7 +245,7 @@ public class TestEngine {
         Terminal.print("\n");
     }
 
-    private TestCase runTest(String fname) throws java.io.IOException {
+    private TestCase runTest(String fname) throws IOException {
         TestCase tc = readTestCase(fname);
         Throwable exception = null;
 
@@ -273,7 +273,7 @@ public class TestEngine {
         return tc;
     }
 
-    private TestCase readTestCase(String fname) throws java.io.IOException {
+    private TestCase readTestCase(String fname) throws IOException {
         BufferedReader r = new BufferedReader(new FileReader(fname));
         Properties vars = new Properties();
 

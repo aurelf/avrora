@@ -43,8 +43,8 @@ import avrora.sim.State;
  * the count for the range specified instead of for the entire program.
  *
  * @author Ben L. Titzer
- * @see avrora.sim.util.Counter
- * @see avrora.sim.util.ProgramProfiler
+ * @see Counter
+ * @see ProgramProfiler
  */
 public class RangeProfiler extends Simulator.Probe.Empty {
     /**

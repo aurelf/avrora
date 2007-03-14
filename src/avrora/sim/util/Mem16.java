@@ -44,7 +44,7 @@ import cck.util.Util;
  */
 public class Mem16 {
     public final int[] values;
-    public final int max = 16;
+    public static final int max = 16;
 
     // -1 = bottom, -2 = invalid
     public int count = 0;

@@ -36,8 +36,7 @@ import avrora.arch.legacy.*;
 import avrora.core.Program;
 import cck.text.*;
 import cck.util.Util;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * The <code>ISEInterpreter</code> class implements an abstract interpreter for intraprocedural
@@ -557,7 +556,7 @@ public class ISEInterpreter implements LegacyInstrVisitor {
     }
 
     public void visit(LegacyInstr.ICALL i) {
-        java.util.List iedges = program.getIndirectEdges(pc);
+        List iedges = program.getIndirectEdges(pc);
         if (iedges == null)
             throw Util.failure("No control flow information for indirect call at: " +
                     StringUtil.addrToString(pc));
@@ -572,7 +571,7 @@ public class ISEInterpreter implements LegacyInstrVisitor {
     }
 
     public void visit(LegacyInstr.IJMP i) {
-        java.util.List iedges = program.getIndirectEdges(pc);
+        List iedges = program.getIndirectEdges(pc);
         if (iedges == null)
             throw Util.failure("No control flow information for indirect call at: " +
                     StringUtil.addrToString(pc));

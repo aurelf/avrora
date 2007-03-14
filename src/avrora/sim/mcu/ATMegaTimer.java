@@ -281,15 +281,15 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
          * Creates a new, mutable Mode object.
          */
         protected Mode(Class sc, RegisterSet.Field f, TopValue t) {
-            if (Mode.NORMAL.class == sc) {
+            if (NORMAL.class == sc) {
                 strategy = new NORMAL();
-            } else if (Mode.CTC.class == sc) {
+            } else if (CTC.class == sc) {
                 strategy = new CTC();
-            } else if (Mode.PWM.class == sc) {
+            } else if (PWM.class == sc) {
                 strategy = new PWM();
-            } else if (Mode.FC_PWM.class == sc) {
+            } else if (FC_PWM.class == sc) {
                 strategy = new FC_PWM();
-            } else if (Mode.FAST_PWM.class == sc) {
+            } else if (FAST_PWM.class == sc) {
                 strategy = new FAST_PWM();
             } else {
                 throw new Error("Unknown Strategy class " + sc);

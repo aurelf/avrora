@@ -84,7 +84,7 @@ public class Type {
         StringBuffer buf = new StringBuffer();
         buf.append(typeCon.getName());
         boolean first = true;
-        if ( dimensions.size() > 0 ) {
+        if (!dimensions.isEmpty() ) {
             buf.append('(');
             for ( Map.Entry<String, Object> e : dimensions.entrySet() ) {
                 if ( !first ) buf.append(", ");

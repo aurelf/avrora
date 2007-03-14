@@ -40,7 +40,7 @@ import avrora.sim.State;
  * watch. It is useful for composing multiple watches into one and is used internally in the simulator.
  *
  * @author Ben L. Titzer
- * @see avrora.sim.Simulator
+ * @see Simulator
  */
 public class MulticastIORWatch extends TransactionalList implements Simulator.IORWatch {
 

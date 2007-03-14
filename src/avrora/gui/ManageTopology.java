@@ -152,7 +152,7 @@ public class ManageTopology {
         for (int i = 0; i < selectedRows.length; i++) {
             //let's get the NID of that row, and tell the 
             //GUI to remove it
-            Integer integer = ((Integer) (theModel.getValueAt(selectedRows[i], 0)));
+            Integer integer = (Integer)theModel.getValueAt(selectedRows[i], 0);
             AvroraGui.instance.getSimulation().removeNode(integer.intValue());
         }
         

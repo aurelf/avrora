@@ -51,7 +51,7 @@ import cck.text.Printer;
 public class InterpreterGenerator extends Generator {
 
     protected JavaCodePrinter javaCodePrinter;
-    jintgen.gen.CodeSimplifier ncg;
+    CodeSimplifier ncg;
 
     public void generate() throws IOException {
         initStatics();
@@ -87,7 +87,7 @@ public class InterpreterGenerator extends Generator {
         properties.setProperty("symbol", className("Symbol"));
         properties.setProperty("interpreter", className("InstrInterpreter"));
         properties.setProperty("state", className("State"));
-        ncg = new jintgen.gen.CodeSimplifier(arch);
+        ncg = new CodeSimplifier(arch);
         ncg.genAccessMethods();
     }
 
@@ -214,7 +214,7 @@ public class InterpreterGenerator extends Generator {
     }
 
     void generateCode(List<Stmt> stmts) {
-        jintgen.gen.CodeSimplifier ncg = new jintgen.gen.CodeSimplifier(arch);
+        CodeSimplifier ncg = new CodeSimplifier(arch);
         stmts = ncg.visitStmtList(stmts, new CGEnv(null, 0));
         javaCodePrinter.visitStmtList(stmts);
     }

@@ -59,10 +59,6 @@ public class Seres extends Platform {
 
     }
 
-    public Microcontroller getMicrocontroller() {
-        return mcu;
-    }
-
     public static class Factory implements PlatformFactory {
 
         public Platform newPlatform(int id, Program p) {

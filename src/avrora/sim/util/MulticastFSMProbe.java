@@ -39,7 +39,7 @@ import avrora.sim.FiniteStateMachine;
  * probe. It is useful for composing multiple probes into one and is used internally in the simulator.
  *
  * @author Ben L. Titzer
- * @see avrora.sim.FiniteStateMachine
+ * @see FiniteStateMachine
  */
 public class MulticastFSMProbe extends TransactionalList implements FiniteStateMachine.Probe {
 

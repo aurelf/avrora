@@ -479,8 +479,8 @@ public class AbstractArithmetic {
      * @return the bitwise exclusive or of the two abstract values
      */
     public static char xor(char av1, char av2) {
-        char mask = AbstractArithmetic.commonMask(av1, av2);
-        return AbstractArithmetic.canon(mask, (char)(av1 ^ av2));
+        char mask = commonMask(av1, av2);
+        return canon(mask, (char)(av1 ^ av2));
     }
 
     /**
@@ -548,7 +548,7 @@ public class AbstractArithmetic {
      * @return a concrete value where each of the unknown bits of the abstract value are set to one
      */
     public static int ceiling(char av1) {
-        int invmask = (~AbstractArithmetic.maskOf(av1)) & 0xff;
+        int invmask = (~maskOf(av1)) & 0xff;
         return bitsOf(av1) | invmask;
     }
 

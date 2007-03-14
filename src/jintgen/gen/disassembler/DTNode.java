@@ -153,7 +153,7 @@ public class DTNode {
      * @return true if this node has no children; false otherwise
      */
     public boolean isLeaf() {
-        return children.size() == 0;
+        return children.isEmpty();
     }
 
     /**

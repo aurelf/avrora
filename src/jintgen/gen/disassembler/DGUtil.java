@@ -179,7 +179,7 @@ public class DGUtil {
     }
 
     private static void printNode(Printer p, long state, DTNode dt, HashSet<Integer> nodes) {
-        long nstate = DGUtil.getBitStates(state, dt);
+        long nstate = getBitStates(state, dt);
         int length = dt.right_bit - dt.left_bit + 1;
         String name = getName(dt, state);
         p.println(name+";");
@@ -257,7 +257,7 @@ public class DGUtil {
         }
 
         // reset left and right bits for a terminal node
-        if ( nc.size() == 0 )
+        if (nc.isEmpty() )
             return n.shallowCopy(0, 0, nc);
         else
             return n.shallowCopy(nc);
@@ -277,14 +277,14 @@ public class DGUtil {
     }
 
     public static List<FormatDecl.BitField> initConstantEnviron(ConstantPropagator.Environ ce, InstrDecl id, AddrModeDecl am, FormatDecl ed) {
-        List<FormatDecl.BitField> list = DGUtil.initConstantEnviron(ed, ce);
+        List<FormatDecl.BitField> list = initConstantEnviron(ed, ce);
         if ( am != null ) addProperties(am.properties.values(), ce);
         if ( id != null ) addProperties(id.properties.values(), ce);
         return list;
     }
 
     public static void addProperties(Iterable<Property> properties, ConstantPropagator.Environ ce) {
-        for ( Property p : properties ) DGUtil.addProperty(p, ce);
+        for ( Property p : properties ) addProperty(p, ce);
     }
 
     public static List<FormatDecl.BitField> initConstantEnviron(FormatDecl ed, ConstantPropagator.Environ ce) {
@@ -321,6 +321,6 @@ public class DGUtil {
 
     public static boolean addrModeClassExists(InstrDecl d) {
         AddrModeDecl localDecl = d.addrMode.localDecl;
-        return localDecl == null || localDecl.operands.size() != 0;
+        return localDecl == null || !localDecl.operands.isEmpty();
     }
 }

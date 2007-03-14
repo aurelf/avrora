@@ -249,7 +249,7 @@ public class FiniteStateMachine {
      * event into the queue of the underlying clock for this device. That event will complete the transition.
      * This method will not allow any transitions when the machine is already in transition.
      * @param newState the new state to transition to
-     * @throws cck.util.Util.InternalError if it is illegal to transition between the current state and the new state
+     * @throws Util.InternalError if it is illegal to transition between the current state and the new state
      * according to the transition time matrix; or if the machine is already in a transitional state
      */
     public void transition(int newState) {

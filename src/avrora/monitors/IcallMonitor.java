@@ -51,7 +51,7 @@ import cck.text.Terminal;
  */
 public class IcallMonitor extends MonitorFactory {
 
-    public class Mon implements avrora.monitors.Monitor {
+    public class Mon implements Monitor {
         public final Simulator simulator;
         private final SourceMapping sourceMap;
 
@@ -105,7 +105,7 @@ public class IcallMonitor extends MonitorFactory {
         super("The \"icall\" monitor is used to detect possible bogus icalls, it " + "simply checks that the target for each icall has a source mapping " + "associated with it.");
     }
 
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
+    public Monitor newMonitor(Simulator s) {
         return new Mon(s);
     }
 }

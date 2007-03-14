@@ -42,7 +42,7 @@ package avrora.arch.legacy;
  * Operands are used as the arguments to the constructors of instructions.
  *
  * @author Ben L. Titzer
- * @see avrora.arch.legacy.LegacyInstrProto
+ * @see LegacyInstrProto
  */
 public interface LegacyOperand {
 
@@ -52,7 +52,7 @@ public interface LegacyOperand {
      *
      * @return this if this is an instance of <code>LegacyOperand.LegacyRegister</code>; null otherwise
      */
-    public LegacyOperand.Register asRegister();
+    public Register asRegister();
 
     /**
      * The <code>asConstant()</code> method uses virtual dispatch to avoid a cast. If this operand is an
@@ -60,7 +60,7 @@ public interface LegacyOperand {
      *
      * @return this if this is an instance of <code>LegacyOperand.Constant</code>; null otherwise
      */
-    public LegacyOperand.Constant asConstant();
+    public Constant asConstant();
 
     /**
      * The <code>LegacyOperand.LegacyRegister</code> class encapsulates the notion of a register operand to an
@@ -73,7 +73,7 @@ public interface LegacyOperand {
          * by this operand.
          * @return a reference to the register that this operand refers to
          */
-        public avrora.arch.legacy.LegacyRegister getRegister();
+        public LegacyRegister getRegister();
     }
 
     /**

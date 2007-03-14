@@ -156,7 +156,6 @@ public class LCDScreen implements USART.USARTDevice {
             mode = MODE_DATA;
         } else if (data == (byte) 254) {
             mode = MODE_INSTRUCTION;
-            return;
         } else {
             setCursor(frame.value);
             cursor = (cursor + 1) % 80;

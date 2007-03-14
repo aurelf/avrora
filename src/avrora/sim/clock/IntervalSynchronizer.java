@@ -121,7 +121,7 @@ public class IntervalSynchronizer extends Synchronizer {
 
                 // we have not been removed, we can reinsert the synch event
                 clock.insertEvent(this, period);
-            } catch (java.lang.InterruptedException e) {
+            } catch (InterruptedException e) {
                 throw Util.unexpected(e);
             }
         }
@@ -172,7 +172,7 @@ public class IntervalSynchronizer extends Synchronizer {
      * this synchronization interval have terminated, either through <code>stop()</code>
      * being called, or terminating normally such as through a timeout.
      */
-    public void join() throws java.lang.InterruptedException {
+    public void join() throws InterruptedException {
         Iterator threadIterator = threadMap.keySet().iterator();
         while (threadIterator.hasNext()) {
             SimulatorThread thread = (SimulatorThread)threadIterator.next();
@@ -292,7 +292,7 @@ public class IntervalSynchronizer extends Synchronizer {
                 if ( w.shouldWait )
                     w.wait();
             }
-        } catch ( java.lang.InterruptedException e) {
+        } catch ( InterruptedException e) {
             throw Util.unexpected(e);
         }
     }

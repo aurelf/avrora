@@ -97,7 +97,7 @@ public class AnalyzeStackAction extends Action {
      * options specified, creating an instance of the <code>Analyzer</code> class, and running the analysis.
      *
      * @param args the string arguments that are the files containing the program
-     * @throws java.lang.Exception if the program cannot be loaded correctly
+     * @throws Exception if the program cannot be loaded correctly
      */
     public void run(String[] args) throws Exception {
         Program p = Main.loadProgram(args);

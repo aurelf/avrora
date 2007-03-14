@@ -67,9 +67,7 @@ public class StateCache {
             av_EIMSK = s.av_EIMSK;
             av_TIMSK = s.av_TIMSK;
             av_REGISTERS = new char[NUM_REGS];
-            for (int cntr = 0; cntr < NUM_REGS; cntr++) {
-                av_REGISTERS[cntr] = s.av_REGISTERS[cntr];
-            }
+            System.arraycopy(s.av_REGISTERS, 0, av_REGISTERS, 0, NUM_REGS);
             hashCode = computeHashCode();
             UID = uidCount++;
         }
@@ -120,7 +118,7 @@ public class StateCache {
         private boolean delegating = false;
         private boolean empty = true;
 
-        private class OptionalIterator implements java.util.Iterator {
+        private class OptionalIterator implements Iterator {
             boolean done;
 
             public boolean hasNext() {
@@ -162,7 +160,7 @@ public class StateCache {
             }
         }
 
-        public java.util.Iterator iterator() {
+        public Iterator iterator() {
             if (delegating)
                 return delegate.iterator();
             else

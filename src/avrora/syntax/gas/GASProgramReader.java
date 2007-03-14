@@ -37,8 +37,7 @@ import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
 import cck.util.Util;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 
 /**
  * The <code>GASProgramReader</code> is an implementation of the <code>ProgramReader</code> that reads a
@@ -54,18 +53,15 @@ public class GASProgramReader extends ProgramReader {
      *
      * @param args the string names of the files to load
      * @return a program built from the specified source files
-     * @throws avrora.syntax.gas.ParseException
-     *                             if a parse error is encountered
-     * @throws java.io.IOException if there is a problem reading from one of the files
+     * @throws ParseException if a parse error is encountered
+     * @throws IOException    if there is a problem reading from one of the files
      */
     public Program read(String[] args) throws Exception {
-        if (args.length == 0)
-            Util.userError("no input files");
+        if (args.length == 0) Util.userError("no input files");
         // TODO: handle multiple GAS files and link them
-        if (args.length != 1)
-            Util.userError("input type \"gas\" accepts only one file at a time.");
+        if (args.length != 1) Util.userError("input type \"gas\" accepts only one file at a time.");
 
-        if ( getArchitecture() != LegacyArchitecture.INSTANCE )
+        if (getArchitecture() != LegacyArchitecture.INSTANCE)
             Util.userError("input type  \"gas\" parses only the \"legacy\" architecture.");
 
         File f = new File(args[0]);
@@ -79,10 +75,7 @@ public class GASProgramReader extends ProgramReader {
     }
 
     public GASProgramReader() {
-        super("The \"gas\" input format reads programs that are written in " +
-                "GAS format assembly language. A subset of the directives and " +
-                "syntax is supported. No linking functionality is currently " +
-                "implemented; all symbol references must be defined in one file. ");
+        super("The \"gas\" input format reads programs that are written in " + "GAS format assembly language. A subset of the directives and " + "syntax is supported. No linking functionality is currently " + "implemented; all symbol references must be defined in one file. ");
     }
 
 }

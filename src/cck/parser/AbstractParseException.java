@@ -66,7 +66,6 @@ public class AbstractParseException extends RuntimeException {
      */
 
     public AbstractParseException() {
-        super();
         specialConstructor = false;
     }
 

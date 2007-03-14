@@ -37,7 +37,7 @@ package avrora.arch.legacy;
  * public and final, which allows fast access from the interpreter.
  *
  * @author Ben L. Titzer
- * @see avrora.arch.legacy.LegacyInstr
+ * @see LegacyInstr
  */
 public class LegacyInstrProperties {
 

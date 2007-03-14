@@ -44,6 +44,7 @@ import java.awt.event.ActionEvent;
 import java.io.PrintStream;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.net.URL;
 
 /**
  * From a high level view, the controls what the simulation is doing.
@@ -356,11 +357,7 @@ public class ManageSimTime {
         int newdelay = ((Integer) simTimeDelaySpinner.getValue()).intValue();
         long newinbetweenperiod = ((Integer) simTimeCycleSpinner.getValue()).longValue();
         boolean newiorc;
-        if ("cycles".equals(simTimeIorCSelect.getSelectedItem())) {
-            newiorc = false;
-        } else {
-            newiorc = true;
-        }
+        newiorc = !"cycles".equals(simTimeIorCSelect.getSelectedItem());
 
         int neweventtype;
         int slidervalue = simTimeSlider.getValue();
@@ -390,7 +387,7 @@ public class ManageSimTime {
     private static JButton makeSimButton(String imageName, String actionCommand, String toolTipText, String altText, AvroraGui papp) {
         //Look for the image.
         String imgLocation = "images/" + imageName + ".gif";
-        java.net.URL imageURL = AvroraGui.class.getResource(imgLocation);
+        URL imageURL = AvroraGui.class.getResource(imgLocation);
 
         //Create and initialize the button.
         JButton button = new JButton();

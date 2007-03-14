@@ -60,11 +60,11 @@ public class SimpleAir implements RadioAir {
     private static final int INTERVALS = 1;
     private static final int sampleTime = 13 * 64;
     private static final int TRANSFER_TIME = Radio.TRANSFER_TIME;
-    private static final int INTERVAL_TIME = TRANSFER_TIME * INTERVALS;
+    private static final int INTERVAL_TIME = TRANSFER_TIME;
 
     public SimpleAir() {
         radios = new HashSet();
-        radioChannel = new Channel(8 * INTERVALS, INTERVAL_TIME, true);
+        radioChannel = new Channel(8, INTERVAL_TIME, true);
         synchronizer = new IntervalSynchronizer(INTERVAL_TIME, new MeetEvent());
     }
 

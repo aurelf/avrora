@@ -139,7 +139,7 @@ public class SimMenuBar {
      * otherwise false
      */
     public boolean checkAndDispatch(ActionEvent e) {
-        Object source = (e.getSource());
+        Object source = e.getSource();
         if (source instanceof JMenuItem) {
             if (((JMenuItem) source).getText().equals(SIMOPTIONS)) {
                 theSimInput.createSetOptionsDialog();

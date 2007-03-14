@@ -65,19 +65,19 @@ public class PinConnect {
     protected int numNodes;
 
     // SERES link directions
-    public final int NONE = -1;
-    public final int NORTH = 0;
-    public final int EAST = 1;
-    public final int SOUTH = 2;
-    public final int WEST = 3;
+    public static final int NONE = -1;
+    public static final int NORTH = 0;
+    public static final int EAST = 1;
+    public static final int SOUTH = 2;
+    public static final int WEST = 3;
     
     // Superbot link directions
-    public final int LED1 = 0;
-    public final int LED2 = 1;
-    public final int LED3 = 2;
-    public final int LED4 = 3;
-    public final int LED5 = 4;
-    public final int LED6 = 5;
+    public static final int LED1 = 0;
+    public static final int LED2 = 1;
+    public static final int LED3 = 2;
+    public static final int LED4 = 3;
+    public static final int LED5 = 4;
+    public static final int LED6 = 5;
     
     public PinConnect() {
         // period = 1
@@ -119,7 +119,7 @@ public class PinConnect {
         while (i.hasNext()) {
 
             // get the next PinNode on the list
-            PinConnect.PinNode p = (PinConnect.PinNode) i.next();
+            PinNode p = (PinNode) i.next();
 
             // does this node have the equivalent Microcontroller?
             if (currMCU == p.mcu) {
@@ -147,16 +147,16 @@ public class PinConnect {
         }
 
         // the previous PinNode
-        PinNode prevNode = (PinConnect.PinNode) i.next();
+        PinNode prevNode = (PinNode) i.next();
 
         // connect the nodes from North to South to create a long chain
         while (i.hasNext()) {
             // get next node on the list
-            PinNode currNode = (PinConnect.PinNode) i.next();
+            PinNode currNode = (PinNode) i.next();
             // two-way communication links between neighboring modules
             
             // two-way communication links between neighboring modules
-            if ( prevNode.platform.equalsIgnoreCase("SERES")) {
+            if ("SERES".equalsIgnoreCase(prevNode.platform)) {
             	prevNode.connectNodes(currNode, SOUTH, SOUTH);
             	prevNode.connectNodes(currNode, NORTH, NORTH);
             	prevNode.connectNodes(currNode, EAST, EAST);
@@ -166,7 +166,7 @@ public class PinConnect {
             	//prevNode.connectNodes(prevNode, EAST, EAST);
             	//prevNode.connectNodes(prevNode, WEST, WEST);
             }
-            else if ( prevNode.platform.equalsIgnoreCase("Superbot") ) {
+            else if ("Superbot".equalsIgnoreCase(prevNode.platform) ) {
             	prevNode.connectNodes(currNode, LED1, LED1);
             	prevNode.connectNodes(currNode, LED2, LED2);
             	prevNode.connectNodes(currNode, LED3, LED3);
@@ -196,23 +196,23 @@ public class PinConnect {
         public Microcontroller mcu;
 
         // transmit pins
-        protected PinWire TxPins[];
+        protected PinWire[] TxPins;
 
         // receive pins
-        protected PinWire RxPins[];
+        protected PinWire[] RxPins;
 
         // interrupt pins
-        protected PinWire IntPins[];
+        protected PinWire[] IntPins;
 
         // simulator thread
         //public SimulatorThread simThread;
 
         // node id and neighbors
     	private int localNode;
-    	public PinNode neighborNodes[];
+    	public PinNode[] neighborNodes;
     	
     	// side we are connected to neighbors
-    	public int neighborSides[];
+    	public int[] neighborSides;
     	
     	// platform ID
     	public final String platform;
@@ -350,7 +350,7 @@ public class PinConnect {
     protected class PinLink {
 
         protected LinkedList pinWires;
-        protected final int DELAY = 1000;
+        protected static final int DELAY = 1000;
         protected int currentDelay;
         
         public PinNode outputNode;
@@ -415,7 +415,6 @@ public class PinConnect {
             // check if we have an output wire
             if (currOutput == null) {
                 // there is no output wire, so do nothing
-                return;
             }
             // if we have an output wire, propagate its signal
             else {

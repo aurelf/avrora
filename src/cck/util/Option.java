@@ -44,7 +44,7 @@ import java.util.*;
  * classes represent specific types of options such as integers, booleans, and strings.
  *
  * @author Ben L. Titzer
- * @see cck.util.Options
+ * @see Options
  */
 public abstract class Option {
     /**
@@ -466,7 +466,7 @@ public abstract class Option {
         }
 
         public boolean isBlank() {
-            return value.equals("");
+            return "".equals(value);
         }
     }
 
@@ -539,7 +539,7 @@ public abstract class Option {
          * to the terminal.
          */
         public void printHelp() {
-            String defvalue = orig.equals("") ? "(null)" : orig;
+            String defvalue = "".equals(orig) ? "(null)" : orig;
             printHeader("list", "" + defvalue);
             printDescription();
         }
@@ -577,9 +577,9 @@ public abstract class Option {
          * @param val a string representation of the new value of the option.
          */
         public void set(String val) {
-            if (val.equals("true") || val.equals("")) {
+            if ("true".equals(val) || "".equals(val)) {
                 value = true;
-            } else if (val.equals("false")) {
+            } else if ("false".equals(val)) {
                 value = false;
             } else parseError(name, "boolean", val);
         }

@@ -158,7 +158,7 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
     * Synchronized because GUI thread and paintthread will access the horz bar
     */
     public synchronized void updateHorzBar() {
-        int newExtent = ((int) (((double) this.getSize().width) / stepsize));
+        int newExtent = (int)((double)this.getSize().width / stepsize);
 
         int maxvalue;
         maxvalue = 0;
@@ -374,8 +374,8 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
             int endingvalue;
             if (privateNumbers[j].size() == 0) {
                 endingvalue = 0;
-            } else if (((int) ((double) panelDimen.width) / stepsize) < privateNumbers[j].get(privateNumbers[j].size() - 1)) {
-                endingvalue = startingvalue + ((int) (((double) panelDimen.width) / stepsize));
+            } else if ((int)(double)panelDimen.width / stepsize < privateNumbers[j].get(privateNumbers[j].size() - 1)) {
+                endingvalue = startingvalue + (int)((double)panelDimen.width / stepsize);
             } else {
                 endingvalue = privateNumbers[j].get(privateNumbers[j].size() - 1);
             }
@@ -437,12 +437,12 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
                             currentXPoint1 = 0;
                             startColorOn = false;
                         } else {
-                            currentXPoint1 = ((int) (((double) (privateNumbers[j].get(i) - startingvalue)) * stepsize));
+                            currentXPoint1 = (int)((double)(privateNumbers[j].get(i) - startingvalue) * stepsize);
                             i++;
                         }
                         int currentXPoint2;
                         if (i < privateNumbers[j].size()) {
-                            currentXPoint2 = ((int) (((double) (privateNumbers[j].get(i) - startingvalue)) * stepsize));
+                            currentXPoint2 = (int)((double)(privateNumbers[j].get(i) - startingvalue) * stepsize);
                             i++;
                         } else {
                             currentXPoint2 = panelDimen.width;
@@ -451,7 +451,7 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
                         g.fillOval(currentXPoint2 - 2, currentYPoint - 2, 4, 4);
                         g.drawLine(currentXPoint1, currentYPoint, currentXPoint2, currentYPoint);
                     } else {
-                        int currentXPoint = ((int) (((double) (privateNumbers[j].get(i) - startingvalue)) * stepsize));
+                        int currentXPoint = (int)((double)(privateNumbers[j].get(i) - startingvalue) * stepsize);
                         i++;
                         g.fillOval(currentXPoint - 2, currentYPoint - 2, 4, 4);
                     }

@@ -164,7 +164,7 @@ public class TypeCon {
      * The <code>getName()</code> method returns the name of this type constructor.
      * @return a string representing the name of this type constructor
      */
-    public final String getName() {
+    public String getName() {
         return name;
     }
 

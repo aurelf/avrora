@@ -121,7 +121,7 @@ public class DTBuilder {
 
     void computeRange(EncodingSet set, int depth) {
         // there should be at least one encoding in every decoding tree
-        assert set.lowPrio.size() > 0;
+        assert !set.lowPrio.isEmpty();
 
         set.buildArrays();
         verbose.println("--> scanning...");
@@ -196,7 +196,7 @@ public class DTBuilder {
         // create the default branch
         createDefaultBranch(set, unmatched);
 
-        assert set.children.size() > 0;
+        assert !set.children.isEmpty();
     }
 
     private boolean createSingleton(EncodingSet set) {
@@ -228,7 +228,7 @@ public class DTBuilder {
     }
 
     private void createDefaultBranch(EncodingSet set, List<EncodingInst> unmatched) {
-        if ( unmatched.size() > 0 ) {
+        if (!unmatched.isEmpty() ) {
             // replicate the unmatched encodings over all branches
             for ( EncodingInst ei : unmatched ) {
                 for ( EncodingSet c : set.children.values() )

@@ -1,4 +1,7 @@
 package avrora.arch.avr;
+
+import cck.util.Util;
+
 public abstract class AVRInstrInterpreter extends AVRState implements AVRInstrVisitor {
     boolean bit_get(int v, int bit) {
         return (v & (1 << bit)) != 0;
@@ -19,7 +22,7 @@ public abstract class AVRInstrInterpreter extends AVRState implements AVRInstrVi
             case AVROperand.R0_B_val: return $read_int8((AVROperand.R0_B)o);
             case AVROperand.op_GPR_val: return $read_int8((AVROperand.op_GPR)o);
         }
-        throw cck.util.Util.failure("invalid operand type in read");
+        throw Util.failure("invalid operand type in read");
     }
     int $read_poly_uint16(AVROperand o) {
         switch ( o.op_type ) {
@@ -29,14 +32,14 @@ public abstract class AVRInstrInterpreter extends AVRState implements AVRInstrVi
             case AVROperand.AI_RZ_W_val: return $read_uint16((AVROperand.AI_RZ_W)o);
             case AVROperand.XYZ_val: return $read_uint16((AVROperand.XYZ)o);
         }
-        throw cck.util.Util.failure("invalid operand type in read");
+        throw Util.failure("invalid operand type in read");
     }
     void $write_poly_int8(AVROperand o, int value) {
         switch ( o.op_type ) {
             case AVROperand.R0_B_val: $write_int8((AVROperand.R0_B)o, value); return;
             case AVROperand.op_GPR_val: $write_int8((AVROperand.op_GPR)o, value); return;
         }
-        throw cck.util.Util.failure("invalid operand type in write");
+        throw Util.failure("invalid operand type in write");
     }
     public int get_reg(int r) {
         return map_get(regs, r);

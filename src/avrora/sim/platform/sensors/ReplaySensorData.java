@@ -70,7 +70,7 @@ public class ReplaySensorData implements SensorData {
         if ( tt == StreamTokenizer.TT_EOF ) return;
         if ( tt != StreamTokenizer.TT_NUMBER )
             throw Util.failure("sensor data format error: expected number as sensor reading");
-        currentReading = ((int)st.nval) & 0x3ff;
+        currentReading = (int)st.nval & 0x3ff;
     }
 
     class ChangeReading implements Simulator.Event {

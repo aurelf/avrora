@@ -49,8 +49,8 @@ public interface Context {
      * program.
      *
      * @param ident the string name of the register or register alias
-     * @return a reference to the <code>LegacyRegister</code> instance representing the register with the specified
-     *         name or alias
+     * @return a reference to the <code>LegacyRegister</code> instance representing the register with the
+     *         specified name or alias
      */
     public LegacyRegister getRegister(AbstractToken ident);
 

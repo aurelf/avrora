@@ -89,15 +89,15 @@ public abstract class TypeEnv {
         }
 
         public boolean contains(TypeCon a, TypeCon b) {
-            TypeEnv.Relation.Node n = nodes.get(a);
+            Node n = nodes.get(a);
             if ( n == null ) return false;
-            TypeEnv.Relation.Node m = nodes.get(b);
+            Node m = nodes.get(b);
             if ( m == null ) return false;
             return n.neighbors.contains(m);
         }
 
         protected Node nodeOf(TypeCon a) {
-            TypeEnv.Relation.Node node = nodes.get(a);
+            Node node = nodes.get(a);
             if ( node == null ) {
                 node = new Node(a);
                 nodes.put(a, node);

@@ -123,7 +123,7 @@ public class TypeRef implements Typeable {
         StringBuffer buf = new StringBuffer();
         buf.append(tcName.image);
         boolean first = true;
-        if ( dimensions.size() > 0 ) {
+        if (!dimensions.isEmpty() ) {
             buf.append('(');
             for ( Map.Entry<String, List> e : dimensions.entrySet() ) {
                 if ( !first ) buf.append(", ");

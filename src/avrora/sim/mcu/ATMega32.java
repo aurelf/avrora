@@ -54,7 +54,7 @@ public class ATMega32 extends ATMegaFamily {
     public static final int ATMEGA32_IOREG_SIZE = 64;
     public static final int ATMEGA32_SRAM_SIZE = 2 * _1kb;
     public static final int ATMEGA32_FLASH_SIZE = 32 * _1kb;
-    public static final int ATMEGA32_EEPROM_SIZE = 1 * _1kb;
+    public static final int ATMEGA32_EEPROM_SIZE = _1kb;
     public static final int ATMEGA32_NUM_PINS = 45;
     public static final int ATMEGA32_NUM_INTS = 22;
 

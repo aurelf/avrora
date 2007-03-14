@@ -102,7 +102,7 @@ public class MCUProperties {
      * microcontroller.
      * @param n the name of the pin such as "OC0"
      * @return an integer representing the physical pin number if it exists;
-     * @throws java.util.NoSuchElementException if the specified pin name does not have an assignment
+     * @throws NoSuchElementException if the specified pin name does not have an assignment
      */
     public int getPin(String n) {
         Integer i = (Integer)pinAssignments.get(n);
@@ -116,7 +116,7 @@ public class MCUProperties {
      * LegacyRegister name for this microcontroller.
      * @param n the name of the IO register such as "TCNT0"
      * @return an integer representing the IO register number if it exists
-     * @throws java.util.NoSuchElementException if the specified IO register name does not have an assignment
+     * @throws NoSuchElementException if the specified IO register name does not have an assignment
      */
     public int getIOReg(String n) {
         return layout.getIOReg(n);
@@ -136,7 +136,7 @@ public class MCUProperties {
      * name for this microcontroller
      * @param n the name of the interrupt such as "RESET"
      * @return an integer representing the interrupt number if it exists
-     * @throws java.util.NoSuchElementException if the specified interrupt name does not have an assignment
+     * @throws NoSuchElementException if the specified interrupt name does not have an assignment
      */
     public int getInterrupt(String n) {
         Integer i = (Integer)interruptAssignments.get(n);

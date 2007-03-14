@@ -172,7 +172,7 @@ public class TypeChecker extends VerifierPass implements CodeAccumulator<Type, E
             return meth;
         } else {
             // no type given to the write; check that there is only one accessor available
-            if ( accessors.size() == 0 ) ERROR.UnresolvedAccess(access, d, m, null);
+            if (accessors.isEmpty() ) ERROR.UnresolvedAccess(access, d, m, null);
             if ( accessors.size() > 1 ) ERROR.AmbiguousAccess(access, d, m);
             return accessors.values().iterator().next();
         }

@@ -2,35 +2,40 @@
 package avrora.syntax.gas;
 
 import avrora.syntax.*;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Enumeration;
+import java.util.Vector;
 
 public class GASParser extends AbstractParser implements GASParserConstants {
 
-    public GASParser(java.io.InputStream stream, Module m, String fname) {
+    public GASParser(InputStream stream, Module m, String fname) {
         this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
         module = m;
     }
 
-    public void ReInit(java.io.InputStream stream, Module m, String fname) {
+    public void ReInit(InputStream stream, Module m, String fname) {
         ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
         module = m;
     }
 
-    public GASParser(java.io.Reader stream, Module m, String fname) {
+    public GASParser(Reader stream, Module m, String fname) {
         this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
         module = m;
     }
 
-    public void ReInit(java.io.Reader stream, Module m, String fname) {
+    public void ReInit(Reader stream, Module m, String fname) {
         ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
         module = m;
     }
 
-/* Begin GRAMMAR */
-    final public void Module() throws ParseException {
+    /* Begin GRAMMAR */
+
+    public void Module() throws ParseException {
         label_1:
         while (true) {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
@@ -166,7 +171,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 case TST:
                 case WDR:
                 case IDENTIFIER:
-                    ;
                     break;
                 default:
                     jj_la1[0] = jj_gen;
@@ -177,7 +181,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         jj_consume_token(0);
     }
 
-    final public void Statement() throws ParseException {
+    public void Statement() throws ParseException {
         if (jj_2_1(2)) {
             Assignment();
         } else {
@@ -328,7 +332,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         }
     }
 
-    final public void Directive() throws ParseException {
+    public void Directive() throws ParseException {
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case EQU:
                 EquDirective();
@@ -380,7 +384,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         }
     }
 
-    final public void Instruction() throws ParseException {
+    public void Instruction() throws ParseException {
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case ADD:
             case ADC:
@@ -523,7 +527,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         }
     }
 
-    final public void InstrGPRGPR() throws ParseException {
+    public void InstrGPRGPR() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         t = OpcodeGPRGPR();
@@ -533,7 +537,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, r1, r2);
     }
 
-    final public Token OpcodeGPRGPR() throws ParseException {
+    public Token OpcodeGPRGPR() throws ParseException {
         Token t;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case ADD:
@@ -595,13 +599,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
         }
-        {
-            if (true) return t;
-        }
-        throw new Error("Missing return statement in function");
+        return t;
     }
 
-    final public void InstrGPR() throws ParseException {
+    public void InstrGPR() throws ParseException {
         Token t;
         SyntacticOperand.Register r1;
         t = OpcodeGPR();
@@ -609,7 +610,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, r1);
     }
 
-    final public Token OpcodeGPR() throws ParseException {
+    public Token OpcodeGPR() throws ParseException {
         Token t;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case COM:
@@ -662,13 +663,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
         }
-        {
-            if (true) return t;
-        }
-        throw new Error("Missing return statement in function");
+        return t;
     }
 
-    final public void InstrGPRIMM() throws ParseException {
+    public void InstrGPRIMM() throws ParseException {
         Token t;
         SyntacticOperand.Register r1;
         SyntacticOperand.Expr c1;
@@ -679,7 +677,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, r1, c1);
     }
 
-    final public Token OpcodeGPRIMM() throws ParseException {
+    public Token OpcodeGPRIMM() throws ParseException {
         Token t;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case ADIW:
@@ -726,13 +724,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
         }
-        {
-            if (true) return t;
-        }
-        throw new Error("Missing return statement in function");
+        return t;
     }
 
-    final public void InstrIMM() throws ParseException {
+    public void InstrIMM() throws ParseException {
         Token t;
         SyntacticOperand.Expr c1;
         t = OpcodeIMM();
@@ -740,7 +735,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, c1);
     }
 
-    final public Token OpcodeIMM() throws ParseException {
+    public Token OpcodeIMM() throws ParseException {
         Token t;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case RJMP:
@@ -820,13 +815,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
         }
-        {
-            if (true) return t;
-        }
-        throw new Error("Missing return statement in function");
+        return t;
     }
 
-    final public void InstrIMMIMM() throws ParseException {
+    public void InstrIMMIMM() throws ParseException {
         Token t;
         SyntacticOperand.Expr c1, c2;
         t = OpcodeIMMIMM();
@@ -836,7 +828,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, c1, c2);
     }
 
-    final public Token OpcodeIMMIMM() throws ParseException {
+    public Token OpcodeIMMIMM() throws ParseException {
         Token t;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case SBIC:
@@ -862,13 +854,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
         }
-        {
-            if (true) return t;
-        }
-        throw new Error("Missing return statement in function");
+        return t;
     }
 
-    final public void InstrLoad() throws ParseException {
+    public void InstrLoad() throws ParseException {
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case LDI:
                 InstrLDI();
@@ -893,7 +882,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         }
     }
 
-    final public void InstrLDI() throws ParseException {
+    public void InstrLDI() throws ParseException {
         Token t;
         SyntacticOperand.Register r1;
         SyntacticOperand.Expr c1;
@@ -904,7 +893,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, r1, c1);
     }
 
-    final public void InstrLD_variant() throws ParseException {
+    public void InstrLD_variant() throws ParseException {
         if (jj_2_2(5)) {
             InstrLDPI();
         } else if (jj_2_3(4)) {
@@ -922,7 +911,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         }
     }
 
-    final public void InstrLD() throws ParseException {
+    public void InstrLD() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         t = jj_consume_token(LD);
@@ -932,7 +921,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction("ld", t, r1, r2);
     }
 
-    final public void InstrLDPI() throws ParseException {
+    public void InstrLDPI() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         t = jj_consume_token(LD);
@@ -943,7 +932,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction("ldpi", t, r1, r2);
     }
 
-    final public void InstrLDPD() throws ParseException {
+    public void InstrLDPD() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         t = jj_consume_token(LD);
@@ -954,7 +943,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction("ldpd", t, r1, r2);
     }
 
-    final public void InstrLDD() throws ParseException {
+    public void InstrLDD() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         SyntacticOperand.Expr c1;
@@ -967,7 +956,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, r1, r2, c1);
     }
 
-    final public void InstrLDS() throws ParseException {
+    public void InstrLDS() throws ParseException {
         Token t;
         SyntacticOperand.Register r1;
         SyntacticOperand.Expr c1;
@@ -978,7 +967,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, r1, c1);
     }
 
-    final public void InstrLPM_variant() throws ParseException {
+    public void InstrLPM_variant() throws ParseException {
         if (jj_2_4(5)) {
             InstrLPMGPRGPRP();
         } else if (jj_2_5(3)) {
@@ -997,7 +986,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         }
     }
 
-    final public void InstrLPMGPRGPR() throws ParseException {
+    public void InstrLPMGPRGPR() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         t = OpcodeLPM();
@@ -1007,7 +996,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image + 'd', t, r1, r2);
     }
 
-    final public void InstrLPMGPRGPRP() throws ParseException {
+    public void InstrLPMGPRGPRP() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         t = OpcodeLPM();
@@ -1018,13 +1007,13 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image + "pi", t, r1, r2);
     }
 
-    final public void InstrLPMBARE() throws ParseException {
+    public void InstrLPMBARE() throws ParseException {
         Token t;
         t = OpcodeLPM();
         module.addInstruction(t.image, t);
     }
 
-    final public Token OpcodeLPM() throws ParseException {
+    public Token OpcodeLPM() throws ParseException {
         Token t;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case LPM:
@@ -1038,13 +1027,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
         }
-        {
-            if (true) return t;
-        }
-        throw new Error("Missing return statement in function");
+        return t;
     }
 
-    final public void InstrStore() throws ParseException {
+    public void InstrStore() throws ParseException {
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case ST:
                 InstrST_variant();
@@ -1062,7 +1048,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         }
     }
 
-    final public void InstrST_variant() throws ParseException {
+    public void InstrST_variant() throws ParseException {
         if (jj_2_6(3)) {
             InstrST();
         } else if (jj_2_7(3)) {
@@ -1080,7 +1066,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         }
     }
 
-    final public void InstrST() throws ParseException {
+    public void InstrST() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         t = jj_consume_token(ST);
@@ -1090,7 +1076,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction("st", t, r1, r2);
     }
 
-    final public void InstrSTPI() throws ParseException {
+    public void InstrSTPI() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         t = jj_consume_token(ST);
@@ -1101,7 +1087,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction("stpi", t, r1, r2);
     }
 
-    final public void InstrSTPD() throws ParseException {
+    public void InstrSTPD() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         t = jj_consume_token(ST);
@@ -1112,7 +1098,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction("stpd", t, r1, r2);
     }
 
-    final public void InstrSTD() throws ParseException {
+    public void InstrSTD() throws ParseException {
         Token t;
         SyntacticOperand.Register r1, r2;
         SyntacticOperand.Expr c1;
@@ -1125,7 +1111,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, r1, c1, r2);
     }
 
-    final public void InstrSTS() throws ParseException {
+    public void InstrSTS() throws ParseException {
         Token t;
         SyntacticOperand.Register r1;
         SyntacticOperand.Expr c1;
@@ -1136,7 +1122,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, c1, r1);
     }
 
-    final public void InstrBARE() throws ParseException {
+    public void InstrBARE() throws ParseException {
         Token t;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case IJMP:
@@ -1228,7 +1214,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t);
     }
 
-    final public void InstrInput() throws ParseException {
+    public void InstrInput() throws ParseException {
         Token t;
         SyntacticOperand.Register r1;
         SyntacticOperand.Expr c1;
@@ -1239,7 +1225,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, r1, c1);
     }
 
-    final public void InstrOutput() throws ParseException {
+    public void InstrOutput() throws ParseException {
         Token t;
         SyntacticOperand.Register r1;
         SyntacticOperand.Expr c1;
@@ -1250,23 +1236,20 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addInstruction(t.image, t, c1, r1);
     }
 
-    final public SyntacticOperand.Register Register() throws ParseException {
+    public SyntacticOperand.Register Register() throws ParseException {
         Token tok;
         tok = jj_consume_token(IDENTIFIER);
-        {
-            if (true) return module.newOperand(tok);
-        }
-        throw new Error("Missing return statement in function");
+        return module.newOperand(tok);
     }
 
-    final public void Label() throws ParseException {
+    public void Label() throws ParseException {
         Token tok;
         tok = jj_consume_token(IDENTIFIER);
         jj_consume_token(159);
         module.addLabel(tok);
     }
 
-    final public void EquDirective() throws ParseException {
+    public void EquDirective() throws ParseException {
         Token tok;
         Expr e;
         jj_consume_token(EQU);
@@ -1276,7 +1259,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addConstant(tok, e);
     }
 
-    final public void Assignment() throws ParseException {
+    public void Assignment() throws ParseException {
         Token tok;
         Expr e;
         tok = jj_consume_token(IDENTIFIER);
@@ -1285,7 +1268,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         module.addConstant(tok, e);
     }
 
-    final public void OrgDirective() throws ParseException {
+    public void OrgDirective() throws ParseException {
         Token tok;
         Expr e;
         jj_consume_token(ORG);
@@ -1297,12 +1280,11 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 break;
             default:
                 jj_la1[16] = jj_gen;
-                ;
         }
         module.setOrigin(new Expr.Constant(tok));
     }
 
-    final public void ReserveDirective() throws ParseException {
+    public void ReserveDirective() throws ParseException {
         Token tok;
         Expr e;
         Expr f = null;
@@ -1326,17 +1308,16 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 break;
             default:
                 jj_la1[18] = jj_gen;
-                ;
         }
         module.reserveBytes(e, f);
     }
 
-    final public void GlobalDirective() throws ParseException {
+    public void GlobalDirective() throws ParseException {
         jj_consume_token(GLOBAL);
         jj_consume_token(IDENTIFIER);
     }
 
-    final public void TypeDirective() throws ParseException {
+    public void TypeDirective() throws ParseException {
         jj_consume_token(TYPE);
         jj_consume_token(IDENTIFIER);
         jj_consume_token(156);
@@ -1344,17 +1325,17 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         jj_consume_token(IDENTIFIER);
     }
 
-    final public void FileDirective() throws ParseException {
+    public void FileDirective() throws ParseException {
         jj_consume_token(FILE);
         jj_consume_token(STRING_LITERAL);
     }
 
-    final public void ArchDirective() throws ParseException {
+    public void ArchDirective() throws ParseException {
         jj_consume_token(ARCH);
         jj_consume_token(IDENTIFIER);
     }
 
-    final public void DataDirective() throws ParseException {
+    public void DataDirective() throws ParseException {
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case BYTE:
                 ByteDirective();
@@ -1372,50 +1353,50 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         }
     }
 
-    final public void ByteDirective() throws ParseException {
+    public void ByteDirective() throws ParseException {
         ExprList l;
         jj_consume_token(BYTE);
         l = DataList();
         module.addDataBytes(l);
     }
 
-    final public void WordDirective() throws ParseException {
+    public void WordDirective() throws ParseException {
         ExprList l;
         jj_consume_token(WORD);
         l = DataList();
         module.addDataWords(l);
     }
 
-    final public void DoubleWordDirective() throws ParseException {
+    public void DoubleWordDirective() throws ParseException {
         ExprList l;
         jj_consume_token(LONG);
         l = DataList();
         module.addDataDoubleWords(l);
     }
 
-    final public void IncludeDirective() throws ParseException {
+    public void IncludeDirective() throws ParseException {
         Token file;
         jj_consume_token(INCLUDE);
         file = jj_consume_token(STRING_LITERAL);
         module.includeFile(file);
     }
 
-    final public void NoListDirective() throws ParseException {
+    public void NoListDirective() throws ParseException {
         jj_consume_token(NOLIST);
     }
 
-    final public void ListDirective() throws ParseException {
+    public void ListDirective() throws ParseException {
         jj_consume_token(LIST);
     }
 
-    final public void SizeDirective() throws ParseException {
+    public void SizeDirective() throws ParseException {
         jj_consume_token(SIZE);
         jj_consume_token(IDENTIFIER);
         jj_consume_token(156);
         Expr();
     }
 
-    final public void SegDirective() throws ParseException {
+    public void SegDirective() throws ParseException {
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case DATA:
                 jj_consume_token(DATA);
@@ -1432,16 +1413,13 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         }
     }
 
-    final public SyntacticOperand.Expr Const() throws ParseException {
+    public SyntacticOperand.Expr Const() throws ParseException {
         Expr e;
         e = Expr();
-        {
-            if (true) return module.newOperand(e);
-        }
-        throw new Error("Missing return statement in function");
+        return module.newOperand(e);
     }
 
-    final public ExprList DataList() throws ParseException {
+    public ExprList DataList() throws ParseException {
         ExprList list = new ExprList();
         Expr e;
         e = Data();
@@ -1450,7 +1428,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         while (true) {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case 156:
-                    ;
                     break;
                 default:
                     jj_la1[21] = jj_gen;
@@ -1460,13 +1437,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             e = Data();
             list.add(e);
         }
-        {
-            if (true) return list;
-        }
-        throw new Error("Missing return statement in function");
+        return list;
     }
 
-    final public Expr Data() throws ParseException {
+    public Expr Data() throws ParseException {
         Token tok;
         Expr e;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
@@ -1489,22 +1463,16 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr Expr() throws ParseException {
+    public Expr Expr() throws ParseException {
         Expr e;
         e = LorExpr();
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr LorExpr() throws ParseException {
+    public Expr LorExpr() throws ParseException {
         Token tok;
         Expr e, er;
         e = LandExpr();
@@ -1512,7 +1480,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         while (true) {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case 162:
-                    ;
                     break;
                 default:
                     jj_la1[23] = jj_gen;
@@ -1522,13 +1489,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             er = LandExpr();
             e = new Expr.BinOp(tok, e, er);
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr LandExpr() throws ParseException {
+    public Expr LandExpr() throws ParseException {
         Token tok;
         Expr e, er;
         e = OrExpr();
@@ -1536,7 +1500,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         while (true) {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case 163:
-                    ;
                     break;
                 default:
                     jj_la1[24] = jj_gen;
@@ -1546,13 +1509,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             er = OrExpr();
             e = new Expr.BinOp(tok, e, er);
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr OrExpr() throws ParseException {
+    public Expr OrExpr() throws ParseException {
         Token tok;
         Expr e, er;
         e = XorExpr();
@@ -1560,7 +1520,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         while (true) {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case 164:
-                    ;
                     break;
                 default:
                     jj_la1[25] = jj_gen;
@@ -1570,13 +1529,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             er = XorExpr();
             e = new Expr.BinOp(tok, e, er);
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr XorExpr() throws ParseException {
+    public Expr XorExpr() throws ParseException {
         Token tok;
         Expr e, er;
         e = AndExpr();
@@ -1584,7 +1540,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         while (true) {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case 165:
-                    ;
                     break;
                 default:
                     jj_la1[26] = jj_gen;
@@ -1594,13 +1549,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             er = AndExpr();
             e = new Expr.BinOp(tok, e, er);
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr AndExpr() throws ParseException {
+    public Expr AndExpr() throws ParseException {
         Token tok;
         Expr e, er;
         e = EqExpr();
@@ -1608,7 +1560,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         while (true) {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case 166:
-                    ;
                     break;
                 default:
                     jj_la1[27] = jj_gen;
@@ -1618,13 +1569,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             er = EqExpr();
             e = new Expr.BinOp(tok, e, er);
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr EqExpr() throws ParseException {
+    public Expr EqExpr() throws ParseException {
         Token tok;
         Expr e, er;
         e = RelExpr();
@@ -1633,7 +1581,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case 167:
                 case 168:
-                    ;
                     break;
                 default:
                     jj_la1[28] = jj_gen;
@@ -1654,13 +1601,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             er = RelExpr();
             e = new Expr.BinOp(tok, e, er);
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr RelExpr() throws ParseException {
+    public Expr RelExpr() throws ParseException {
         Token tok;
         Expr e, er;
         e = ShiftExpr();
@@ -1671,7 +1615,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 case 170:
                 case 171:
                 case 172:
-                    ;
                     break;
                 default:
                     jj_la1[30] = jj_gen;
@@ -1698,13 +1641,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             er = ShiftExpr();
             e = new Expr.BinOp(tok, e, er);
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr ShiftExpr() throws ParseException {
+    public Expr ShiftExpr() throws ParseException {
         Token tok;
         Expr e, er;
         e = AddExpr();
@@ -1713,7 +1653,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case 173:
                 case 174:
-                    ;
                     break;
                 default:
                     jj_la1[32] = jj_gen;
@@ -1734,13 +1673,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             er = AddExpr();
             e = new Expr.BinOp(tok, e, er);
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr AddExpr() throws ParseException {
+    public Expr AddExpr() throws ParseException {
         Token tok;
         Expr e, er;
         e = MulExpr();
@@ -1749,7 +1685,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case 157:
                 case 158:
-                    ;
                     break;
                 default:
                     jj_la1[34] = jj_gen;
@@ -1770,13 +1705,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             er = MulExpr();
             e = new Expr.BinOp(tok, e, er);
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr MulExpr() throws ParseException {
+    public Expr MulExpr() throws ParseException {
         Token tok;
         Expr e, er;
         e = UnaryExpr();
@@ -1785,7 +1717,6 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                 case 175:
                 case 176:
-                    ;
                     break;
                 default:
                     jj_la1[36] = jj_gen;
@@ -1806,13 +1737,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             er = UnaryExpr();
             e = new Expr.BinOp(tok, e, er);
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr UnaryExpr() throws ParseException {
+    public Expr UnaryExpr() throws ParseException {
         Token tok;
         Expr e;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
@@ -1849,13 +1777,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr Term() throws ParseException {
+    public Expr Term() throws ParseException {
         Token tok;
         Expr e;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
@@ -1881,13 +1806,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
         }
-        {
-            if (true) return e;
-        }
-        throw new Error("Missing return statement in function");
+        return e;
     }
 
-    final public Expr Func() throws ParseException {
+    public Expr Func() throws ParseException {
         Token tok;
         Token l;
         Expr e;
@@ -1895,13 +1817,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         jj_consume_token(179);
         e = Expr();
         l = jj_consume_token(180);
-        {
-            if (true) return new Expr.Func(tok, e, l);
-        }
-        throw new Error("Missing return statement in function");
+        return new Expr.Func(tok, e, l);
     }
 
-    final public Token FuncName() throws ParseException {
+    public Token FuncName() throws ParseException {
         Token tok;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case LO8:
@@ -1915,13 +1834,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
                 jj_consume_token(-1);
                 throw new ParseException();
         }
-        {
-            if (true) return tok;
-        }
-        throw new Error("Missing return statement in function");
+        return tok;
     }
 
-    final private boolean jj_2_1(int xla) {
+    private boolean jj_2_1(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_1();
@@ -1929,7 +1845,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return retval;
     }
 
-    final private boolean jj_2_2(int xla) {
+    private boolean jj_2_2(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_2();
@@ -1937,7 +1853,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return retval;
     }
 
-    final private boolean jj_2_3(int xla) {
+    private boolean jj_2_3(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_3();
@@ -1945,7 +1861,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return retval;
     }
 
-    final private boolean jj_2_4(int xla) {
+    private boolean jj_2_4(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_4();
@@ -1953,7 +1869,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return retval;
     }
 
-    final private boolean jj_2_5(int xla) {
+    private boolean jj_2_5(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_5();
@@ -1961,7 +1877,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return retval;
     }
 
-    final private boolean jj_2_6(int xla) {
+    private boolean jj_2_6(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_6();
@@ -1969,7 +1885,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return retval;
     }
 
-    final private boolean jj_2_7(int xla) {
+    private boolean jj_2_7(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_7();
@@ -1977,7 +1893,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return retval;
     }
 
-    final private boolean jj_3R_16() {
+    private boolean jj_3R_16() {
         if (jj_3R_21()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_3R_20()) return true;
@@ -1991,19 +1907,19 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return false;
     }
 
-    final private boolean jj_3_3() {
+    private boolean jj_3_3() {
         if (jj_3R_15()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3_2() {
+    private boolean jj_3_2() {
         if (jj_3R_14()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_17() {
+    private boolean jj_3R_17() {
         if (jj_3R_21()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_3R_20()) return true;
@@ -2013,7 +1929,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return false;
     }
 
-    final private boolean jj_3R_19() {
+    private boolean jj_3R_19() {
         if (jj_scan_token(ST)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_3R_20()) return true;
@@ -2023,25 +1939,25 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return false;
     }
 
-    final private boolean jj_3_5() {
+    private boolean jj_3_5() {
         if (jj_3R_17()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3_4() {
+    private boolean jj_3_4() {
         if (jj_3R_16()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_20() {
+    private boolean jj_3R_20() {
         if (jj_scan_token(IDENTIFIER)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_18() {
+    private boolean jj_3R_18() {
         if (jj_scan_token(ST)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_3R_20()) return true;
@@ -2051,25 +1967,25 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return false;
     }
 
-    final private boolean jj_3R_23() {
+    private boolean jj_3R_23() {
         if (jj_scan_token(ELPM)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3_7() {
+    private boolean jj_3_7() {
         if (jj_3R_19()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3_6() {
+    private boolean jj_3_6() {
         if (jj_3R_18()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_15() {
+    private boolean jj_3R_15() {
         if (jj_scan_token(LD)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_3R_20()) return true;
@@ -2081,19 +1997,19 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return false;
     }
 
-    final private boolean jj_3_1() {
+    private boolean jj_3_1() {
         if (jj_3R_13()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_22() {
+    private boolean jj_3R_22() {
         if (jj_scan_token(LPM)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_21() {
+    private boolean jj_3R_21() {
         Token xsp;
         xsp = jj_scanpos;
         if (jj_3R_22()) {
@@ -2104,7 +2020,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return false;
     }
 
-    final private boolean jj_3R_14() {
+    private boolean jj_3R_14() {
         if (jj_scan_token(LD)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_3R_20()) return true;
@@ -2118,7 +2034,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return false;
     }
 
-    final private boolean jj_3R_13() {
+    private boolean jj_3R_13() {
         if (jj_scan_token(IDENTIFIER)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(160)) return true;
@@ -2153,34 +2069,50 @@ public class GASParser extends AbstractParser implements GASParserConstants {
     }
 
     private static void jj_la1_0() {
-        jj_la1_0 = new int[]{0xffc00000, 0xffc00000, 0xffc00000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1c00000, 0x80000000, 0x0, 0x382000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x302000, 0x302000, 0x300000, };
+        jj_la1_0 = new int[] { 0xffc00000, 0xffc00000, 0xffc00000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1c00000, 0x80000000, 0x0, 0x382000, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x302000, 0x302000,
+                0x300000, };
     }
 
     private static void jj_la1_1() {
-        jj_la1_1 = new int[]{0xffffffff, 0xffffffff, 0x7f, 0xffffff80, 0x580, 0x1000, 0x4a00, 0xfff62000, 0x18000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x80000, 0x0, 0x14, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, };
+        jj_la1_1 = new int[] { 0xffffffff, 0xffffffff, 0x7f, 0xffffff80, 0x580, 0x1000, 0x4a00, 0xfff62000,
+                0x18000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x80000, 0x0, 0x14, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, };
     }
 
     private static void jj_la1_2() {
-        jj_la1_2 = new int[]{0xffffffff, 0xffffffff, 0x0, 0xffffffff, 0x78580000, 0x842000, 0x200120, 0x5f, 0x80, 0x4000000, 0x0, 0x4000000, 0x4000000, 0x0, 0x0, 0x8303de00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, };
+        jj_la1_2 = new int[] { 0xffffffff, 0xffffffff, 0x0, 0xffffffff, 0x78580000, 0x842000, 0x200120, 0x5f,
+                0x80, 0x4000000, 0x0, 0x4000000, 0x4000000, 0x0, 0x0, 0x8303de00, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, };
     }
 
     private static void jj_la1_3() {
-        jj_la1_3 = new int[]{0xffffffff, 0xffffffff, 0x0, 0xffffffff, 0x2004f800, 0x18610604, 0x40080000, 0x4800008, 0x80000000, 0x1f0, 0x10, 0x100, 0x100, 0x0, 0x0, 0x3020001, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, };
+        jj_la1_3 = new int[] { 0xffffffff, 0xffffffff, 0x0, 0xffffffff, 0x2004f800, 0x18610604, 0x40080000,
+                0x4800008, 0x80000000, 0x1f0, 0x10, 0x100, 0x100, 0x0, 0x0, 0x3020001, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, };
     }
 
     private static void jj_la1_4() {
-        jj_la1_4 = new int[]{0x3ffffff, 0x3ffffff, 0x0, 0x1ffffff, 0x100000, 0xc00400, 0x20003c, 0x0, 0x3, 0x0, 0x0, 0x0, 0x0, 0xe0000, 0x20000, 0x101fbc0, 0x10000000, 0x0, 0x10000000, 0x0, 0x0, 0x10000000, 0x42000000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x60000000, 0x60000000, 0x0, 0x0, 0x40000000, 0x42000000, 0x2000000, 0x0, };
+        jj_la1_4 = new int[] { 0x3ffffff, 0x3ffffff, 0x0, 0x1ffffff, 0x100000, 0xc00400, 0x20003c, 0x0, 0x3,
+                0x0, 0x0, 0x0, 0x0, 0xe0000, 0x20000, 0x101fbc0, 0x10000000, 0x0, 0x10000000, 0x0, 0x0,
+                0x10000000, 0x42000000, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x60000000,
+                0x60000000, 0x0, 0x0, 0x40000000, 0x42000000, 0x2000000, 0x0, };
     }
 
     private static void jj_la1_5() {
-        jj_la1_5 = new int[]{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xe0000, 0x4, 0x8, 0x10, 0x20, 0x40, 0x180, 0x180, 0x1e00, 0x1e00, 0x6000, 0x6000, 0x0, 0x0, 0x18000, 0x18000, 0x60000, 0xe0000, 0x80000, 0x0, };
+        jj_la1_5 = new int[] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xe0000, 0x4, 0x8, 0x10, 0x20, 0x40, 0x180, 0x180, 0x1e00,
+                0x1e00, 0x6000, 0x6000, 0x0, 0x0, 0x18000, 0x18000, 0x60000, 0xe0000, 0x80000, 0x0, };
     }
 
     final private JJCalls[] jj_2_rtns = new JJCalls[7];
     private boolean jj_rescan = false;
     private int jj_gc = 0;
 
-    public GASParser(java.io.InputStream stream) {
+    public GASParser(InputStream stream) {
         jj_input_stream = new SimpleCharStream(stream, 1, 1);
         token_source = new GASParserTokenManager(jj_input_stream);
         token = new Token();
@@ -2190,7 +2122,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
     }
 
-    public void ReInit(java.io.InputStream stream) {
+    public void ReInit(InputStream stream) {
         jj_input_stream.ReInit(stream, 1, 1);
         token_source.ReInit(jj_input_stream);
         token = new Token();
@@ -2200,7 +2132,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
     }
 
-    public GASParser(java.io.Reader stream) {
+    public GASParser(Reader stream) {
         jj_input_stream = new SimpleCharStream(stream, 1, 1);
         token_source = new GASParserTokenManager(jj_input_stream);
         token = new Token();
@@ -2210,7 +2142,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
     }
 
-    public void ReInit(java.io.Reader stream) {
+    public void ReInit(Reader stream) {
         jj_input_stream.ReInit(stream, 1, 1);
         token_source.ReInit(jj_input_stream);
         token = new Token();
@@ -2238,12 +2170,10 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
     }
 
-    final private Token jj_consume_token(int kind) throws ParseException {
+    private Token jj_consume_token(int kind) throws ParseException {
         Token oldToken;
-        if ((oldToken = token).next != null)
-            token = token.next;
-        else
-            token = token.next = token_source.getNextToken();
+        if ((oldToken = token).next != null) token = token.next;
+        else token = token.next = token_source.getNextToken();
         jj_ntk = -1;
         if (token.kind == kind) {
             jj_gen++;
@@ -2264,7 +2194,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         throw generateParseException();
     }
 
-    final private boolean jj_scan_token(int kind) {
+    private boolean jj_scan_token(int kind) {
         if (jj_scanpos == jj_lastpos) {
             jj_la--;
             if (jj_scanpos.next == null) {
@@ -2287,35 +2217,29 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return (jj_scanpos.kind != kind);
     }
 
-    final public Token getNextToken() {
-        if (token.next != null)
-            token = token.next;
-        else
-            token = token.next = token_source.getNextToken();
+    public Token getNextToken() {
+        if (token.next != null) token = token.next;
+        else token = token.next = token_source.getNextToken();
         jj_ntk = -1;
         jj_gen++;
         return token;
     }
 
-    final public Token getToken(int index) {
+    public Token getToken(int index) {
         Token t = lookingAhead ? jj_scanpos : token;
         for (int i = 0; i < index; i++) {
-            if (t.next != null)
-                t = t.next;
-            else
-                t = t.next = token_source.getNextToken();
+            if (t.next != null) t = t.next;
+            else t = t.next = token_source.getNextToken();
         }
         return t;
     }
 
-    final private int jj_ntk() {
-        if ((jj_nt = token.next) == null)
-            return (jj_ntk = (token.next = token_source.getNextToken()).kind);
-        else
-            return (jj_ntk = jj_nt.kind);
+    private int jj_ntk() {
+        if ((jj_nt = token.next) == null) return (jj_ntk = (token.next = token_source.getNextToken()).kind);
+        else return (jj_ntk = jj_nt.kind);
     }
 
-    private java.util.Vector jj_expentries = new java.util.Vector();
+    private Vector jj_expentries = new Vector();
     private int[] jj_expentry;
     private int jj_kind = -1;
     private int[] jj_lasttokens = new int[100];
@@ -2327,11 +2251,9 @@ public class GASParser extends AbstractParser implements GASParserConstants {
             jj_lasttokens[jj_endpos++] = kind;
         } else if (jj_endpos != 0) {
             jj_expentry = new int[jj_endpos];
-            for (int i = 0; i < jj_endpos; i++) {
-                jj_expentry[i] = jj_lasttokens[i];
-            }
+            System.arraycopy(jj_lasttokens, 0, jj_expentry, 0, jj_endpos);
             boolean exists = false;
-            for (java.util.Enumeration enm = jj_expentries.elements(); enm.hasMoreElements();) {
+            for (Enumeration enm = jj_expentries.elements(); enm.hasMoreElements();) {
                 int[] oldentry = (int[])(enm.nextElement());
                 if (oldentry.length == jj_expentry.length) {
                     exists = true;
@@ -2400,13 +2322,13 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         return new ParseException(token, exptokseq, tokenImage);
     }
 
-    final public void enable_tracing() {
+    public void enable_tracing() {
     }
 
-    final public void disable_tracing() {
+    public void disable_tracing() {
     }
 
-    final private void jj_rescan_token() {
+    private void jj_rescan_token() {
         jj_rescan = true;
         for (int i = 0; i < 7; i++) {
             JJCalls p = jj_2_rtns[i];
@@ -2444,7 +2366,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         jj_rescan = false;
     }
 
-    final private void jj_save(int index, int xla) {
+    private void jj_save(int index, int xla) {
         JJCalls p = jj_2_rtns[index];
         while (p.gen > jj_gen) {
             if (p.next == null) {
@@ -2459,6 +2381,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
     }
 
     static final class JJCalls {
+
         int gen;
         Token first;
         int arg;

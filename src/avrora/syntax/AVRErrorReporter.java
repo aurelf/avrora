@@ -92,8 +92,7 @@ public class AVRErrorReporter extends ErrorReporter {
     }
 
     public void WrongNumberOfOperands(AbstractToken instr, int seen, int expected) {
-        String report = "wrong number of operands to instruction " + StringUtil.quote(instr) + ", expected "
-                + expected + " and found " + seen;
+        String report = "wrong number of operands to instruction " + StringUtil.quote(instr) + ", expected " + expected + " and found " + seen;
         error("WrongNumberOfOperands", point(instr), report);
     }
 

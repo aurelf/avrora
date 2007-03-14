@@ -50,7 +50,7 @@ public class CallStack implements CallTrace.Monitor {
 
     protected int depth;
     protected final int maxDepth;
-    protected final long stack[];
+    protected final long[] stack;
 
     public CallStack() {
         this(MAXDEPTH);

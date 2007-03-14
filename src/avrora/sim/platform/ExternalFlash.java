@@ -410,7 +410,7 @@ public class ExternalFlash {
                         // first starts here with step 1: get opcode
                         if (!isReading) {
                             // get SI bytewise
-                            dfTempByte |= ((si) ? 1 : 0) << (7 - i);  // MSB first
+                            dfTempByte |= (si ? 1 : 0) << (7 - i);  // MSB first
 
                             i++;
 
@@ -465,7 +465,7 @@ public class ExternalFlash {
             }
 
             // write relevant bit to so
-            so = ((temp & (1 << (7 - i))) > 0); // MSB first
+            so = (temp & 1 << 7 - i) > 0; // MSB first
 
         }
 
@@ -476,20 +476,20 @@ public class ExternalFlash {
                     dfOpcode = dfTempByte;
                     echo("Recieved Opcode: " + dfOpcode);
                     // Status LegacyRegister Read?
-                    if ((dfOpcode == 0x57) || (dfOpcode == 0xD7)) {
+                    if (dfOpcode == 0x57 || dfOpcode == 0xD7) {
                         isReading = true;
                     }
                     break;
 
                 case 2:
                     // get first part of adressing sequence
-                    dfPageAddress = (dfTempByte << 7) & 0x0780;
+                    dfPageAddress = dfTempByte << 7 & 0x0780;
                     echo("Received Address byte 1: " + dfTempByte);
                     break;
 
                 case 3:
                     // get second part of adressing sequence
-                    dfPageAddress |= (dfTempByte >> 1);
+                    dfPageAddress |= dfTempByte >> 1;
                     // and first part of byte offset
                     dfByteOffset = dfTempByte & 0x0100;
                     echo("Received Address byte 2: " + dfTempByte);
@@ -521,7 +521,7 @@ public class ExternalFlash {
                 case 0x68:
                 case 0xE8:
                     // Additional Don't cares Required: 4 Bytes
-                    if (step == (4 + 4)) {
+                    if (step == 4 + 4) {
                         isReading = true;
                     }
                     break;
@@ -530,7 +530,7 @@ public class ExternalFlash {
                 case 0x52:
                 case 0xD2:
                     // Additional Don't cares Required: 4 Bytes
-                    if (step == (4 + 4)) {
+                    if (step == 4 + 4) {
                         isReading = true;
                     }
                     break;
@@ -539,7 +539,7 @@ public class ExternalFlash {
                 case 0x54:
                 case 0xD4:
                     // Additional Don't cares Required: 1 Byte
-                    if (step == (4 + 1)) {
+                    if (step == 4 + 1) {
                         isReading = true;
                     }
                     break;
@@ -547,7 +547,7 @@ public class ExternalFlash {
                     // Buffer 2 Read
                 case 0x56:
                 case 0xD6:
-                    if (step == (4 + 1)) {
+                    if (step == 4 + 1) {
                         isReading = true;
                     }
                     break;
@@ -562,14 +562,14 @@ public class ExternalFlash {
                     //	Buffer 1 Write
                 case 0x84:
                     setBuffer1(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 1 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
+                    echo("written Buffer 1 Byte: " + (short)dfByteOffset + ": " + dfTempByte);
                     dfByteOffset += 1;
                     break;
 
                     //	Buffer 2 Write
                 case 0x87:
                     setBuffer2(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 2 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
+                    echo("written Buffer 2 Byte: " + (short)dfByteOffset + ": " + dfTempByte);
                     dfByteOffset += 1;
                     break;
 
@@ -607,7 +607,7 @@ public class ExternalFlash {
                 case 0x82:
                     // read from SI into buffer1, write to memory when Flash_CS gets 1
                     setBuffer1(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 1 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
+                    echo("written Buffer 1 Byte: " + (short)dfByteOffset + ": " + dfTempByte);
                     dfByteOffset += 1;
                     break;
 
@@ -615,7 +615,7 @@ public class ExternalFlash {
                 case 0x85:
                     // read from SI into buffer2, write to mem when Flash_CS gets 1
                     setBuffer2(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 2 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
+                    echo("written Buffer 2 Byte: " + (short)dfByteOffset + ": " + dfTempByte);
                     dfByteOffset += 1;
                     break;
             }
@@ -634,7 +634,7 @@ public class ExternalFlash {
         /**
          * delay while dataflash is busy
          *
-         * @see avrora.sim.Simulator.Event#fire()
+         * @see Simulator.Event#fire()
          */
         public void fire() {
             // operation finished

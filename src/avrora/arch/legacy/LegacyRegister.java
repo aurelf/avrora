@@ -47,8 +47,8 @@ import java.util.HashSet;
  * register sets are allocated once here and are exposed as static fields in this class.
  *
  * @author Ben L. Titzer
- * @see avrora.arch.legacy.LegacyOperand
- * @see avrora.arch.legacy.LegacyInstr
+ * @see LegacyOperand
+ * @see LegacyInstr
  */
 public class LegacyRegister {
 

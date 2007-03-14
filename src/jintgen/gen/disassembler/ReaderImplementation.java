@@ -102,7 +102,7 @@ class ReaderImplementation extends GenBase {
 
         void generate() {
             startblock("static int readop_$1($disassembler d)", number);
-            if ( fields.size() == 0 ) {
+            if (fields.isEmpty() ) {
                 println("return 0;");
             } else {
                 int offset = 0;

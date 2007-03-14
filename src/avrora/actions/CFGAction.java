@@ -37,8 +37,7 @@ import avrora.arch.legacy.LegacyInstr;
 import avrora.core.*;
 import cck.text.*;
 import cck.util.Option;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -132,7 +131,7 @@ public class CFGAction extends Action {
         }
     }
 
-    private void dumpDotCFG(ControlFlowGraph cfg) throws java.io.IOException {
+    private void dumpDotCFG(ControlFlowGraph cfg) throws IOException {
         Printer p;
         if (FILE.isBlank())
             p = Printer.STDOUT;
@@ -184,7 +183,7 @@ public class CFGAction extends Action {
             Iterator entry_iter = pmap.getProcedureEntrypoints().iterator();
             while (entry_iter.hasNext()) {
                 ControlFlowGraph.Block entry = (ControlFlowGraph.Block)entry_iter.next();
-                p.startblock("subgraph cluster" + (num++));
+                p.startblock("subgraph cluster" + num++);
                 Iterator blocks = pmap.getProcedureBlocks(entry).iterator();
                 while (blocks.hasNext()) {
                     ControlFlowGraph.Block block = (ControlFlowGraph.Block)blocks.next();
@@ -313,8 +312,8 @@ public class CFGAction extends Action {
 
             // remember only inter-procedural edges
             if (COLLAPSE_PROCEDURES.get()) {
-                source = ((es = getEntryOf(source)) == null) ? source : es;
-                target = ((et = getEntryOf(target)) == null) ? target : et;
+                source = (es = getEntryOf(source)) == null ? source : es;
+                target = (et = getEntryOf(target)) == null ? target : et;
                 // don't print out intra-block edges if we are collapsing procedures
                 if (es == et && et != null) continue;
             }
