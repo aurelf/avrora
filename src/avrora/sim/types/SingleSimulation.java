@@ -35,7 +35,6 @@ package avrora.sim.types;
 import avrora.Main;
 import avrora.core.LoadableProgram;
 import avrora.sim.Simulation;
-import avrora.sim.SimulatorThread;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.platform.PlatformFactory;
 import cck.util.Options;
@@ -53,95 +52,8 @@ public class SingleSimulation extends Simulation {
     protected static final String HELP = "The \"single\" simulation type corresponds to a standard simulation " +
             "of a single microcontroller with a single program.";
 
-    protected static class SingleSynchronizer extends Synchronizer {
-
-        protected Simulation.Node node;
-        protected SimulatorThread thread;
-
-        /**
-         * The <code>addNode()</code> method adds a node to this synchronization group.
-         * This method should only be called before the <code>start()</code> method is
-         * called.
-         * @param n the simulator representing the node to add to this group
-         */
-        public void addNode(Simulation.Node n) {
-            if ( node != null )
-                throw Util.failure("Only one node supported at a time");
-            node = n;
-        }
-
-        /**
-         * The <code>removeNode()</code> method removes a node from this synchronization
-         * group, and wakes any nodes that might be waiting on it.
-         * @param n the simulator thread to remove from this synchronization group
-         */
-        public void removeNode(Simulation.Node n) {
-            if ( node == n ) node = null;
-        }
-
-        /**
-         * The <code>waitForNeighbors()</code> method is called from within the execution
-         * of a node when that node needs to wait for its neighbors to catch up to it
-         * in execution time. The node will be blocked until the other nodes in other
-         * threads catch up in global time.
-         */
-        public void waitForNeighbors(long time) {
-            // do nothing
-        }
-
-        /**
-         * The <code>start()</code> method starts the threads executing, and the synchronizer
-         * will add whatever synchronization to their execution that is necessary to preserve
-         * the global timing properties of simulation.
-         */
-        public void start() {
-            if ( node == null )
-                throw Util.failure("No nodes in simulation");
-            thread = new SimulatorThread(node);
-            thread.start();
-        }
-
-        /**
-         * The <code>join()</code> method will block the caller until all of the threads in
-         * this synchronization interval have terminated, either through <code>stop()</code>
-         * being called, or terminating normally such as through a timeout.
-         */
-        public void join() throws InterruptedException {
-            thread.join();
-        }
-
-        /**
-         * The <code>pause()</code> method temporarily pauses the simulation. The nodes are
-         * not guaranteed to stop at the same global time. This method will return when all
-         * threads in the simulation have been paused and will no longer make progress until
-         * the <code>start()</code> method is called again.
-         */
-        public void pause() {
-            throw Util.unimplemented();
-        }
-
-        /**
-         * The <code>stop()</code> method will terminate all the simulation threads. It is
-         * not guaranteed to stop all the simulation threads at the same global time.
-         */
-        public void stop() {
-            throw Util.unimplemented();
-        }
-
-
-        /**
-         * The <code>synch()</code> method will pause all of the nodes at the same global time.
-         * This method can only be called when the simulation is paused. It will run all threads
-         * forward until the global time specified and pause them.
-         * @param globalTime the global time in clock cycles to run all threads ahead to
-         */
-        public void synch(long globalTime) {
-            throw Util.unimplemented();
-        }
-    }
-
     public SingleSimulation() {
-        super("single", HELP, new SingleSynchronizer());
+        super("single", HELP, new Synchronizer.Single());
 
         addSection("SINGLE NODE SIMULATION OVERVIEW", help);
         addOptionSection("The most basic type of simulation, the single node simulation, is designed to " +
