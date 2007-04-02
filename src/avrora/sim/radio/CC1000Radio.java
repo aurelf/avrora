@@ -1321,13 +1321,15 @@ public class CC1000Radio implements Radio {
          * PDATA per clock.
          */
         protected class PCLKOutput extends Microcontroller.OutputPin {
-
+            protected boolean last;
             public void write(boolean level) {
+                if ( level == last ) return;
                 if (!level) { // clr
                     action();
                 } else { // set. false
 
                 }
+                last = level;
             }
         }
 
@@ -1348,12 +1350,15 @@ public class CC1000Radio implements Radio {
         // that software will respect the packet formatting.
         // If you don't, then PALE should be implemented.
         protected class PALEOutput extends Microcontroller.OutputPin {
+            protected boolean last;
             public void write(boolean level) {
+                if ( level == last ) return;
                 if (!level) {
                     bitsRead = 0;
                 } else {
                     bitsRead = 8;
                 }
+                last = level;
             }
         }
 
