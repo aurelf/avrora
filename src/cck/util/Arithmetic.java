@@ -183,6 +183,12 @@ public class Arithmetic {
         return (value == 0) ? -1 : high;
     }
 
+    public static int log(int value) {
+        // TODO: is this correct?
+        if ( value == 0 ) return 0;
+        return 1 + Arithmetic.highestBit(value - 1);
+    }
+
     /**
      * The <code>getBitField()</code> method reads a bit field from a value where the bits of the field
      * are not consecutive or in order. This method accepts an array of integers that denotes the permutation
