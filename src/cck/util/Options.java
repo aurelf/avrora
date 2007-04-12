@@ -97,6 +97,11 @@ public class Options {
         return option == null ? null : option.stringValue();
     }
 
+    public String getOptionValue(String name, String def) {
+        Option option = (Option) knownValues.get(name);
+        return option == null ? def : option.stringValue();
+    }
+
     public Option getOption(String name) {
         return (Option) knownValues.get(name);
     }
