@@ -93,10 +93,10 @@ public class TripTimeMonitor extends MonitorFactory {
                 this.start = start;
                 this.end = end;
 
-                this.cumul = 0;
-                this.cumul_sqr = 0;
-                this.max = 0;
-                this.min = Long.MAX_VALUE;
+                cumul = 0;
+                cumul_sqr = 0;
+                max = 0;
+                min = Long.MAX_VALUE;
                 if ( DISTRIBUTION.get() )
                     distrib = new Distribution("trip time "
                             +StringUtil.addrToString(start)+" -to- "

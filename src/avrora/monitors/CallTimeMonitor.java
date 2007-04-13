@@ -43,15 +43,10 @@ import cck.util.Util;
  */
 public class CallTimeMonitor extends MonitorFactory {
 
-    final Option.Str METHOD = newOption("method", "",
-            "This option specifies the name of the method to profile.");
-    final Option.Bool IGNR_INTRS = newOption("ignore-interrupts", false,
-            "This option selects whether this monitor will consider time spent in nested interrupts to " +
-            "be part of a method's execution time.");
+    final Option.Str METHOD = newOption("method", "", "The \"method\" option specifies the symbol name for the " + "method to profile.");
 
     public CallTimeMonitor() {
-        super("The \"MethodTimeMonitor\" monitor records profiling information about the " +
-                "method that consists of the time it takes (on average) to execute a call.");
+        super("The \"MethodTimeMonitor\" monitor records profiling " + "information about the method that consists of the time it takes " + "(on average) to execute a call.");
     }
 
     protected class CallTimeMon extends CallStack implements Monitor {
@@ -59,8 +54,7 @@ public class CallTimeMonitor extends MonitorFactory {
         final Simulator simulator;
         final Program program;
 
-        final SourceMapping.Location start;
-        final boolean ignore_interrupts;
+        final LabelMapping.Location start;
 
         long cumul;
         long cumul_sqr;
@@ -70,9 +64,6 @@ public class CallTimeMonitor extends MonitorFactory {
 
         int call_depth;
         long[] call_time = new long[256];
-
-        long startInterrupt;
-        long endInterrupt;
 
         CallTimeMon(Simulator s) {
             simulator = s;
@@ -84,47 +75,21 @@ public class CallTimeMonitor extends MonitorFactory {
             min = Long.MAX_VALUE;
             count = 0;
 
-            ignore_interrupts = IGNR_INTRS.get();
-            startInterrupt = 0;
-            endInterrupt = 0;
-
             start = getLocation(METHOD.get());
             CallTrace trace = new CallTrace(s);
             trace.attachMonitor(this);
         }
 
         public void fireAfterReturn(long time, int pc, int retaddr) {
-            if (getTarget(depth - 1) == start.lma_addr) {
-                record(time - call_time[--call_depth] - (endInterrupt - startInterrupt));
-                startInterrupt = endInterrupt = 0;
-            }
+            if ( getTarget(depth - 1) == start.address )
+                record(time - call_time[--call_depth]);
             pop();
         }
 
-        public void fireAfterInterruptReturn(long time, int pc, int retaddr) {
-            if (ignore_interrupts && findCallAddress(start.lma_addr)) {
-                endInterrupt = time;
-            }
-            super.fireAfterInterruptReturn(time, pc, retaddr);
-        }
-
         public void fireBeforeCall(long time, int pc, int target) {
-            if (target == start.lma_addr) call_time[call_depth++] = time;
+            if ( target == start.address )
+                call_time[call_depth++] = time;
             super.fireBeforeCall(time, pc, target);
-        }
-
-        public void fireBeforeInterrupt(long time, int pc, int inum) {
-            if (ignore_interrupts && findCallAddress(start.lma_addr)) {
-                startInterrupt = time;
-            }
-            super.fireBeforeInterrupt(time, pc, inum);
-        }
-
-        private boolean findCallAddress(int address) {
-            for (int i = depth - 1; i >= 0; --i) {
-                if (getTarget(i) == address) return true;
-            }
-            return false;
         }
 
         private void record(long time) {
@@ -135,25 +100,30 @@ public class CallTimeMonitor extends MonitorFactory {
             count++;
         }
 
-        private SourceMapping.Location getLocation(String src) {
+        private LabelMapping.Location getLocation(String src) {
             SourceMapping lm = program.getSourceMapping();
             SourceMapping.Location loc = lm.getLocation(src);
             if (loc == null) Util.userError("Invalid program address: ", src);
-            if (program.readInstr(loc.lma_addr) == null) Util.userError("Invalid program address: ", src);
+            if (program.readInstr(loc.address) == null) Util.userError("Invalid program address: ", src);
             return loc;
         }
 
         public void report() {
-            TermUtil.printSeparator("Call time results for node "+simulator.getID());
-            Terminal.printGreen(" function                 calls         avg       cumul        max        min");
+            Terminal.printGreen(" function                 calls         avg         std        max        min");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
 
             float avg = (float)cumul / count;
             double std = Math.sqrt(((double)cumul_sqr / count) - (avg * avg));
 
-            Terminal.println(" " + StringUtil.leftJustify(METHOD.get(), 20) + "  " + StringUtil.rightJustify(count, 8) + "  " + StringUtil.rightJustify(avg, 10) + "  " + StringUtil.rightJustify(cumul, 10) + "  " + StringUtil.rightJustify((float)max, 9) + "  " + StringUtil.rightJustify((float)min, 9));
-            Terminal.nextln();
+            Terminal.println(" "+ StringUtil.leftJustify(METHOD.get(), 20)+"  "
+                    +StringUtil.rightJustify(count, 8)+"  "
+                    +StringUtil.rightJustify(avg, 10)+"  "
+                    +StringUtil.rightJustify((float)std, 10)+"  "
+                    +StringUtil.rightJustify((float)max, 9)+"  "
+                    +StringUtil.rightJustify((float)min, 9)
+                    );
+
         }
     }
 

@@ -107,6 +107,7 @@ public class Defaults {
             monitorMap.addClass("simperf", SimPerfMonitor.class);
             monitorMap.addClass("serial", SerialMonitor.class);
             monitorMap.addClass("spi", SPIMonitor.class);
+            monitorMap.addClass("call-time", CallTimeMonitor.class);
             monitorMap.addClass("trip-time", TripTimeMonitor.class);
             monitorMap.addClass("ioregs", IORegMonitor.class);
             monitorMap.addClass("virgil", VirgilMonitor.class);
