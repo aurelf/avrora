@@ -44,6 +44,8 @@ import cck.util.Util;
 public class CallTimeMonitor extends MonitorFactory {
 
     final Option.Str METHOD = newOption("method", "", "The \"method\" option specifies the symbol name for the " + "method to profile.");
+    final Option.Bool IGNR_INTRS = newOption("ignore-interrupts", false,
+    	"If set to true, cycle time in interrupt handlers are distracted.");
 
     public CallTimeMonitor() {
         super("The \"MethodTimeMonitor\" monitor records profiling " + "information about the method that consists of the time it takes " + "(on average) to execute a call.");
@@ -55,6 +57,7 @@ public class CallTimeMonitor extends MonitorFactory {
         final Program program;
 
         final LabelMapping.Location start;
+        final boolean ignore_interrupts;
 
         long cumul;
         long cumul_sqr;
@@ -64,6 +67,9 @@ public class CallTimeMonitor extends MonitorFactory {
 
         int call_depth;
         long[] call_time = new long[256];
+
+        long startInterrupt;
+	long endInterrupt;
 
         CallTimeMon(Simulator s) {
             simulator = s;
@@ -75,15 +81,28 @@ public class CallTimeMonitor extends MonitorFactory {
             min = Long.MAX_VALUE;
             count = 0;
 
+            ignore_interrupts = IGNR_INTRS.get();
+	    startInterrupt = 0;
+	    endInterrupt = 0;
+
             start = getLocation(METHOD.get());
             CallTrace trace = new CallTrace(s);
             trace.attachMonitor(this);
         }
 
         public void fireAfterReturn(long time, int pc, int retaddr) {
-            if ( getTarget(depth - 1) == start.address )
-                record(time - call_time[--call_depth]);
+            if ( getTarget(depth - 1) == start.address ) {
+                record(time - call_time[--call_depth] - (endInterrupt - startInterrupt));
+		startInterrupt = endInterrupt = 0;
+            }
             pop();
+        }
+
+        public void fireAfterInterruptReturn(long time, int pc, int retaddr) {
+	    if (ignore_interrupts && findCallAddress(start.address)) {
+	       endInterrupt = time;
+	    }
+            super.fireAfterInterruptReturn(time, pc, retaddr);
         }
 
         public void fireBeforeCall(long time, int pc, int target) {
@@ -91,6 +110,21 @@ public class CallTimeMonitor extends MonitorFactory {
                 call_time[call_depth++] = time;
             super.fireBeforeCall(time, pc, target);
         }
+
+        public void fireBeforeInterrupt(long time, int pc, int inum) {
+	    if (ignore_interrupts && findCallAddress(start.address)) {
+	       startInterrupt = time;
+	    }
+	    super.fireBeforeInterrupt(time, pc, inum);
+        }
+
+	private boolean findCallAddress(int address) {
+	    for (int i = depth - 1; i >= 0; --i) {
+	        if (getTarget(i) == address)
+		    return true;
+	    }
+	    return false;
+	}
 
         private void record(long time) {
             cumul += time;
@@ -109,7 +143,7 @@ public class CallTimeMonitor extends MonitorFactory {
         }
 
         public void report() {
-            Terminal.printGreen(" function                 calls         avg         std        max        min");
+            Terminal.printGreen(" function                 calls         avg       cumul        max        min");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
 
@@ -119,7 +153,7 @@ public class CallTimeMonitor extends MonitorFactory {
             Terminal.println(" "+ StringUtil.leftJustify(METHOD.get(), 20)+"  "
                     +StringUtil.rightJustify(count, 8)+"  "
                     +StringUtil.rightJustify(avg, 10)+"  "
-                    +StringUtil.rightJustify((float)std, 10)+"  "
+                    +StringUtil.rightJustify(cumul, 10)+"  "
                     +StringUtil.rightJustify((float)max, 9)+"  "
                     +StringUtil.rightJustify((float)min, 9)
                     );
