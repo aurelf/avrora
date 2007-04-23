@@ -34,6 +34,7 @@ package avrora.monitors;
 
 import avrora.sim.Simulator;
 import avrora.sim.clock.MainClock;
+import cck.util.TimeUtil;
 
 /**
  * The <code>RealTimeMonitor</code> class slows down the simulation to real-time. This is
@@ -64,7 +65,7 @@ public class RealTimeMonitor extends MonitorFactory {
             }
 
             long cycles = clock.getCount();
-            long msGoal = (1000*cycles) / clock.getHZ();
+            long msGoal = (long)TimeUtil.cyclesToMillis(cycles, clock.getHZ());
             while ( (System.currentTimeMillis() - beginMs) < msGoal ) ;
 
             clock.insertEvent(this, period);

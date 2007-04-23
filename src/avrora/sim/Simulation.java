@@ -37,12 +37,15 @@ import avrora.core.LoadableProgram;
 import avrora.monitors.MonitorFactory;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.mcu.MicrocontrollerFactory;
+import avrora.sim.mcu.AtmelMicrocontroller;
+import avrora.sim.mcu.EEPROM;
 import avrora.sim.platform.*;
 import avrora.sim.util.ClockCycleTimeout;
 import avrora.sim.util.InterruptScheduler;
 import cck.help.HelpCategory;
 import cck.util.*;
 import java.util.*;
+import java.io.*;
 
 /**
  * The <code>Simulation</code> class represents a complete simulation, including
@@ -89,6 +92,9 @@ public abstract class Simulation extends HelpCategory {
             "schedule that describes when to post interrupts (especially external interrupts) to the " +
             "program. This is useful for testing programs under different interrupt loads. For " +
             "multi-node simulations, the interrupt schedule is only applied to node 0.");
+    public final Option.Str EELOADIMAGE = newOption("eeprom-load-image", "",
+            "This option specifies a (binary) image file to load into EEPROM before starting " +
+            "the simulation.");
 
     /**
      * The <code>Monitor</code> interface represents a monitor for a simulation. A monitor
@@ -149,6 +155,7 @@ public abstract class Simulation extends HelpCategory {
             simulator = platform.getMicrocontroller().getSimulator();
             processTimeout();
             processInterruptSched();
+            processEepromLoad();
             synchronizer.addNode(this);
             // OLD MONITOR API SUPPORT:
             // for each of the monitors in the factory list, create a new monitor
@@ -182,6 +189,35 @@ public abstract class Simulation extends HelpCategory {
             if ( id != 0 ) return;
             if ( !SCHEDULE.isBlank() ) {
                 InterruptScheduler s = new InterruptScheduler(SCHEDULE.get(), simulator);
+            }
+        }
+
+        private void processEepromLoad() {
+            if ( !EELOADIMAGE.isBlank() ) {
+                FileInputStream f;
+                // FIXME: break of abstraction (getDevice is specific to
+                // AtmelMicrocontroller)
+                AtmelMicrocontroller mcu = (AtmelMicrocontroller) platform.getMicrocontroller();
+                EEPROM eeprom = (EEPROM) mcu.getDevice("eeprom");
+                byte[] image;
+
+                try {
+                    f = new FileInputStream(EELOADIMAGE.get());
+
+                    if (f.available() > eeprom.getSize()) {
+                        f.close();
+                        Util.userError("EEPROM image too large", EELOADIMAGE.get());
+                    }
+
+                    image = new byte[f.available()];
+                    f.read(image);
+                    f.close();
+
+                } catch (IOException e) {
+                    throw Util.unexpected(e);
+                }
+
+                eeprom.setContent(image);
             }
         }
 

@@ -38,6 +38,7 @@ import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
 import cck.text.*;
 import cck.util.Util;
+import cck.util.TimeUtil;
 
 /**
  * The <code>SimUtil</code> class encapsulates a set of utility methods that are used in
@@ -123,13 +124,11 @@ public class SimUtil {
             long seconds = count / hz;
             long fract = count % hz;
             double f = (double)fract / hz;
-            StringUtil.appendSecs(buf2, seconds);
+            TimeUtil.appendSecs(buf2, seconds);
             StringUtil.appendFract(buf2, f, SECONDS_PRECISION);
             StringUtil.justify(R, buf, buf2.toString(), TIME_LENGTH);
-            //buf.append(StringUtil.rightJustify(buf2.toString(), TIME_LENGTH));
         } else {
             StringUtil.justify(R, buf, clk.getCount(), TIME_LENGTH);
-            //buf.append(StringUtil.rightJustify(clk.getCount(), TIME_LENGTH));
         }
         buf.append("  ");
     }

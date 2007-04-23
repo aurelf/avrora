@@ -2,19 +2,6 @@
 # CHANGELOG: list of fixes, refactorings, optimizations and functionality for Avrora
 #######################################################################################
 
-=========================== 1.6.x -- R E G R E S S I O N S ============================
- Comp   Module  Item                                              Completion (Version)
----------------------------------------------------------------------------------------
-    1      sim  Simulation.grow() failure
-    1      dev  SPI interrupt flag, interrupt mapping not correct
-    1      dev  USART does not post UDRE interrupt correctly
-    1    probe  GDB monitor generates packet error
-    1    input  Label loading bug
-    1    probe  Casts in MemoryMonitor
-
------------------------------------ Completed -----------------------------------------
-
-
 ====================================== F I X E S ======================================
  Comp   Module  Item                                              Completion (Version)
 ---------------------------------------------------------------------------------------
@@ -28,10 +15,10 @@
     1     devs  USART frame sizes
     1  jintgen  DisassemblerGenerator: split fields that span word boundaries
     1   sensor  update-node-id with ELF must use flash, not RAM address
-    1    input  Grammar for new objdump version
     2    radio  Detect receives of radio bytes and notify radio probes
 
 ----------------------------------- Completed -----------------------------------------
+    1   eeprom  [Sascha Silbe] EEPROM support fixes                           1.7.86
     1      dev  SPIF flag in SPSR register                                    1.7.77
     1    input  Workaround for objdump 2.16.1 bug                             1.7.74
     1      gdb  Switched gdb monitor to use lowercase hex [Tim Auton]         1.7.73
@@ -100,6 +87,7 @@
     2    probe  Event profiler that collects min, max, mean statistics
 
 ----------------------------------- Completed -----------------------------------------
+    1      sim  [Sascha Silbe] Allow loading of EEPROM image from a file     1.7.86
     1   probes  Added SPIForwarder and SPIMonitor                            1.7.78
     1   probes  [Sascha Silbe] added support for multiple USART connx        1.7.77
     1   probes  Added VirgilMonitor for watching for Virgil-level exceptions 1.7.76

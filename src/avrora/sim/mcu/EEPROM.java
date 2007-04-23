@@ -34,16 +34,17 @@ package avrora.sim.mcu;
 
 import avrora.sim.RWRegister;
 import avrora.sim.Simulator;
+import cck.util.Arithmetic;
 
 /**
  * This is an implementation of the non-volatile EEPROM on the ATMega128 microcontroller.
  *
  * @author Daniel Lee
+ * @author Sascha Silbe
  */
 public class EEPROM extends AtmelInternalDevice {
 
-    // TODO: CPU halting after EEPROM read/write reads/writes.
-    final int EEPROM_SIZE;
+    final int EEPROM_SIZE, EEPROM_SIZE_numBits;
 
     public static final int EEARH = 0x1F;
     public static final int EEARL = 0x1E;
@@ -70,26 +71,26 @@ public class EEPROM extends AtmelInternalDevice {
     boolean readEnable;
 
     final EEPROMTicker ticker;
+    final EEPROMWriteFinishedEvent writeFinishedEvent;
 
     int writeCount = -1;
     boolean writeEnableWritten;
     boolean readEnableWritten;
 
-    // at some point, we might want to add support for
-    // initializing the EEPROM with a file or something
-    // and possibly writing back out when the simulator exits
-    // to emulate a real EEPROM
     EEPROM(int size, AtmelMicrocontroller m) {
         super("eeprom", m);
 
         ticker = new EEPROMTicker();
+        writeFinishedEvent = new EEPROMWriteFinishedEvent();
 
         EEDR_reg = new RWRegister();
         EECR_reg = new EECRReg();
-        EEARL_reg = new RWRegister();
+        EEARL_reg = new EEARLReg();
         EEARH_reg = new EEARHReg();
 
         EEPROM_SIZE = size;
+        EEPROM_SIZE_numBits = Arithmetic.log(size);
+        //EEPROM_SIZE_numBits = new BigInteger(Integer.toString(size)).bitLength();
         EEPROM_data = new byte[EEPROM_SIZE];
 
         installIOReg("EEDR", EEDR_reg);
@@ -99,18 +100,57 @@ public class EEPROM extends AtmelInternalDevice {
 
     }
 
+    public int getSize() {
+        return EEPROM_SIZE;
+    }
+
+    public void setContent(byte[] contents) {
+        for (int addr = 0; addr < contents.length; addr++) {
+            EEPROM_data[addr] = contents[addr];
+        }
+        if (devicePrinter.enabled) devicePrinter.println("EEPROM: content set");
+    }
+
+    public byte[] getContent() {
+        return EEPROM_data;
+    }
+
     protected class EEARHReg extends RWRegister {
+
         public void write(byte val) {
-            // TODO: this code has no effect!
-            value = (byte)(0xff & val);
-            mainClock.insertEvent(ticker, 1);
+            // EEAR access not allowed during write
+            if (writeEnable) return;
+
+            value = (byte)(val & ((EEPROM_SIZE >> 8) - 1));
         }
 
         public void writeBit(int bit, boolean val) {
-            if (bit < 4) {
+            // EEAR access not allowed during write
+            if (writeEnable) return;
+
+            if (bit < (EEPROM_SIZE_numBits - 8)) {
                 super.writeBit(bit, val);
             }
-            mainClock.insertEvent(ticker, 1);
+        }
+
+    }
+
+    protected class EEARLReg extends RWRegister {
+
+        public void write(byte val) {
+            // EEAR access not allowed during write
+            if (writeEnable) return;
+
+            value = (byte)(val & Math.min(EEPROM_SIZE - 1, 255));
+        }
+
+        public void writeBit(int bit, boolean val) {
+            // EEAR access not allowed during write
+            if (writeEnable) return;
+
+            if (bit < EEPROM_SIZE_numBits) {
+                super.writeBit(bit, val);
+            }
         }
 
     }
@@ -144,7 +184,7 @@ public class EEPROM extends AtmelInternalDevice {
             if (devicePrinter.enabled) devicePrinter.println("EEPROM: EECR written to, val = " + value);
             decode(value);
             if (!masterWriteEnableOld && masterWriteEnable) {
-                // EEWE has been written to. reset write count
+                // EEMWE has been written to. reset write count
                 if (devicePrinter.enabled) devicePrinter.println("EEPROM: reset write count to 4");
                 writeCount = 4;
             }
@@ -158,7 +198,7 @@ public class EEPROM extends AtmelInternalDevice {
             if (devicePrinter.enabled) devicePrinter.println("EEPROM: EECR written to, val = " + value);
             decode(value);
             if (!masterWriteEnableOld && masterWriteEnable) {
-                // EEWE has been written to. reset write count
+                // EEMWE has been written to. reset write count
                 if (devicePrinter.enabled) devicePrinter.println("EEPROM: reset write count to 4");
                 writeCount = 4;
             }
@@ -166,6 +206,7 @@ public class EEPROM extends AtmelInternalDevice {
     }
 
     protected class EEPROMTicker implements Simulator.Event {
+
         public void fire() {
 
             if (devicePrinter.enabled) {
@@ -174,24 +215,34 @@ public class EEPROM extends AtmelInternalDevice {
 
             int address = read16(EEARH_reg, EEARL_reg);
             if (writeCount > 0) {
-                // if EEMWE has been written to 1 within
+                // if EEWE has been written to 1 within
                 // 4 clock cycles, write data
 
                 // after 4 cycles, clear this bit
-                // implement blocking CPU
 
                 if (writeEnableWritten) {
-                    if (devicePrinter.enabled) devicePrinter.println("EEPROM: " + EEDR_reg.read() + " written to " + address);
+                    // TODO: disallow EEPROM access during Flash write
+
+                    if (devicePrinter.enabled)
+                        devicePrinter.println("EEPROM: " + EEDR_reg.read() + " written to " + address);
                     EEPROM_data[address] = EEDR_reg.read();
+                    // EEPROM write takes 8.5ms
+                    mainClock.insertEvent(writeFinishedEvent, (long)(mainClock.getHZ() * 0.0085));
+                    // CPU halts for 2 cycles
+                    simulator.delay(2);
                 }
 
             }
-            if (readEnableWritten) {
+            // read not allowed while write is in progress
+            if (readEnableWritten && !writeEnable) {
                 // read
-                // implement blocking CPU
-                if (devicePrinter.enabled) devicePrinter.println("EEPROM: " + EEPROM_data[address] + " read from " + address);
+                if (devicePrinter.enabled)
+                    devicePrinter.println("EEPROM: " + EEPROM_data[address] + " read from " + address);
                 EEDR_reg.write(EEPROM_data[address]);
-
+                // reset EERE
+                EECR_reg.writeBit(EERE, false);
+                // CPU halts for 4 cycles
+                simulator.delay(4);
             }
             if (writeCount > 0) {
                 writeCount--;
@@ -199,13 +250,21 @@ public class EEPROM extends AtmelInternalDevice {
             }
 
             if (writeCount == 0) {
-                // clear EEWE
-                if (devicePrinter.enabled) devicePrinter.println("EEPROM: write count hit 0, clearing EEWE");
+                // clear EEMWE
+                if (devicePrinter.enabled) devicePrinter.println("EEPROM: write count hit 0, clearing EEMWE");
                 writeCount--;
-                EECR_reg.writeBit(1, false);
+                EECR_reg.writeBit(EEMWE, false);
             }
             writeEnableWritten = false;
             readEnableWritten = false;
+        }
+    }
+
+    protected class EEPROMWriteFinishedEvent implements Simulator.Event {
+
+        public void fire() {
+            if (devicePrinter.enabled) devicePrinter.println("EEPROM: write finished, clearing EEWE");
+            EECR_reg.writeBit(EEWE, false);
         }
     }
 }

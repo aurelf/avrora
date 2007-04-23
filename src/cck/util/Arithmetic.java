@@ -184,9 +184,8 @@ public class Arithmetic {
     }
 
     public static int log(int value) {
-        // TODO: is this correct?
         if ( value == 0 ) return 0;
-        return 1 + Arithmetic.highestBit(value - 1);
+        return 1 + highestBit(value - 1);
     }
 
     /**

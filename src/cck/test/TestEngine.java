@@ -34,9 +34,7 @@ package cck.test;
 
 import cck.text.Status;
 import cck.text.Terminal;
-import cck.text.StringUtil;
-import cck.util.ClassMap;
-import cck.util.Util;
+import cck.util.*;
 
 import java.io.*;
 import java.util.Iterator;
@@ -147,7 +145,7 @@ public class TestEngine {
         Terminal.printBrightGreen("Passed");
         Terminal.print(": " + successes.size());
         Terminal.print(" of " + testNames.length);
-        Terminal.print(" in " + StringUtil.milliToSecs(time) +" seconds");
+        Terminal.print(" in " + TimeUtil.milliToSecs(time) +" seconds");
         Terminal.nextln();
     }
 

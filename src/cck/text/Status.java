@@ -32,6 +32,7 @@
 package cck.text;
 
 import cck.util.Util;
+import cck.util.TimeUtil;
 
 import java.util.Stack;
 
@@ -101,7 +102,7 @@ public class Status {
         Terminal.print(color, s);
         if (time >= 0) {
             Terminal.print(": ");
-            Terminal.print(StringUtil.milliToSecs(time) + " seconds");
+            Terminal.print(TimeUtil.milliToSecs(time) + " seconds");
         }
         Terminal.print("]");
         Terminal.nextln();
