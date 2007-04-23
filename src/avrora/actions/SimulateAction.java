@@ -39,6 +39,7 @@ import avrora.sim.Simulator;
 import avrora.sim.util.SimUtil;
 import cck.text.*;
 import cck.util.Util;
+import cck.util.TimeUtil;
 import java.util.Iterator;
 
 /**
@@ -130,7 +131,7 @@ public class SimulateAction extends SimAction {
             if ( count > maxCycles ) maxCycles = count;
         }
         TermUtil.reportQuantity("Simulated time", maxCycles, "cycles");
-        TermUtil.reportQuantity("Time for simulation", StringUtil.milliToSecs(diff), "seconds");
+        TermUtil.reportQuantity("Time for simulation", TimeUtil.milliToSecs(diff), "seconds");
         int nn = sim.getNumberOfNodes();
         double thru = ((double)aggCycles) / (diff * 1000);
         TermUtil.reportQuantity("Total throughput", (float)thru, "mhz");

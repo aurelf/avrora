@@ -56,8 +56,6 @@ public class StringUtil {
     public static final String COMMA = ",";
     public static final String COMMA_SPACE = ", ";
     public static final String[] EMPTY_STRING_ARRAY = {};
-    public static final int[] DENOM = {24, 60, 60, 1000};
-    public static final int[] DAYSECS = {60, 60};
     public static final char SQUOTE_CHAR = '\'';
     public static final char BACKSLASH = '\\';
     public static final char QUOTE_CHAR = '"';
@@ -448,47 +446,6 @@ public class StringUtil {
      */
     public static String rightJustify(String s, int width) {
         return justify(true, s, width);
-    }
-
-    public static final int SECS_PER_DAY = 3600 * 24;
-    public static final int SECS_PER_HOUR = 3600;
-    public static final int SECS_PER_MIN = 60;
-
-    public static final long MILLISECS_PER_DAY = 3600 * 24 * 1000;
-    public static final long MILLISECS_PER_HOUR = 3600 * 1000;
-    public static final long MILLISECS_PER_MIN = 60 * 1000;
-    public static final long MILLISECS_PER_SEC = 1000;
-
-    public static String milliToSecs(long millis) {
-        long secs = millis / 1000;
-        millis = millis % 1000;
-        StringBuffer buf = new StringBuffer(10);
-        buf.append(secs);
-        buf.append('.');
-
-        if (millis < 100) buf.append('0');
-        if (millis < 10) buf.append('0');
-        buf.append(millis);
-        return buf.toString();
-    }
-
-    public static final int DAYS = 0;
-    public static final int HOURS = 1;
-    public static final int MINS = 2;
-    public static final int SECS = 3;
-    public static final int MILLIS = 4;
-
-    /**
-     * The <code>millisToDays()</code> method converts the given milliseconds into a breakdown of days, hours,
-     * minutes, seconds, and milliseconds, returning a long array where the expr 0 corresponds to days, expr 1
-     * corresponds to hours, etc.
-     *
-     * @param millis the number of milliseconds to convert
-     * @return the breakdown of milliseconds into days, hours, minutes, seconds, and milliseconds in an array,
-     *         with most significant units first
-     */
-    public static long[] millisToDays(long millis) {
-        return Arithmetic.modulus(millis, DENOM);
     }
 
     /**
@@ -971,17 +928,6 @@ public class StringUtil {
 
     public static char toBit(boolean f) {
         return f ? '1' : '0';
-    }
-
-    public static void appendSecs(StringBuffer buf2, long seconds) {
-        long[] res = Arithmetic.modulus(seconds, DAYSECS);
-        for (int cntr = 0; cntr < res.length; cntr++) {
-            if (cntr > 0) {
-                buf2.append(':');
-                if (res[cntr] < 10) buf2.append('0');
-            }
-            buf2.append(res[cntr]);
-        }
     }
 
     public static void appendFract(StringBuffer buf, double val, int digits) {
