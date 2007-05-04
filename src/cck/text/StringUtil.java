@@ -1052,4 +1052,15 @@ public class StringUtil {
         list.add(buf.toString().trim());
         return list;
     }
+
+    public static String getShortName(Class clazz) {
+        String nm = clazz.getName();
+        int dollar = nm.lastIndexOf('$');
+        int dot = nm.lastIndexOf('.');
+        if ( dot > 0 || dollar > 0 ) {
+            if ( dot > dollar ) nm = nm.substring(dot + 1, nm.length());
+            else nm = nm.substring(dollar + 1, nm.length());
+        }
+        return nm;
+    }
 }
