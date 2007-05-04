@@ -60,6 +60,7 @@ public class VirgilMonitor extends MonitorFactory {
     public static final int ABORT_BOUNDS_CODE = 125;
     public static final int ABORT_DIV_CODE = 124;
     public static final int ABORT_ALLOC_CODE = 123;
+    public static final int ABORT_UNIMP_CODE = 122;
 
     public final Option.Long STATUS_ADDR = newOption("status-addr", 0x91,
             "This option specifies the address in memory where the status register lies. " +
@@ -117,6 +118,10 @@ public class VirgilMonitor extends MonitorFactory {
                     case ABORT_ALLOC_CODE:
                         name = "AllocationException";
                         msg = "dynamic memory allocation failed";
+                        break;
+                    case ABORT_UNIMP_CODE:
+                        name = "UnimplementedException";
+                        msg = "method not implemented";
                         break;
                 }
                 Terminal.print(idstr);

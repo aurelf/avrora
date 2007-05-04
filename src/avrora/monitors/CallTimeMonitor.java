@@ -43,12 +43,15 @@ import cck.util.Util;
  */
 public class CallTimeMonitor extends MonitorFactory {
 
-    final Option.Str METHOD = newOption("method", "", "The \"method\" option specifies the symbol name for the " + "method to profile.");
+    final Option.Str METHOD = newOption("method", "",
+            "This option specifies the name of the method to profile.");
     final Option.Bool IGNR_INTRS = newOption("ignore-interrupts", false,
-    	"If set to true, cycle time in interrupt handlers are distracted.");
+            "This option selects whether this monitor will consider time spent in nested interrupts to " +
+            "be part of a method's execution time.");
 
     public CallTimeMonitor() {
-        super("The \"MethodTimeMonitor\" monitor records profiling " + "information about the method that consists of the time it takes " + "(on average) to execute a call.");
+        super("The \"MethodTimeMonitor\" monitor records profiling information about the " +
+                "method that consists of the time it takes (on average) to execute a call.");
     }
 
     protected class CallTimeMon extends CallStack implements Monitor {
@@ -69,7 +72,7 @@ public class CallTimeMonitor extends MonitorFactory {
         long[] call_time = new long[256];
 
         long startInterrupt;
-	long endInterrupt;
+        long endInterrupt;
 
         CallTimeMon(Simulator s) {
             simulator = s;
@@ -82,8 +85,8 @@ public class CallTimeMonitor extends MonitorFactory {
             count = 0;
 
             ignore_interrupts = IGNR_INTRS.get();
-	    startInterrupt = 0;
-	    endInterrupt = 0;
+            startInterrupt = 0;
+            endInterrupt = 0;
 
             start = getLocation(METHOD.get());
             CallTrace trace = new CallTrace(s);
@@ -91,40 +94,38 @@ public class CallTimeMonitor extends MonitorFactory {
         }
 
         public void fireAfterReturn(long time, int pc, int retaddr) {
-            if ( getTarget(depth - 1) == start.address ) {
+            if (getTarget(depth - 1) == start.address) {
                 record(time - call_time[--call_depth] - (endInterrupt - startInterrupt));
-		startInterrupt = endInterrupt = 0;
+                startInterrupt = endInterrupt = 0;
             }
             pop();
         }
 
         public void fireAfterInterruptReturn(long time, int pc, int retaddr) {
-	    if (ignore_interrupts && findCallAddress(start.address)) {
-	       endInterrupt = time;
-	    }
+            if (ignore_interrupts && findCallAddress(start.address)) {
+                endInterrupt = time;
+            }
             super.fireAfterInterruptReturn(time, pc, retaddr);
         }
 
         public void fireBeforeCall(long time, int pc, int target) {
-            if ( target == start.address )
-                call_time[call_depth++] = time;
+            if (target == start.address) call_time[call_depth++] = time;
             super.fireBeforeCall(time, pc, target);
         }
 
         public void fireBeforeInterrupt(long time, int pc, int inum) {
-	    if (ignore_interrupts && findCallAddress(start.address)) {
-	       startInterrupt = time;
-	    }
-	    super.fireBeforeInterrupt(time, pc, inum);
+            if (ignore_interrupts && findCallAddress(start.address)) {
+                startInterrupt = time;
+            }
+            super.fireBeforeInterrupt(time, pc, inum);
         }
 
-	private boolean findCallAddress(int address) {
-	    for (int i = depth - 1; i >= 0; --i) {
-	        if (getTarget(i) == address)
-		    return true;
-	    }
-	    return false;
-	}
+        private boolean findCallAddress(int address) {
+            for (int i = depth - 1; i >= 0; --i) {
+                if (getTarget(i) == address) return true;
+            }
+            return false;
+        }
 
         private void record(long time) {
             cumul += time;
@@ -150,13 +151,7 @@ public class CallTimeMonitor extends MonitorFactory {
             float avg = (float)cumul / count;
             double std = Math.sqrt(((double)cumul_sqr / count) - (avg * avg));
 
-            Terminal.println(" "+ StringUtil.leftJustify(METHOD.get(), 20)+"  "
-                    +StringUtil.rightJustify(count, 8)+"  "
-                    +StringUtil.rightJustify(avg, 10)+"  "
-                    +StringUtil.rightJustify(cumul, 10)+"  "
-                    +StringUtil.rightJustify((float)max, 9)+"  "
-                    +StringUtil.rightJustify((float)min, 9)
-                    );
+            Terminal.println(" " + StringUtil.leftJustify(METHOD.get(), 20) + "  " + StringUtil.rightJustify(count, 8) + "  " + StringUtil.rightJustify(avg, 10) + "  " + StringUtil.rightJustify(cumul, 10) + "  " + StringUtil.rightJustify((float)max, 9) + "  " + StringUtil.rightJustify((float)min, 9));
 
         }
     }
