@@ -240,9 +240,10 @@ public class IntervalSynchronizer extends Synchronizer {
      */
     public synchronized void removeNode(Simulation.Node t) {
         // don't try to remove a thread that's not here!
-        if ( !threadMap.containsKey(t) ) return;
+        SimulatorThread st = t.getThread();
+        if ( !threadMap.containsKey(st) ) return;
         synchronized ( condition ) {
-            SynchEvent e = (SynchEvent)threadMap.get(t);
+            SynchEvent e = (SynchEvent)threadMap.get(st);
             e.removed = true; // just in case the thread is still running, don't let it synch
             if ( e.met ) meet_count--;
 
