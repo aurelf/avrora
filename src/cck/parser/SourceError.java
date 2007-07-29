@@ -106,10 +106,7 @@ public class SourceError extends Util.Error {
 
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o instanceof String) {
-            return errorType.equals(o);
-        }
-        return false;
+        return o instanceof String && errorType.equals(o);
     }
 
     /**

@@ -946,14 +946,14 @@ public class StringUtil {
 
     public static String stringReplace(String template, Properties p, Object[] strs) {
         for ( int cntr = 0; cntr < strs.length; cntr++ ) {
-            p.setProperty((cntr+1)+"", strs[cntr].toString());
+            p.setProperty(String.valueOf((cntr + 1)), strs[cntr].toString());
         }
         return stringReplace(template, p);
     }
 
     public static String stringReplace(String template, Properties p, String[] strs) {
         for ( int cntr = 0; cntr < strs.length; cntr++ ) {
-            p.setProperty((cntr+1)+"", strs[cntr]);
+            p.setProperty(String.valueOf((cntr + 1)), strs[cntr]);
         }
         return stringReplace(template, p);
     }

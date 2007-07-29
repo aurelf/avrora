@@ -88,11 +88,4 @@ public class SourceException extends SourceError {
         }
     }
 
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o instanceof String) {
-            return errorType.equals(o);
-        }
-        return false;
-    }
 }

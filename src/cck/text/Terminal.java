@@ -41,7 +41,7 @@ import java.io.PrintStream;
  *
  * @author Ben L. Titzer
  */
-public final class Terminal {
+public class Terminal {
 
     public static boolean useColors = true;
     public static boolean htmlColors;
