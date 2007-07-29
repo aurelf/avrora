@@ -207,7 +207,7 @@ public abstract class Option {
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
-            return "" + value;
+            return String.valueOf(value);
         }
 
         /**
@@ -215,7 +215,7 @@ public abstract class Option {
          * to the terminal.
          */
         public void printHelp() {
-            printHeader("long", "" + defvalue);
+            printHeader("long", String.valueOf(defvalue));
             printDescription();
         }
     }
@@ -275,7 +275,7 @@ public abstract class Option {
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
-            return "" + value;
+            return String.valueOf(value);
         }
 
         /**
@@ -283,7 +283,7 @@ public abstract class Option {
          * to the terminal.
          */
         public void printHelp() {
-            printHeader("double", "" + defvalue);
+            printHeader("double", String.valueOf(defvalue));
             printDescription();
         }
     }
@@ -540,7 +540,7 @@ public abstract class Option {
          */
         public void printHelp() {
             String defvalue = "".equals(orig) ? "(null)" : orig;
-            printHeader("list", "" + defvalue);
+            printHeader("list", defvalue);
             printDescription();
         }
     }
@@ -600,7 +600,7 @@ public abstract class Option {
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
-            return "" + value;
+            return String.valueOf(value);
         }
 
         /**
@@ -608,7 +608,7 @@ public abstract class Option {
          * to the terminal.
          */
         public void printHelp() {
-            printHeader("boolean", "" + defvalue);
+            printHeader("boolean", String.valueOf(defvalue));
             printDescription();
         }
     }
