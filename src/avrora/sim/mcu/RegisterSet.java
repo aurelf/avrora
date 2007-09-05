@@ -188,7 +188,7 @@ public class RegisterSet {
     }
 
     /**
-     * The <code>LegacyRegister</code> class implements an IO register that is
+     * The <code>MultiFieldRegister</code> class implements an IO register that is
      * directly read and written by the program. This IO register implements writes
      * that alter multiple fields and subfields in the register set.
      */

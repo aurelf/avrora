@@ -52,185 +52,183 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
 
     protected abstract class Timer8Bit extends ATMegaTimer {
 
-	final TCNTnRegister TCNTn_reg;
-	final Mode[] modes;
+        final TCNTnRegister TCNTn_reg;
+        final Mode[] modes;
 
-	protected Timer8Bit(int n, AtmelMicrocontroller m, int[] periods, 
-			    String ovfName, String acfName) {
-	    super(n, m, periods, ovfName);
- 
-	    // Install a Decorater to the TCNT register
-	    TCNTn_reg = new TCNTnRegister("TCNT" + n, m.getIOReg("TCNT" + n));
-	    m.installIOReg(TCNTn_reg.name, TCNTn_reg);
+        protected Timer8Bit(int n, AtmelMicrocontroller m, int[] periods, String ovfName, String acfName) {
+            super(n, m, periods, ovfName);
 
-	    AtmelMicrocontroller.Pin pin =
-		(AtmelMicrocontroller.Pin)m.getPin("OC" + timerNumber);
-	    int interrupt = m.properties.getInterrupt(acfName);
-	    addComparator(Comparator._, new OutputCompareUnit(n, m, Comparator._, interrupt, pin));
+            // Install a Decorater to the TCNT register
+            TCNTn_reg = new TCNTnRegister("TCNT" + n, m.getIOReg("TCNT" + n));
+            m.installIOReg(TCNTn_reg.name, TCNTn_reg);
 
-	    modes = new Mode[]{
-		new Mode(Mode.NORMAL.class,   null, FixedTop.FF),
-		new Mode(Mode.FC_PWM.class,   null, FixedTop.FF),
-		new Mode(Mode.CTC.class,      m.getField("OCF" + n), m.getIOReg("OCR" + n)),
-		new Mode(Mode.FAST_PWM.class, null, FixedTop.FF)
-	    };
+            AtmelMicrocontroller.Pin pin = (AtmelMicrocontroller.Pin) m.getPin("OC" + timerNumber);
+            int interrupt = m.properties.getInterrupt(acfName);
+            addComparator(Comparator._, new OutputCompareUnit(n, m, Comparator._, interrupt, pin));
 
-	    resetMode(0);	     // XXX: is this always the default mode? 
-	}
+            modes = new Mode[]{new Mode(Mode.NORMAL.class, null, FixedTop.FF), new Mode(Mode.FC_PWM.class, null, FixedTop.FF), new Mode(Mode.CTC.class, m.getField("OCF" + n), m.getIOReg("OCR" + n)), new Mode(Mode.FAST_PWM.class, null, FixedTop.FF)};
 
-	public int getCounter()           { return TCNTn_reg.read();	   }
-        public void setCounter(int count) {        TCNTn_reg.write((byte)count); }
-	public String getCounterName()    { return "TCNT" + timerNumber;   }
-	public int getMax()               { return 0xFF; 	           }
-	public void resetMode(int WGMn)   { mode = modes[WGMn];            }
+            resetMode(0);// XXX: is this always the default mode?
+        }
 
-	class OutputCompareUnit extends OutputComparator {
-	    final BufferedRegister OCRn_reg;
+        public int getCounter() {
+            return TCNTn_reg.read();
+        }
 
-	    OutputCompareUnit(int timerNumber, AtmelMicrocontroller m, String unit, int interruptNumber,
-			      AtmelMicrocontroller.Pin pin) {
-		super(unit, m.getRegisterSet(), interruptNumber, pin);
-		String name = "OCR" + timerNumber + unit;
-		OCRn_reg = new BufferedRegister(m.getIOReg(name));
-		m.installIOReg(name, OCRn_reg);
-	    }
+        public void setCounter(int count) {
+            TCNTn_reg.write((byte) count);
+        }
 
-	    int read() {
-		return OCRn_reg.read16();
-	    }
+        public String getCounterName() {
+            return "TCNT" + timerNumber;
+        }
 
-	    int readBuffer() {
-		return OCRn_reg.readBuffer();
-	    }
-	}
+        public int getMax() {
+            return 0xFF;
+        }
+
+        public void resetMode(int WGMn) {
+            mode = modes[WGMn];
+        }
+
+        class OutputCompareUnit extends OutputComparator {
+            final BufferedRegister OCRn_reg;
+
+            OutputCompareUnit(int timerNumber, AtmelMicrocontroller m, String unit, int interruptNumber, AtmelMicrocontroller.Pin pin) {
+                super(unit, m.getRegisterSet(), interruptNumber, pin);
+                String name = "OCR" + timerNumber + unit;
+                OCRn_reg = new BufferedRegister(m.getIOReg(name));
+                m.installIOReg(name, OCRn_reg);
+            }
+
+            int read() {
+                return OCRn_reg.read16();
+            }
+
+            int readBuffer() {
+                return OCRn_reg.readBuffer();
+            }
+        }
 
     }
 
     protected abstract class Timer16Bit extends ATMegaTimer {
-	final RW16Register   TCNTn_reg;	 // The underlying 16-bit register
-	final HighRegister   TCNTnH_reg; 
-	final TCNTnRegister  TCNTnL_reg;
-	final Mode[] modes;
+        final RW16Register TCNTn_reg;// The underlying 16-bit register
+        final HighRegister TCNTnH_reg;
+        final TCNTnRegister TCNTnL_reg;
+        final Mode[] modes;
 
-	protected Timer16Bit(int n, AtmelMicrocontroller m, int[] periods, String ovfName, String[] cfn) {
-	    super(n, m, periods, ovfName);
+        protected Timer16Bit(int n, AtmelMicrocontroller m, int[] periods, String ovfName, String[] cfn) {
+            super(n, m, periods, ovfName);
 
-	    TCNTn_reg = new RW16Register();
-	    TCNTnH_reg = (HighRegister)m.installIOReg("TCNT" + n + "H", new HighRegister());
-	    TCNTnL_reg = new TCNTnRegister("TCNT" + n + "L", new LowRegister(TCNTn_reg));
-	    m.installIOReg("TCNT" + n + "L", TCNTnL_reg);
-						      
-	    
-	    {
-		AtmelMicrocontroller.Pin pin =
-		    (AtmelMicrocontroller.Pin)m.getPin("IC" + timerNumber);
-		int interrupt = m.properties.getInterrupt(cfn[0]);
-		addComparator(Comparator.I, new InputCompareUnit(n, m, Comparator._, interrupt, pin));
-	    }
-	    {
-		AtmelMicrocontroller.Pin pin =
-		    (AtmelMicrocontroller.Pin)m.getPin("OC" + timerNumber + "A");
-		int interrupt = m.properties.getInterrupt(cfn[1]);
-		addComparator(Comparator.A, new OutputCompareUnit(n, m, Comparator.A, interrupt, pin));
-	    }
-	    {
-		AtmelMicrocontroller.Pin pin =
-		    (AtmelMicrocontroller.Pin)m.getPin("OC" + timerNumber + "B");
-		int interrupt = m.properties.getInterrupt(cfn[2]);
-		addComparator(Comparator.B, new OutputCompareUnit(n, m, Comparator.B, interrupt, pin));
-	    }
-	    {
-		AtmelMicrocontroller.Pin pin =
-		    (AtmelMicrocontroller.Pin)m.getPin("OC" + timerNumber + "C");
-		int interrupt = m.properties.getInterrupt(cfn[3]);
-		addComparator(Comparator.C, new OutputCompareUnit(n, m, Comparator.C, interrupt, pin));
-	    }
+            TCNTn_reg = new RW16Register();
+            TCNTnH_reg = (HighRegister) m.installIOReg("TCNT" + n + "H", new HighRegister());
+            TCNTnL_reg = new TCNTnRegister("TCNT" + n + "L", new LowRegister(TCNTn_reg));
+            m.installIOReg("TCNT" + n + "L", TCNTnL_reg);
 
-	    modes = new Mode[]{ 
-		new Mode(Mode.NORMAL.class,   null,                        FixedTop.FFFF),
-		new Mode(Mode.PWM.class,      null,                        FixedTop.FF),
-		new Mode(Mode.PWM.class,      null,                        FixedTop._1FF),
-		new Mode(Mode.PWM.class,      null,                        FixedTop._3FF),
-		new Mode(Mode.CTC.class,      m.getField("OCF" + n + "A"), gro(Comparator.A)),
-		new Mode(Mode.FAST_PWM.class, null,                        FixedTop.FF),
-		new Mode(Mode.FAST_PWM.class, null,                        FixedTop._1FF),
-		new Mode(Mode.FAST_PWM.class, null,                        FixedTop._3FF),
-		new Mode(Mode.FC_PWM.class,   m.getField("ICF" + n),       gri(Comparator.I)),
-		new Mode(Mode.FC_PWM.class,   m.getField("OCF" + n + "A"), gro(Comparator.A)),
-		new Mode(Mode.PWM.class,      m.getField("ICF" + n),       gri(Comparator.I)),
-		new Mode(Mode.PWM.class,      m.getField("OCF" + n + "A"), gro(Comparator.A)),
-		new Mode(Mode.CTC.class,      m.getField("ICF" + n),       gri(Comparator.I)),
-		null,
-		new Mode(Mode.FAST_PWM.class, m.getField("ICF" + n),       gri(Comparator.I)),
-		new Mode(Mode.FAST_PWM.class, m.getField("OCF" + n + "A"), gro(Comparator.A)) 
-	    };
 
-	    resetMode(0);	     // XXX: is this always the default mode? 
-	}
+            {
+                AtmelMicrocontroller.Pin pin = (AtmelMicrocontroller.Pin) m.getPin("IC" + timerNumber);
+                int interrupt = m.properties.getInterrupt(cfn[0]);
+                addComparator(Comparator.I, new InputCompareUnit(n, m, Comparator._, interrupt, pin));
+            }
+            {
+                AtmelMicrocontroller.Pin pin = (AtmelMicrocontroller.Pin) m.getPin("OC" + timerNumber + "A");
+                int interrupt = m.properties.getInterrupt(cfn[1]);
+                addComparator(Comparator.A, new OutputCompareUnit(n, m, Comparator.A, interrupt, pin));
+            }
+            {
+                AtmelMicrocontroller.Pin pin = (AtmelMicrocontroller.Pin) m.getPin("OC" + timerNumber + "B");
+                int interrupt = m.properties.getInterrupt(cfn[2]);
+                addComparator(Comparator.B, new OutputCompareUnit(n, m, Comparator.B, interrupt, pin));
+            }
+            {
+                AtmelMicrocontroller.Pin pin = (AtmelMicrocontroller.Pin) m.getPin("OC" + timerNumber + "C");
+                int interrupt = m.properties.getInterrupt(cfn[3]);
+                addComparator(Comparator.C, new OutputCompareUnit(n, m, Comparator.C, interrupt, pin));
+            }
 
-	private TopValue gro(String n) {
-	    return ((OutputCompareUnit)getComparator(n)).OCRnX_reg;
-	}
-	private TopValue gri(String n) {
-	    return ((InputCompareUnit)getComparator(n)).OCRnX_reg;
-	}
+            modes = new Mode[]{new Mode(Mode.NORMAL.class, null, FixedTop.FFFF), new Mode(Mode.PWM.class, null, FixedTop.FF), new Mode(Mode.PWM.class, null, FixedTop._1FF), new Mode(Mode.PWM.class, null, FixedTop._3FF), new Mode(Mode.CTC.class, m.getField("OCF" + n + "A"), gro(Comparator.A)), new Mode(Mode.FAST_PWM.class, null, FixedTop.FF), new Mode(Mode.FAST_PWM.class, null, FixedTop._1FF), new Mode(Mode.FAST_PWM.class, null, FixedTop._3FF), new Mode(Mode.FC_PWM.class, m.getField("ICF" + n), gri(Comparator.I)), new Mode(Mode.FC_PWM.class, m.getField("OCF" + n + "A"), gro(Comparator.A)), new Mode(Mode.PWM.class, m.getField("ICF" + n), gri(Comparator.I)), new Mode(Mode.PWM.class, m.getField("OCF" + n + "A"), gro(Comparator.A)), new Mode(Mode.CTC.class, m.getField("ICF" + n), gri(Comparator.I)), null, new Mode(Mode.FAST_PWM.class, m.getField("ICF" + n), gri(Comparator.I)), new Mode(Mode.FAST_PWM.class, m.getField("OCF" + n + "A"), gro(Comparator.A))};
 
-	public int getCounter()           { return TCNTn_reg.read16();	   }
-	public void setCounter(int count) {        TCNTn_reg.write(count); }
-	public String getCounterName()    { return "TCNT" + timerNumber;   }
-	public int getMax()               { return 0xFFFF; 	           }
-	public void resetMode(int WGMn)   { mode = modes[WGMn];            }
+            resetMode(0);// XXX: is this always the default mode?
+        }
 
-	class OutputCompareUnit extends OutputComparator {
-	    final HighRegister       OCRnXH_reg;
-	    final LowRegister        OCRnXL_reg;
-	    final BufferedRegister   OCRnX_reg;
+        private TopValue gro(String n) {
+            return ((OutputCompareUnit) getComparator(n)).OCRnX_reg;
+        }
 
-	    OutputCompareUnit(int timerNumber, AtmelMicrocontroller m, String unit, 
-			      int interruptNumber, AtmelMicrocontroller.Pin pin) {
-		super(unit, m.getRegisterSet(), interruptNumber, pin);
+        private TopValue gri(String n) {
+            return ((InputCompareUnit) getComparator(n)).OCRnX_reg;
+        }
 
-		String name = "OCR" + timerNumber + unit;
-		OCRnX_reg  = new BufferedRegister(new RW16Register());
-		OCRnXH_reg = (HighRegister)m.installIOReg(name + "H", new OCRnxHighRegister(OCRnX_reg));
-		OCRnXL_reg = (LowRegister) m.installIOReg(name + "L", new LowRegister(OCRnX_reg));
-	    }
+        public int getCounter() {
+            return TCNTn_reg.read16();
+        }
 
-	    int read() {
-		return OCRnX_reg.read16();
-	    }
+        public void setCounter(int count) {
+            TCNTn_reg.write(count);
+        }
 
-	    int readBuffer() {
-		return OCRnX_reg.readBuffer();
-	    }
-	}
+        public String getCounterName() {
+            return "TCNT" + timerNumber;
+        }
 
-	/**
-	 * XXX: Incomplete, will require some refactoring
-	 */
-	class InputCompareUnit extends InputComparator {
-	    final HighRegister       OCRnXH_reg;
-	    final LowRegister        OCRnXL_reg;
-	    final BufferedRegister   OCRnX_reg;
+        public int getMax() {
+            return 0xFFFF;
+        }
 
-	    InputCompareUnit(int timerNumber, AtmelMicrocontroller m, String unit, 
-			      int interruptNumber, AtmelMicrocontroller.Pin pin) {
-		super(unit, m.getRegisterSet(), interruptNumber, pin);
+        public void resetMode(int WGMn) {
+            mode = modes[WGMn];
+        }
 
-		String name = "ICR" + timerNumber + unit;
-		OCRnX_reg  = new BufferedRegister(new RW16Register());
-		OCRnXH_reg = (HighRegister)m.installIOReg(name + "H", new OCRnxHighRegister(OCRnX_reg));
-		OCRnXL_reg = (LowRegister) m.installIOReg(name + "L", new LowRegister(OCRnX_reg));
-	    }
+        class OutputCompareUnit extends OutputComparator {
+            final HighRegister OCRnXH_reg;
+            final LowRegister OCRnXL_reg;
+            final BufferedRegister OCRnX_reg;
 
-	    int read() {
-		return OCRnX_reg.read16();
-	    }
+            OutputCompareUnit(int timerNumber, AtmelMicrocontroller m, String unit, int interruptNumber, AtmelMicrocontroller.Pin pin) {
+                super(unit, m.getRegisterSet(), interruptNumber, pin);
 
-	    int readBuffer() {
-		return OCRnX_reg.readBuffer();
-	    }
-	}
+                String name = "OCR" + timerNumber + unit;
+                OCRnX_reg = new BufferedRegister(new RW16Register());
+                OCRnXH_reg = (HighRegister) m.installIOReg(name + "H", new OCRnxHighRegister(OCRnX_reg));
+                OCRnXL_reg = (LowRegister) m.installIOReg(name + "L", new LowRegister(OCRnX_reg));
+            }
+
+            int read() {
+                return OCRnX_reg.read16();
+            }
+
+            int readBuffer() {
+                return OCRnX_reg.readBuffer();
+            }
+        }
+
+        /**
+         * XXX: Incomplete, will require some refactoring
+         */
+        class InputCompareUnit extends InputComparator {
+            final HighRegister OCRnXH_reg;
+            final LowRegister OCRnXL_reg;
+            final BufferedRegister OCRnX_reg;
+
+            InputCompareUnit(int timerNumber, AtmelMicrocontroller m, String unit, int interruptNumber, AtmelMicrocontroller.Pin pin) {
+                super(unit, m.getRegisterSet(), interruptNumber, pin);
+
+                String name = "ICR" + timerNumber + unit;
+                OCRnX_reg = new BufferedRegister(new RW16Register());
+                OCRnXH_reg = (HighRegister) m.installIOReg(name + "H", new OCRnxHighRegister(OCRnX_reg));
+                OCRnXL_reg = (LowRegister) m.installIOReg(name + "L", new LowRegister(OCRnX_reg));
+            }
+
+            int read() {
+                return OCRnX_reg.read16();
+            }
+
+            int readBuffer() {
+                return OCRnX_reg.readBuffer();
+            }
+        }
 
     }
 
@@ -254,12 +252,12 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
             static final int TCR0UB = 0;
 
             public void write(byte val) {
-                super.write((byte)(0xf & val));
+                super.write((byte) (0xf & val));
                 decode(val);
             }
 
             public void writeBit(int bit, boolean val) {
-		if (bit > AS0) return;
+                if (bit > AS0) return;
                 super.writeBit(bit, val);
                 decode(value);
             }
@@ -285,9 +283,8 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
         }
     }
 
-    protected static final int[] periods1   = new int[]{0, 1, 8, 64, 256, 1024};
-    protected static final String[] cf1Names = new String[]{"TIMER1 CAPT", "TIMER1 COMPA",
-							   "TIMER1 COMPB","TIMER1 COMPC"};
+    protected static final int[] periods1 = new int[]{0, 1, 8, 64, 256, 1024};
+    protected static final String[] cf1Names = new String[]{"TIMER1 CAPT", "TIMER1 COMPA", "TIMER1 COMPB", "TIMER1 COMPC"};
 
     /**
      * <code>Timer1</code> is a 16-bit timer available on the ATMega128.
@@ -301,8 +298,7 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
     }
 
     protected static final int[] periods3 = {0, 1, 8, 64, 256, 1024};
-    protected static final String[] cf3Names = new String[]{"TIMER3 CAPT", "TIMER3 COMPA",
-							    "TIMER3 COMPB","TIMER3 COMPC"};
+    protected static final String[] cf3Names = new String[]{"TIMER3 CAPT", "TIMER3 COMPA", "TIMER3 COMPB", "TIMER3 COMPC"};
 
     /**
      * <code>Timer3</code> is an additional 16-bit timer available on the ATMega128, but not in ATMega103

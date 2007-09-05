@@ -82,7 +82,6 @@ public interface Radio {
             if (p.originTime < originTime) return 1;
             return 0;
         }
-
     }
 
     /**
@@ -97,6 +96,7 @@ public interface Radio {
          * Installs this Controller into a microcontroller. This should setup the pins, IO registers in such a
          * way that changes to CPU state will make corresponding changes to the RadioController state that
          * will initiate sends and receives if necessary.
+         * @param mcu the microcontroller on which to install this radio
          */
         public void install(Microcontroller mcu);
 
@@ -113,6 +113,7 @@ public interface Radio {
 
     /**
      * Get the <code>Simulator</code> on which this radio is running.
+     * @return the simulator attached to this radio.
      */
     public Simulator getSimulator();
 

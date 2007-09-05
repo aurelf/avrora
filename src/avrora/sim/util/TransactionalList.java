@@ -172,4 +172,8 @@ public class TransactionalList {
         }
     }
 
+    public Link getHead() {
+        return head;
+    }
+
 }

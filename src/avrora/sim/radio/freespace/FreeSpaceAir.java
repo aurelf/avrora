@@ -134,7 +134,7 @@ public class FreeSpaceAir implements RadioAir {
 
     /**
      * remove radio
-     *
+     * @param r the radio to remove from the space
      * @see RadioAir#removeRadio(Radio)
      */
     public synchronized void removeRadio(Radio r) {
@@ -149,7 +149,8 @@ public class FreeSpaceAir implements RadioAir {
 
     /**
      * transmit packet
-     *
+     * @param r the radio that is sending the transmission
+     * @param f the transmission containing the data
      * @see RadioAir#transmit(Radio, Radio.Transmission)
      */
     public synchronized void transmit(Radio r, Radio.Transmission f) {

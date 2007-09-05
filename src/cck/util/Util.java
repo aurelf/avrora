@@ -162,6 +162,7 @@ public class Util {
      * <code>InternalError</code> instance with the specified message. It is useful for internal
      * error conditions and defensive programming.
      *
+     * @param s the error message for the failure
      * @return an instance of the <code>Util.InternalError</code> class with the specified error message
      */
     public static InternalError failure(String s) {
@@ -169,10 +170,25 @@ public class Util {
     }
 
     /**
+     * The <code>enforce()</code> method is a utility similar to <code>assert</code>
+     * that checks a boolean predicate at runtime, throwing the specified internal error
+     * upon failure. It is useful for internal error conditions and defensive programming.
+     *
+     * @param b the boolean condition to enforce
+     * @param s the string error message
+     */
+    public static void enforce(boolean b, String s) {
+        if ( !b ) throw new InternalError(s);
+    }
+
+
+    /**
      * The <code>failure()</code> method is a utility that constructs a
      * <code>InternalError</code> instance with the specified message. It is useful for internal
      * error conditions and defensive programming.
      *
+     * @param c the class of the error
+     * @param s the error message
      * @return an instance of the <code>Util.InternalError</code> class with the specified error message
      */
     public static InternalError failure(String c, String s) {

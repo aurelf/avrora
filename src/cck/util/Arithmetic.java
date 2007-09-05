@@ -238,6 +238,10 @@ public class Arithmetic {
         return (0xffffffff >>> (31 - (high - low))) << low;
     }
 
+    public static int getBitMask(int width) {
+        return (0xffffffff >>> (31 - (width - 1)));
+    }
+
     public static long getLongBitRangeMask(int low, int high) {
         return (-1L >>> (63 - (high - low))) << low;
     }

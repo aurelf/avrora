@@ -15,6 +15,10 @@ if [ "$1" = "" ]; then
     exit
 fi
 
+RED='[0;31m'
+GREEN='[0;32m'
+NORM='[0;00m'
+
 JAVA_FILES=`find src -name '*.java'`
 JJ_FILES=`find src -name '*.jj'`
 
@@ -37,13 +41,31 @@ restoreOldVersions() {
 	done
 }
 
+report() {
+    if [ "$3" = "" ]; then
+	echo "  -> $1$2${NORM}"
+    else
+	echo "  -> $1$2${NORM}: $3"
+    fi
+}
+
+reportError() {
+    report "$RED" "$1" "$2"
+}
+
+reportSuccess() {
+    report "$GREEN" "$1" "$2"
+}
+
 # routine to check for successful CVS commit conditions
 checkSuccess() {
 
     if [ "$?" = 0 ]; then
-	echo " -> $1"
+	if [ ! "$1" = "" ]; then
+	    reportSuccess "$1"
+	fi
     else
-	echo "*** STOP: $2 ***"
+	reportError "Commit error" "$2"
 	$3
 	cat /tmp/commit.reason
 	# replace all old version files
@@ -134,6 +156,10 @@ for t in $TESTS; do
     checkSuccess 'All tests passed.' 'There were test case failures.' 'assembleTestErrors'
     cd $ROOTPATH
 done
+
+echo Making jar archive...
+JARFILE=`./makejar.bash`
+checkSuccess "$JARFILE created successfully." 'There were errors creating the JAR file.' 'assembleCommitErrors'
 
 echo Attempting to commit to CVS...
 

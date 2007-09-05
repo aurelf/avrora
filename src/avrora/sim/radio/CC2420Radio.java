@@ -37,7 +37,6 @@ import avrora.sim.Simulator;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
 import avrora.sim.util.SimUtil;
-import avrora.sim.util.TransactionalList;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
 import cck.util.Util;
@@ -58,7 +57,7 @@ public class CC2420Radio implements Radio {
     //sent back during addressing byte of most trnasfers, during all command strobes,
     // and first byte of transmit
     /**
-     * LegacyRegister addresses.
+     * Register addresses.
      */
     public static final int MAIN = 0x10;
     public static final int MDMCTRL0 = 0x11;
@@ -95,7 +94,7 @@ public class CC2420Radio implements Radio {
     public static final int TXFIFO = 0x3e;
     public static final int RXFIFO = 0x3f;
     /**
-     * Command Strobe LegacyRegister Addresses (instuctions that take actions when conditions are met)
+     * Command Strobe Register Addresses (instuctions that take actions when conditions are met)
      */
     public static final int SNOP = 0x00;
     public static final int SXOSCON = 0x01;
@@ -149,7 +148,7 @@ public class CC2420Radio implements Radio {
     protected static final String[] allModeNames = RadioEnergy.allModeNames();
     protected static final int[][] ttm = FiniteStateMachine.buildSparseTTM(allModeNames.length, 0);
     protected final SimUtil.SimPrinter radioPrinter;
-    protected final ProbeList probes;
+    protected final CC1000Radio.ProbeList probes;
     protected final long xoscFrequency;
     /**
      * Connected Microcontroller, Simulator and SimulatorThread should all correspond.
@@ -163,58 +162,9 @@ public class CC2420Radio implements Radio {
      */
     protected RadioAir air;
 
-    /**
-     * The <code>ProbeList</code> class just keeps track of a list of probes.
-     */
-    class ProbeList extends TransactionalList implements Radio.RadioProbe {
-        public void fireAtPowerChange(Radio r, int newPower) {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next)
-                ((RadioProbe) pos.object).fireAtPowerChange(r, newPower);
-            endTransaction();
-        }
-
-        public void fireAtFrequencyChange(Radio r, double freq) {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next)
-                ((RadioProbe) pos.object).fireAtFrequencyChange(r, freq);
-            endTransaction();
-        }
-
-        public void fireAtBitRateChange(Radio r, int newbitrate) {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next)
-                ((RadioProbe) pos.object).fireAtBitRateChange(r, newbitrate);
-            endTransaction();
-        }
-
-        public void fireAtTransmit(Radio r, Radio.Transmission p) {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next)
-                ((RadioProbe) pos.object).fireAtTransmit(r, p);
-            endTransaction();
-        }
-
-        public void fireAtTransmit(Radio r, Radio.Transmission[] p) {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next) {
-                for (int i = 0; i < 128; i++)
-                    ((RadioProbe) pos.object).fireAtTransmit(r, p[i]);
-            }
-            endTransaction();
-        }
-
-        public void fireAtReceive(Radio r, Radio.Transmission p) {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next)
-                ((RadioProbe) pos.object).fireAtReceive(r, p);
-            endTransaction();
-        }
-    }
-
     public CC2420Radio(Microcontroller mcu, int xfreq) {
         xoscFrequency = 2048 + xfreq;
-        probes = new ProbeList();
+        probes = new CC1000Radio.ProbeList();
         this.mcu = mcu;
         this.sim = mcu.getSimulator();
         radioPrinter = SimUtil.getPrinter(sim, "radio.cc2420");
@@ -236,7 +186,7 @@ public class CC2420Radio implements Radio {
         registers[TXFIFO] = TXFIFO_reg = new TXFIFORegister();
         registers[RXFIFO] = RXFIFO_reg = new RXFIFORegister();
 
-        FSCTRL_reg.setFreq(xfreq);
+        FSCTRL_reg.freq = xfreq;
         TXFIFOBuf = new TXFIFOBuffer();
         RXFIFOBuf = new RXFIFOBuffer();
 
@@ -322,14 +272,6 @@ public class CC2420Radio implements Radio {
             }
         }
 
-        public void writeBit(int bit, boolean val) {
-            value = Arithmetic.setBit(value, bit, val);
-            decode(value);
-            if (radioPrinter.enabled) {
-                printStatus();
-            }
-        }
-
         protected abstract void decode(int val);
 
         protected void action() {
@@ -358,10 +300,6 @@ public class CC2420Radio implements Radio {
 
         RadioStrobe(String id) {
             super(id, 0);
-        }
-
-        protected void printResult() {
-            // default: do nothing
         }
     }
 
@@ -458,10 +396,6 @@ public class CC2420Radio implements Radio {
             decode(value);
         }
 
-        protected void reset() {
-            write(0x0000);   //should be at least 0x0500 before operation though
-        }
-
         protected void decode(int val) {
             demodavg = Arithmetic.getBit(val, DEMOD_AVG_MODE);
             modmode = Arithmetic.getBit(val, MOD_MODE);
@@ -506,10 +440,6 @@ public class CC2420Radio implements Radio {
             ccamode = (val & 0x00c0) >> 6;
             prelength = (val & 0x000F);
         }
-
-        protected void reset() {
-            write(0x0ae2);
-        }
     }
 
     /**
@@ -527,14 +457,10 @@ public class CC2420Radio implements Radio {
         protected void decode(int val) {
             syncword = val;
         }
-
-        protected void reset() {
-            write(0xa70f);
-        }
     }
 
     /**
-     * Transmit Control LegacyRegister controls TX mixer currents, wait time required after STXON before transmitting,
+     * Transmit Control Register controls TX mixer currents, wait time required after STXON before transmitting,
      * and PA output level and current programming.
      */
     protected class TxCtrlRegister extends RadioRegister {
@@ -553,7 +479,7 @@ public class CC2420Radio implements Radio {
         boolean reserved;
 
         TxCtrlRegister() {
-            super("Transmit Control LegacyRegister", 0xa0ff);
+            super("Transmit Control Register", 0xa0ff);
             decode(value);
         }
 
@@ -566,14 +492,10 @@ public class CC2420Radio implements Radio {
             tx_turnaround = TX_TURNAROUND[(val & 0x2000) >> 13];
             reserved = Arithmetic.getBit(val, RESERVED);
         }
-
-        protected void reset() {
-            write(0xa0ff);
-        }
     }
 
     /**
-     * Receive Control LegacyRegister 0 controls the rx mixer current as well as current compensation and main current
+     * Receive Control Register 0 controls the rx mixer current as well as current compensation and main current
      * for the LNA in the AGC high, med, and low gain modes
      */
     protected class RxCtrl0Register extends RadioRegister {
@@ -589,7 +511,7 @@ public class CC2420Radio implements Radio {
         int low_lna_cur = 1;
 
         RxCtrl0Register() {
-            super("RX Control LegacyRegister 0", 0x12e5);
+            super("RX Control Register 0", 0x12e5);
             decode(value);
         }
 
@@ -602,14 +524,10 @@ public class CC2420Radio implements Radio {
             med_lna_cur = (val & 0x000c) >> 2;
             low_lna_cur = (val & 0x0003);
         }
-
-        protected void reset() {
-            write(0x12e5);
-        }
     }
 
     /**
-     * Receive Control LegacyRegister 1 controls settings of RX mixers, LNA modes, controls current to RX bandpass filters,
+     * Receive Control Register 1 controls settings of RX mixers, LNA modes, controls current to RX bandpass filters,
      * receiver mixers output, and the RX mixer.  Also controls VCM level.
      */
     protected class RxCtrl1Register extends RadioRegister {
@@ -636,7 +554,7 @@ public class CC2420Radio implements Radio {
         int rxmix_current = 900;
 
         RxCtrl1Register() {
-            super("RX Control LegacyRegister 1", 0x0a56);
+            super("RX Control Register 1", 0x0a56);
             decode(value);
         }
 
@@ -651,10 +569,6 @@ public class CC2420Radio implements Radio {
             rxmix_tail = RXMIX_TAIL[(val & 0x0030) >> 4];
             rxmix_vcm = RXMIX_VCM[(val & 0x000c) >> 2];
             rxmix_current = RXMIX_CURRENT[(val & 0x0003)];
-        }
-
-        protected void reset() {
-            write(0x0a56);
         }
     }
 
@@ -694,13 +608,10 @@ public class CC2420Radio implements Radio {
             write(0x03ff);
         }
 
-        protected void setFreq(int val) {
-            freq = val;
-        }
     }
 
     /**
-     * I/O Configuration LegacyRegister 0 configures the polarity of the SFD, CCA, FIFO, FIFOP pins, beacon frames,
+     * I/O Configuration Register 0 configures the polarity of the SFD, CCA, FIFO, FIFOP pins, beacon frames,
      * and the FIFOP threshold required to go high
      */
     protected class IORegister0 extends RadioRegister {
@@ -717,7 +628,7 @@ public class CC2420Radio implements Radio {
         boolean cca_polarity;
 
         IORegister0() {
-            super("I/O Config LegacyRegister 0", 0x0040);
+            super("I/O Config Register 0", 0x0040);
             decode(value);
         }
 
@@ -729,14 +640,10 @@ public class CC2420Radio implements Radio {
             sfd_polarity = Arithmetic.getBit(val, SFD_POLARITY);
             cca_polarity = Arithmetic.getBit(val, CCA_POLARITY);
         }
-
-        protected void reset() {
-            write(0x0040);
-        }
     }
 
     /**
-     * I/O Configuration LegacyRegister 1 configures the HSSD module as well as adjusting multiplexer settings of the
+     * I/O Configuration Register 1 configures the HSSD module as well as adjusting multiplexer settings of the
      * SFD and CCA pins
      */
     protected class IORegister1 extends RadioRegister {
@@ -745,7 +652,7 @@ public class CC2420Radio implements Radio {
         int ccamux = 0;
 
         IORegister1() {
-            super("I/O Config LegacyRegister 1", 0x0000);
+            super("I/O Config Register 1", 0x0000);
             decode(value);
         }
 
@@ -754,15 +661,11 @@ public class CC2420Radio implements Radio {
             sfdmux = (val & 0x03e0) >> 5;
             ccamux = (val & 0x001f);
         }
-
-        protected void reset() {
-            write(0x0000);
-        }
     }
 
     protected class TXFIFORegister extends RadioRegister {
         TXFIFORegister() {
-            super("TXFIFO LegacyRegister", 0x0000);
+            super("TXFIFO Register", 0x0000);
         }
 
         protected void decode(int val) {
@@ -781,7 +684,7 @@ public class CC2420Radio implements Radio {
 
     protected class RXFIFORegister extends RadioRegister {
         RXFIFORegister() {
-            super("RXFIFO LegacyRegister", 0x0000);
+            super("RXFIFO Register", 0x0000);
         }
 
         protected void decode(int val) {
@@ -872,19 +775,19 @@ public class CC2420Radio implements Radio {
 
         public void write(byte val) {
             if (counter > 127) {
-                controller.setPinValue("FIFO", false);
-                controller.setPinValue("FIFOP", true);  //signals overflow to MCU
+                controller.pins.readValueFIFO = false;
+                controller.pins.readValueFIFOP = true;  //signals overflow to MCU
                 //counter must be reset by SFLUSHRX_cmd
                 return;
             }
             if (counter == 0)
                 lengthField = val;
-            if (!(controller.getPinValue("FIFO")) && controller.getPinValue("FIFOP")) {
+            if (!controller.pins.readValueFIFO && controller.pins.readValueFIFOP) {
                 for (int i = counter + 1; i > 0; i--) {
                     rxBuffer[i] = rxBuffer[i - 1];
                 }
                 counter++;
-                controller.setPinValue("FIFO", true);  //there are bytes in RXFIFO
+                controller.pins.readValueFIFO = true ;  //there are bytes in RXFIFO
             }
         }
 
@@ -909,9 +812,9 @@ public class CC2420Radio implements Radio {
                     lengthField = rxBuffer[1];
                 }
                 if (counter == 0)
-                    controller.setPinValue("FIFO", false);  //just emptied RXFIFO
+                    controller.pins.readValueFIFO = false;  //just emptied RXFIFO
                 if (counter < IOCFG0_reg.fifop_thr)
-                    controller.setPinValue("FIFOP", false); //after removal will be under FIFOP threshold
+                    controller.pins.readValueFIFOP = false; //after removal will be under FIFOP threshold
                 byte send = rxBuffer[counter];
                 rxBuffer[counter] = 0;
                 return send;
@@ -920,7 +823,7 @@ public class CC2420Radio implements Radio {
 
         public void clearBuffer() {
             Arrays.fill(rxBuffer, (byte)0);
-            controller.setPinValue("FIFO", false);//RXFIFO empty
+            controller.pins.readValueFIFO = false;//RXFIFO empty
             counter = 0;
             remCount = 0;
             lengthField = 0;
@@ -1082,8 +985,8 @@ public class CC2420Radio implements Radio {
 
         public void action() {
             RXFIFOBuf.clearBuffer();
-            controller.setPinValue("FIFO", false);   //clears RXFIFO overflow
-            controller.setPinValue("FIFOP", false);  //clears RXFIFO overflow
+            controller.pins.readValueFIFO = false;   //clears RXFIFO overflow
+            controller.pins.readValueFIFOP = false;  //clears RXFIFO overflow
         }
     }
 
@@ -1172,7 +1075,7 @@ public class CC2420Radio implements Radio {
      * (analog to digital converter).
      */
     public class ATMegaController implements Radio.RadioController, ADC.ADCInput, SPIDevice {
-        public CC2420Radio.PinInterface pinReader;
+        public CC2420Radio.PinInterface pins;
         private SPIDevice spiDevice;
         private final SimUtil.SimPrinter printer;
         private int bytesToCome;
@@ -1183,44 +1086,6 @@ public class CC2420Radio implements Radio {
         private boolean receiving;
         private TransmitToAir transmittingBytes;
         private StartReceiving receivingBytes;
-
-        public void setPinValue(String pin, boolean val) {
-            if ("FIFO".equals(pin)) {
-                pinReader.readValueFIFO = val;
-                pinReader.print("CC2420: writing " + val + " to FIFO pin");
-            }
-            if ("FIFOP".equals(pin)) {
-                pinReader.readValueFIFOP = val;
-                pinReader.print("CC2420: writing " + val + " to FIFOP pin");
-            }
-            if ("CCA".equals(pin)) {
-                pinReader.readValueCCA = val;
-                pinReader.print("CC2420: writing " + val + " to CCA pin");
-            }
-            if ("SFD".equals(pin)) {
-                pinReader.readValueSFD = val;
-                pinReader.print("CC2420: writing " + val + " to SFD pin");
-            }
-            if ("OldCS".equals(pin)) {
-                pinReader.readOldCS = val;
-            }
-        }
-
-        public boolean getPinValue(String pin) {
-            if ("FIFO".equals(pin))
-                return pinReader.readValueFIFO;
-            if ("FIFOP".equals(pin))
-                return pinReader.readValueFIFOP;
-            if ("CCA".equals(pin))
-                return pinReader.readValueCCA;
-            if ("SFD".equals(pin))
-                return pinReader.readValueSFD;
-            if ("CS".equals(pin))
-                return pinReader.readValueCS;
-            if ("OldCS".equals(pin))
-                return pinReader.readOldCS;
-            return false;
-        }
 
         ATMegaController() {
             printer = SimUtil.getPrinter(sim, "radio.cc2420.data");
@@ -1257,7 +1122,7 @@ public class CC2420Radio implements Radio {
                 transmitting = true;
                 i = 0;
                 startTime = transmitFrameStart(startTime, originalTime);
-                controller.setPinValue("SFD", true);
+                controller.pins.readValueSFD = true;
                 sim.insertEvent(this, 3 * (Radio.TRANSFER_TIME));
                 startTime += (Radio.TRANSFER_TIME);
             }
@@ -1275,7 +1140,7 @@ public class CC2420Radio implements Radio {
                     sim.insertEvent(this, (Radio.TRANSFER_TIME));
                     i++;
                 } else if (i == (TXFIFOBuf.lengthField + 1)) {
-                    controller.setPinValue("SFD", false);
+                    controller.pins.readValueSFD = false;
                     i++;
                     sim.insertEvent(this, (Radio.TRANSFER_TIME));
                 } else {
@@ -1352,7 +1217,7 @@ public class CC2420Radio implements Radio {
                 if (counter < length)
                     sim.insertEvent(this, Radio.TRANSFER_TIME);
                 else if (counter == length) {
-                    setPinValue("SFD", false);
+                    pins.readValueSFD = false;
                     receiving = false;
                 }
                 counter++;
@@ -1364,8 +1229,8 @@ public class CC2420Radio implements Radio {
          */
         public void receiveFrame(SPI.Frame frame) {
             bytesToCome--;
-            if (!controller.getPinValue("CS") && controller.getPinValue("OldCS")) {  //then this is a new transfer of bytes together
-                controller.setPinValue("OldCS", false);  //in order to not come here next time
+            if (!controller.pins.readValueCS && controller.pins.readOldCS) {  //then this is a new transfer of bytes together
+                controller.pins.readOldCS = false;  //in order to not come here next time
                 bytesToCome = 2;
                 regAdd = frame.data;
             }
@@ -1374,8 +1239,7 @@ public class CC2420Radio implements Radio {
             } else if ((regAdd & 0x3F) >= 0 && (regAdd & 0x3F) <= 0x0E) {  //if command strobe, then do action associated with it
                 bytesToCome = 3;
                 registers[regAdd & 0x3F].action();   //do actions associated with command strobe
-                if ((regAdd & 0x3F) != 0x00)
-                    registers[0x00].action();      //if command strobe wasnt SNOP, then fig. StatusByte
+                if ((regAdd & 0x3F) != 0x00) computeStatus();
                 spiDevice.receiveFrame(SPI.newFrame(statusByte));   //send back statusbyte
                 if (!transmitting && (STXON_cmd.switched || STXONCCA_cmd.switched)) {
                     if (receiving) {
@@ -1397,7 +1261,7 @@ public class CC2420Radio implements Radio {
                 print("CC2420: discarding " + StringUtil.toMultirepString(frame.data, 8) + " from SPI");
 
             }
-            if (!controller.getPinValue("CS") && bytesToCome == 0) { //a transfer of bytes still going, keep same regAdd
+            if (!controller.pins.readValueCS && bytesToCome == 0) { //a transfer of bytes still going, keep same regAdd
                 bytesToCome = 2;
             }
         }
@@ -1410,7 +1274,7 @@ public class CC2420Radio implements Radio {
             boolean secBank = !bit6 && bit7;
 
             if (bytesToCome == 2) {
-                registers[0x00].action();
+                computeStatus();
                 spiDevice.receiveFrame(SPI.newFrame(statusByte)); //Sends back the statusByte through SPI
             } else if (bytesToCome == 1) {
                 ramBank = frame.data;
@@ -1459,7 +1323,7 @@ public class CC2420Radio implements Radio {
 
         public void regAccess(SPI.Frame frame) {
             if (bytesToCome == 2) {
-                registers[0x00].action();
+                computeStatus();
                 spiDevice.receiveFrame(SPI.newFrame(statusByte));
                 if ((regAdd & 0x3F) == TXFIFO || (regAdd & 0x3F) == RXFIFO)
                     bytesToCome--;
@@ -1474,13 +1338,17 @@ public class CC2420Radio implements Radio {
                 if (Arithmetic.getBit(regAdd, 6)) { //if set, read from register address, send back 16 bits
                     new ReadReg(regAdd, highByte, lowByte);
                 } else {
-                    new WriteReg(regAdd, highByte, lowByte);
+                    writeRegister(regAdd, highByte, lowByte);
                 }
             }
         }
 
+        private void computeStatus() {
+            registers[0x00].action();
+        }
+
         /**
-         * The <code>ReadReg</code> event is used when a LegacyRegister Read instruction is issused and sends either the
+         * The <code>ReadReg</code> event is used when a Register Read instruction is issused and sends either the
          * first or second data bytes in the given address  back to the MCU across the SPI
          */
         private class ReadReg implements Simulator.Event {
@@ -1508,40 +1376,19 @@ public class CC2420Radio implements Radio {
             public void fire() {
                 //means low byte
                 spiDevice.receiveFrame(SPI.newFrame(Arithmetic.low(registers[regAdd].value)));
-                //sends lower byte of LegacyRegister contents back to MCU
+                //sends lower byte of Register contents back to MCU
             }
         }
 
-        /**
-         * The <code>WriteReg</code> event is used when a LegacyRegister Write instruction is issued and writes either the
-         * first or second data byte to the register from data received through the SPI
-         */
-        private class WriteReg implements Simulator.Event {
-            final byte regValueHigh;
-            final byte regValueLow;
-            final byte regAdd;
-
-            WriteReg(int regAdd, byte regValueHigh, byte regValueLow) {
-                this.regAdd = (byte)(regAdd & 0x3F);
-                this.regValueHigh = regValueHigh;
-                this.regValueLow = regValueLow;
-                firing();
-            }
-
-            public void firing() {
-                if (regAdd == RXFIFO || regAdd == TXFIFO) {
-
-                    registers[regAdd].decode(Arithmetic.word(regValueLow, (byte) 0));
-                    //If this was a FIFO access, byte to write would come on regValueLow byte
-                    //writes one byte to the FIFO buffer
-                } else {
-                    registers[regAdd].decode(Arithmetic.word(regValueHigh, regValueLow));
-                    //writes and decodes new value of register
-                }
-            }
-
-            public void fire() {
-                // TODO: why is this empty?
+        void writeRegister(int regAdd, byte regValueHigh, byte regValueLow) {
+            regAdd = (byte)(regAdd & 0x3F);
+            if (regAdd == RXFIFO || regAdd == TXFIFO) {
+                registers[regAdd].decode(Arithmetic.word(regValueLow, (byte) 0));
+                //If this was a FIFO access, byte to write would come on regValueLow byte
+                //writes one byte to the FIFO buffer
+            } else {
+                registers[regAdd].decode(Arithmetic.word(regValueHigh, regValueLow));
+                //writes and decodes new value of register
             }
         }
 
@@ -1617,7 +1464,7 @@ public class CC2420Radio implements Radio {
         }
 
         public void install(Microcontroller mcu) {
-            pinReader = new CC2420Radio.PinInterface(mcu);
+            pins = new CC2420Radio.PinInterface(mcu);
             if (mcu instanceof ATMegaFamily) {
                 ATMegaFamily atm = (ATMegaFamily) mcu;
                 // get ADC device and connect

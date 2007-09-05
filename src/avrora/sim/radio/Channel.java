@@ -77,7 +77,7 @@ public class Channel {
     public void write(int value, int bits, long time) {
         int off = channelOffset(time);
         if ( invert ) value = ~value;
-        for ( int cntr = 0; cntr < 8; cntr++ ) {
+        for ( int cntr = 0; cntr < bits; cntr++ ) {
             int ind = cntr+off;
             channelValues[ind] |= Arithmetic.getBit(value, (bits-1)-cntr);
             channelWritten[ind] = true;
@@ -92,8 +92,8 @@ public class Channel {
 
         // copy the values written into the channel
         for ( int cntr = 0; cntr < bits * 2; cntr++ ) {
-            channelValues[cntr] = channelValues[cntr+8];
-            channelWritten[cntr] = channelWritten[cntr+8];
+            channelValues[cntr] = channelValues[cntr+bits];
+            channelWritten[cntr] = channelWritten[cntr+bits];
         }
         // erase the values written for next interval
         for ( int cntr = bits * 2; cntr < bits * 3; cntr++ ) {
@@ -106,6 +106,7 @@ public class Channel {
      * The <code>read()</code> method reads the value of the channel at the current time, going
      * back by the number of bits.
      * @param time the global time at which to read the channel
+     * @param bits the number of bits to read from the channel
      * @return a value representing the channel contents at this global time
      */
     public int read(long time, int bits) {

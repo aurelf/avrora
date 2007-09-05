@@ -52,7 +52,7 @@ public class Version {
      * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
      * CVS since the last release).
      */
-    public static final int commit = 88;
+    public static final int commit = 89;
 
     /**
      * The <code>TAG</code> field stores a reference to the version tag for the current
@@ -60,4 +60,13 @@ public class Version {
      */
     public static final VersionTag TAG = new VersionTag("avrora", "Beta", 1, 7, commit);
 
+    /**
+     * The <code>main()</code> method implements an entrypoint to the version record
+     * that prints out the version as a path suffix, in order to allow external tools
+     * (such as the jar archiver) to create files tied to this particular version.
+     * @param args the arguments given at the command line
+     */
+    public static void main(String[] args) {
+        System.out.println(TAG.toPathSuffix());
+    }
 }

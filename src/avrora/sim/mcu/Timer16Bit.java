@@ -134,7 +134,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
             // read the bits in the control register for compare mode
             switch (mode.value) {
                 case 1:
-                    outputComparePin.write(!outputComparePin.read()); // clear
+                    outputComparePin.write(!outputComparePin.read()); // toggle
                     break;
                 case 2:
                     outputComparePin.write(false);
