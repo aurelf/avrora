@@ -35,8 +35,8 @@
 package avrora.sim.state;
 
 import avrora.sim.clock.Clock;
-import avrora.sim.*;
-import avrora.sim.output.SimPrinter;
+import avrora.sim.Simulator;
+import avrora.sim.util.SimUtil;
 import cck.util.Arithmetic;
 import cck.text.StringUtil;
 
@@ -63,11 +63,11 @@ public class RegisterUtil {
         }
     }
 
-    public static class BoolView implements BooleanView {
+    public static class BooleanView {
         protected final RegisterView reg;
         protected final byte low;
 
-        public BoolView(RegisterView r, byte l) {
+        public BooleanView(RegisterView r, byte l) {
             reg = r;
             low = l;
         }
@@ -79,46 +79,6 @@ public class RegisterUtil {
         public void setValue(boolean v) {
             if ( v ) reg.setValue(reg.getValue() | 1 << low);
             else reg.setValue(reg.getValue() & ~(1 << low));
-        }
-    }
-
-    public static class ByteArrayView implements RegisterView {
-        protected final byte[] values;
-        protected final int index;
-
-        public ByteArrayView(byte[] v, int i) {
-            values = v;
-            index = i;
-        }
-        public int getWidth() {
-            return 8;
-        }
-        public int getValue() {
-            return values[index];
-        }
-
-        public void setValue(int val) {
-            values[index] = (byte)val;
-        }
-    }
-
-    public static class CharArrayView implements RegisterView {
-        protected final char[] values;
-        protected final int index;
-
-        public CharArrayView(char[] v, int i) {
-            values = v;
-            index = i;
-        }
-        public int getWidth() {
-            return 16;
-        }
-        public int getValue() {
-            return values[index];
-        }
-
-        public void setValue(int val) {
-            values[index] = (char)val;
         }
     }
 
@@ -243,7 +203,7 @@ public class RegisterUtil {
             clock.insertEvent(this, delay);
         }
 
-        public void fireAfterRead(Register r, int oldv, int newv) {
+        public void fireAfterRead(Register r, int oldv) {
             // do nothing.
         }
 
@@ -256,20 +216,12 @@ public class RegisterUtil {
         }
     }
 
-    public static avrora.sim.state.BooleanView booleanView(RegisterView sup, int low) {
-        return new BoolView(sup, (byte)low);
-    }
-
-    public static RegisterView bitView(RegisterView sup, int low) {
-        return new BitRangeView(sup, (byte)low, (byte)low);
+    public static BooleanView booleanView(RegisterView sup, int low) {
+        return new BooleanView(sup, (byte)low);
     }
 
     public static RegisterView bitRangeView(RegisterView sup, int low, int high) {
         return new BitRangeView(sup, (byte)low, (byte)high);
-    }
-
-    public static RegisterView permutedView(RegisterView sup, byte[] perm) {
-        return new PermutedView(sup, perm);
     }
 
     public static RegisterView stackedView(RegisterView a, RegisterView b) {
@@ -281,10 +233,10 @@ public class RegisterUtil {
     }
 
     public static class RegisterPrinter implements Register.Watch {
-        protected final SimPrinter printer;
+        protected final SimUtil.SimPrinter printer;
         protected final String name;
 
-        public RegisterPrinter(SimPrinter p, String n) {
+        public RegisterPrinter(SimUtil.SimPrinter p, String n) {
             printer = p;
             name = n;
         }
@@ -292,31 +244,12 @@ public class RegisterUtil {
             printer.println(name+"    <=   "+ StringUtil.toMultirepString(newv, r.width));
         }
 
-        public void fireAfterRead(Register r, int oldv, int newv) {
+        public void fireAfterRead(Register r, int oldv) {
             printer.println(name+"    ->   "+ StringUtil.toMultirepString(oldv, r.width));
         }
     }
 
-    public static void instrumentRegister(SimPrinter sp, Register reg, String name) {
+    public static void instrumentRegister(SimUtil.SimPrinter sp, Register reg, String name) {
         if ( sp.enabled ) reg.addWatch(new RegisterPrinter(sp, name));
-    }
-
-    public static class ConstantBehavior extends VolatileBehavior {
-        public final int value;
-        public ConstantBehavior(int val) {
-            value = val;
-        }
-        public int read(int cur) {
-            return value;
-        }
-        public int write(int cur, int nv) {
-            return value;
-        }
-    }
-
-    public static class ReadonlyBehavior extends VolatileBehavior {
-        public int write(int cur, int nv) {
-            return cur;
-        }
     }
 }

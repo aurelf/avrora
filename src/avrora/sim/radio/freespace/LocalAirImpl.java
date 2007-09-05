@@ -79,8 +79,8 @@ public class LocalAirImpl {
     }
 
     /**
-     * get node position
-     *
+     * Get the position of this node.
+     * @return the position of this node
      */
     public Position getPosition() {
         return position;
@@ -91,8 +91,8 @@ public class LocalAirImpl {
     }
 
     /**
-     * add neighbor
-     *
+     * Add neighbor to this node.
+     * @param r the neighbor to add
      */
     public synchronized void addNeighbor(LocalAirImpl r) {
         Position position = r.position;
@@ -131,8 +131,8 @@ public class LocalAirImpl {
     }
 
     /**
-     * remove a node
-     *
+     * Remove a neighbor from this node.
+     * @param r the local air implementation of the neighbor
      */
     public synchronized void removeNeighbor(LocalAirImpl r) {
         ListIterator it = neighbors.listIterator();
@@ -145,25 +145,27 @@ public class LocalAirImpl {
     }
 
     /**
-     * tell me, who is around
-     *
+     * Get a list of all the neighbors.
+     * @return a list of all the neighbors of this node.
      */
     public synchronized Iterator getNeighbors() {
         return neighbors.iterator();
     }
 
     /**
-     * receive a packet
-     *
+     * Receive a packet into this channel.
+     * @param p the radio transmission
+     * @param pow the power level of the transmission
+     * @param sender the sender radio
      */
     public synchronized void addPacket(Radio.Transmission p, double pow, Radio sender) {
         radioChannel.write(p.data, 8, p.originTime);
     }
 
-
     /**
      * compute signal strength bases on @see avrora.sim.radio.SimpleAir#sampleRSSI(long) by Daniel Lee
-     *
+     * @param gtime the global time at which to sample the RSSI value
+     * @return an estimate of the RSSI value for the sample time period
      */
     public int sampleRSSI(long gtime) {
         synchronizer.waitForNeighbors(gtime);

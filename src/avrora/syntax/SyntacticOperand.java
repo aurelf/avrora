@@ -76,7 +76,7 @@ public abstract class SyntacticOperand extends ASTNode implements LegacyOperand 
     }
 
     /**
-     * The <code>SyntacticOperand.LegacyRegister</code> class represents a register operand at the source
+     * The <code>SyntacticOperand.Register</code> class represents a register operand at the source
      * level. This may be an actual register name (e.g. "r21") or it could be a symbolic name for a register
      * that has been renamed by an assembler directive.
      */

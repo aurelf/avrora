@@ -175,7 +175,7 @@ public class RegisterLayout {
 
     /**
      * The <code>getIOReg()</code> method retrieves the IO register number for the given IO
-     * LegacyRegister name for this microcontroller.
+     * Register name for this microcontroller.
      * @param n the name of the IO register such as "TCNT0"
      * @return an integer representing the IO register number if it exists
      * @throws NoSuchElementException if the specified IO register name does not have an assignment
@@ -316,7 +316,7 @@ public class RegisterLayout {
             i.next();
         }
         sf.ior_low_bit = hbit - sf.length + 1;
-        sf.mask = Arithmetic.getBitRangeMask(0, sf.length - 1);
+        sf.mask = Arithmetic.getBitMask(sf.length);
         ior_hbit -= sf.length;
         return ior_hbit;
     }
