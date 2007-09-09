@@ -94,7 +94,7 @@ abstract class TestExpr {
             SourceMapping smap = p.getSourceMapping();
             SourceMapping.Location l = smap.getLocation(name);
             if (l == null) throw new UnknownLabel(name);
-            return l.address;
+            return l.lma_addr;
         }
 
         public String toString() {

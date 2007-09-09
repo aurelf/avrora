@@ -143,7 +143,7 @@ public class EnergyProfiler extends MonitorFactory {
             Iterator it = program.getSourceMapping().getIterator();
             while (it.hasNext()) {
                 SourceMapping.Location tempLoc = (SourceMapping.Location)it.next();
-                if (".text".equals(tempLoc.segment) )
+                if (".text".equals(tempLoc.section) )
                     profiles.add(new EnergyProfile(tempLoc));
             }
         }
@@ -159,7 +159,7 @@ public class EnergyProfiler extends MonitorFactory {
             EnergyProfile match = null;
             while (it.hasNext()) {
                 EnergyProfile temp = (EnergyProfile)it.next();
-                if ((temp.location.address <= address) && ((match == null) || (temp.location.address > match.location.address))) {
+                if ((temp.location.lma_addr <= address) && ((match == null) || (temp.location.lma_addr > match.location.lma_addr))) {
                     match = temp;
                 }
             }
@@ -208,7 +208,7 @@ public class EnergyProfiler extends MonitorFactory {
             while (it.hasNext()) {
                 EnergyProfile profile = (EnergyProfile)it.next();
                 if (profile.cycles > 0) {
-                    Terminal.println("   " + profile.location.name + '@' + profile.location.address + ": " + profile.cycles);
+                    Terminal.println("   " + profile.location.name + '@' + profile.location.lma_addr + ": " + profile.cycles);
                 }
             }
             if (sleepCycles > 0)

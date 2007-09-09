@@ -59,7 +59,7 @@ public class CallTimeMonitor extends MonitorFactory {
         final Simulator simulator;
         final Program program;
 
-        final LabelMapping.Location start;
+        final SourceMapping.Location start;
         final boolean ignore_interrupts;
 
         long cumul;
@@ -94,7 +94,7 @@ public class CallTimeMonitor extends MonitorFactory {
         }
 
         public void fireAfterReturn(long time, int pc, int retaddr) {
-            if (getTarget(depth - 1) == start.address) {
+            if (getTarget(depth - 1) == start.lma_addr) {
                 record(time - call_time[--call_depth] - (endInterrupt - startInterrupt));
                 startInterrupt = endInterrupt = 0;
             }
@@ -102,19 +102,19 @@ public class CallTimeMonitor extends MonitorFactory {
         }
 
         public void fireAfterInterruptReturn(long time, int pc, int retaddr) {
-            if (ignore_interrupts && findCallAddress(start.address)) {
+            if (ignore_interrupts && findCallAddress(start.lma_addr)) {
                 endInterrupt = time;
             }
             super.fireAfterInterruptReturn(time, pc, retaddr);
         }
 
         public void fireBeforeCall(long time, int pc, int target) {
-            if (target == start.address) call_time[call_depth++] = time;
+            if (target == start.lma_addr) call_time[call_depth++] = time;
             super.fireBeforeCall(time, pc, target);
         }
 
         public void fireBeforeInterrupt(long time, int pc, int inum) {
-            if (ignore_interrupts && findCallAddress(start.address)) {
+            if (ignore_interrupts && findCallAddress(start.lma_addr)) {
                 startInterrupt = time;
             }
             super.fireBeforeInterrupt(time, pc, inum);
@@ -135,11 +135,11 @@ public class CallTimeMonitor extends MonitorFactory {
             count++;
         }
 
-        private LabelMapping.Location getLocation(String src) {
+        private SourceMapping.Location getLocation(String src) {
             SourceMapping lm = program.getSourceMapping();
             SourceMapping.Location loc = lm.getLocation(src);
             if (loc == null) Util.userError("Invalid program address: ", src);
-            if (program.readInstr(loc.address) == null) Util.userError("Invalid program address: ", src);
+            if (program.readInstr(loc.lma_addr) == null) Util.userError("Invalid program address: ", src);
             return loc;
         }
 

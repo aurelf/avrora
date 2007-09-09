@@ -33,8 +33,8 @@
 package avrora.core;
 
 import cck.text.StringUtil;
-import java.util.Comparator;
-import java.util.Iterator;
+
+import java.util.*;
 
 /**
  * The <code>SourceMapping</code> class embodies the concept of mapping machine code level
@@ -46,12 +46,14 @@ import java.util.Iterator;
  *
  * @author Ben L. Titzer
  */
-public abstract class SourceMapping {
+public class SourceMapping {
 
     /**
      * The <code>program</code> field stores a reference to the program for this source mapping.
      */
     protected final Program program;
+    protected final HashMap labels;
+    protected final HashMap reverseMap;
 
     /**
      * The <code>LOCATION_COMPARATOR</code> comparator is used in order to sort locations
@@ -62,14 +64,15 @@ public abstract class SourceMapping {
             Location l1 = (Location)o1;
             Location l2 = (Location)o2;
 
-            if (l1.address == l2.address) {
+            if (l1.lma_addr == l2.lma_addr) {
                 if (l1.name == null) return 1;
                 if (l2.name == null) return -1;
                 return l1.name.compareTo(l2.name);
             }
-            return l1.address - l2.address;
+            return l1.lma_addr - l2.lma_addr;
         }
     };
+
     /**
      * The <code>Location</code> class represents a location in the program; either named by
      * a label, or an unnamed integer address. The location may refer to any of the code, data,
@@ -78,10 +81,10 @@ public abstract class SourceMapping {
     public class Location {
 
         /**
-         * The <code>segment</code> field records the name of the segment that this label refers to,
+         * The <code>section</code> field records the name of the segment that this label refers to,
          * such as ".text" or ".data".
          */
-        public final String segment;
+        public final String section;
 
         /**
          * The <code>name</code> field records the name of this label.
@@ -91,20 +94,27 @@ public abstract class SourceMapping {
         /**
          * The <code>address</code> field records the address of this label as a byte address.
          */
-        public final int address;
+        public final int vma_addr;
+
+        /**
+         * The <code>address</code> field records the address of this label as a byte address.
+         */
+        public final int lma_addr;
 
         /**
          * The constructor for the <code>Location</code> class creates a new location for the
          * specified lable and address. It is used internally to create labels.
          * @param s the name of the segment as a string
          * @param n the name of the label as a string
-         * @param addr the integer address of the location
+         * @param vma_addr the virtual memory address
+         * @param lma_addr the linear memory address (physical)
          */
-        Location(String s, String n, int addr) {
-            segment = s;
-            if ( n == null ) name = StringUtil.addrToString(addr);
+        Location(String s, String n, int vma_addr, int lma_addr) {
+            section = s;
+            if ( n == null ) name = StringUtil.addrToString(lma_addr);
             else name = n;
-            address = addr;
+            this.vma_addr = vma_addr;
+            this.lma_addr = lma_addr;
         }
 
         /**
@@ -113,10 +123,8 @@ public abstract class SourceMapping {
          * @return an integer value that represents the hash code
          */
         public int hashCode() {
-            if (name == null)
-                return address;
-            else
-                return name.hashCode();
+            if (name == null) return lma_addr;
+            else return name.hashCode();
         }
 
         /**
@@ -130,7 +138,7 @@ public abstract class SourceMapping {
             if (o == this) return true;
             if (!(o instanceof Location)) return false;
             Location l = (Location)o;
-            return l.name.equals(this.name) && l.address == this.address;
+            return l.name.equals(this.name) && l.lma_addr == this.lma_addr;
         }
 
         public String toString() {
@@ -140,11 +148,17 @@ public abstract class SourceMapping {
 
     /**
      * The <code>getName()</code> method translates a code address into a name that is more useful to
-     * the user, such as a label, a location in a method, a location in a module and the source line, etc.
+     * the user, such as a label. In the implementation of the label mapping, this method will return
+     * the label name for this address if there is one. If there is no label for the specified address,
+     * this method will render the address as a hexadecimal string via the <code>StringUtil.addrToString()<.code>
+     * method.
      * @param address the address of an instruction in the program
-     * @return a string representation of the address; e.g. a label
+     * @return a string representation of the address as a label or a hexadecimal string
      */
-    public abstract String getName(int address);
+    public String getName(int address) {
+        String s = (String)reverseMap.get(new Integer(address));
+        return s == null ? StringUtil.addrToString(address) : s;
+    }
 
     /**
      * The constructor for the <code>SourceMapping</code> base class creates a new instance of source mapping
@@ -153,6 +167,8 @@ public abstract class SourceMapping {
      */
     public SourceMapping(Program p) {
         program = p;
+        labels = new HashMap();
+        reverseMap = new HashMap();
     }
 
     /**
@@ -164,7 +180,43 @@ public abstract class SourceMapping {
         return program;
     }
 
-    public abstract Location getLocation(String name);
+    /**
+     * The <code>getLocation()</cdoe> method retrieves an object that represents a location for the given name,
+     * if the name exists in the program. If the name does not exist in the program, this method will return null.
+     * For strings beginning with "0x", this method will evaluate them as hexadecimal literals and return a
+     * location corresponding to an unnamed location at that address.
+     * @param name the name of a program location as a label or a hexadecimal constant
+     * @return a <code>Location</code> object representing that program location; <code>null</code> if the
+     * specified label is not contained in the program
+     */
+    public Location getLocation(String name) {
+        if ( StringUtil.isHex(name) ) {
+            int val = StringUtil.evaluateIntegerLiteral(name);
+            return new Location(null, null, val, val);
+        }
+        return (Location)labels.get(name);
+    }
 
-    public abstract Iterator getIterator();
+    /**
+     * The <code>newLocation()</code> method creates a new program location with the specified label name that
+     * is stored internally.
+     * @param section the name of the section which contains this label
+     * @param name the name of the label
+     * @param vma_addr the virtual address in the program
+     * @param lma_addr the address in the program for which to create and store a new location
+     */
+    public void newLocation(String section, String name, int vma_addr, int lma_addr) {
+        Location l = new Location(section, name, vma_addr, lma_addr);
+        labels.put(name, l);
+        reverseMap.put(new Integer(lma_addr), name);
+    }
+
+    /**
+     * The <code>getIterator()</code> method creates an iterator over the labels
+     * in this source mapping.
+     * @return an iterator that will allow iterating over all of the labels in this source mapping
+     */
+    public Iterator getIterator() {
+        return labels.values().iterator();
+    }
 }

@@ -33,13 +33,10 @@
 package avrora.actions;
 
 import avrora.core.*;
-import avrora.sim.*;
-import avrora.sim.util.SimUtil;
-import avrora.Defaults;
-import avrora.monitors.Monitor;
+import avrora.sim.State;
 import cck.text.*;
-import cck.util.*;
-
+import cck.util.Option;
+import cck.util.Util;
 import java.util.*;
 
 /**
@@ -48,11 +45,7 @@ import java.util.*;
  *
  * @author Ben L. Titzer
  */
-public class SimAction extends Action {
-
-    public static final String HELP = "The \"simulate\" action creates a simulation with the specified program(s) " +
-            "for the specified node(s). The simulation type might be as simple as a single node with a single " +
-            "program, or a multiple-node sensor network simulation or robotics simulation.";
+public abstract class SimAction extends Action {
 
     public final Option.Bool REPORT_SECONDS = newOption("report-seconds", false,
             "This option causes all times printed out by the simulator to be reported " +
@@ -64,76 +57,11 @@ public class SimAction extends Action {
             "The \"simulation\" option selects from the available simulation types, including a single node " +
             "simulation, a sensor network simulation, or a robotics simulation.");
 
-    protected Simulation simulation;
-    protected long startms;
-    protected boolean reported;
+    protected HashMap monitorListMap;
 
-    public SimAction() {
-        super(HELP);
-    }
-
-    /**
-     * The <code>run()</code> method is called by the main class.
-     *
-     * @param args the command line arguments after the options have been stripped out
-     * @throws Exception if there is a problem loading the program, or an exception occurs during
-     *                             simulation
-     */
-    public void run(String[] args) throws Exception {
-        SimUtil.REPORT_SECONDS = REPORT_SECONDS.get();
-        SimUtil.SECONDS_PRECISION = (int)SECONDS_PRECISION.get();
-
-        simulation = Defaults.getSimulation(SIMULATION.get());
-        simulation.process(options, args);
-
-        Runtime.getRuntime().addShutdownHook(new ShutdownThread());
-        printSimHeader();
-        try {
-            startms = System.currentTimeMillis();
-            simulation.start();
-            simulation.join();
-        } catch (Throwable t) {
-            exitSimulation(t);
-        } finally {
-            exitSimulation(null);
-        }
-    }
-
-    private void exitSimulation(Throwable thrown) {
-        synchronized (this) {
-            if (!reported) {
-                reported = true;
-                report(thrown);
-            }
-        }
-    }
-
-    private void report(Throwable thrown) {
-        long delta = System.currentTimeMillis() - startms;
-        try {
-            if (thrown != null) throw thrown;
-        } catch (BreakPointException e) {
-            Terminal.printYellow("Simulation terminated");
-            Terminal.println(": breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
-        } catch (TimeoutException e) {
-            Terminal.printYellow("Simulation terminated");
-            Terminal.println(": timeout reached at pc = " + StringUtil.addrToString(e.address) + ", time = " + e.state.getCycles());
-        } catch (AsynchronousExit e) {
-            Terminal.printYellow("Simulation terminated asynchronously");
-            Terminal.nextln();
-        } catch (Util.Error e) {
-            Terminal.printRed("Simulation terminated");
-            Terminal.print(": ");
-            e.report();
-        } catch (Throwable t) {
-            Terminal.printRed("Simulation terminated with unexpected exception");
-            Terminal.print(": ");
-            t.printStackTrace();
-        } finally {
-            TermUtil.printSeparator();
-            reportTime(simulation, delta);
-            reportMonitors(simulation);
-        }
+    protected SimAction(String h) {
+        super(h);
+        monitorListMap = new HashMap();
     }
 
     /**
@@ -174,40 +102,6 @@ public class SimAction extends Action {
         Terminal.printGreen("Node          Time   Event");
         Terminal.nextln();
         TermUtil.printThinSeparator(Terminal.MAXLINE);
-    }
-
-    protected static void reportMonitors(Simulation sim) {
-        Iterator i = sim.getNodeIterator();
-        while (i.hasNext()) {
-            Simulation.Node n = (Simulation.Node)i.next();
-            Iterator im = n.getMonitors().iterator();
-            while ( im.hasNext() ) {
-                Monitor m = (Monitor)im.next();
-                m.report();
-            }
-        }
-    }
-
-    protected static void reportTime(Simulation sim, long diff) {
-        // calculate total throughput over all threads
-        Iterator i = sim.getNodeIterator();
-        long aggCycles = 0;
-        long maxCycles = 0;
-        while ( i.hasNext() ) {
-            Simulation.Node n = (Simulation.Node)i.next();
-            Simulator simulator = n.getSimulator();
-            if ( simulator == null ) continue;
-            long count = simulator.getClock().getCount();
-            aggCycles += count;
-            if ( count > maxCycles ) maxCycles = count;
-        }
-        TermUtil.reportQuantity("Simulated time", maxCycles, "cycles");
-        TermUtil.reportQuantity("Time for simulation", TimeUtil.milliToSecs(diff), "seconds");
-        int nn = sim.getNumberOfNodes();
-        double thru = ((double)aggCycles) / (diff * 1000);
-        TermUtil.reportQuantity("Total throughput", (float)thru, "mhz");
-        if ( nn > 1 )
-            TermUtil.reportQuantity("Throughput per node", (float)(thru / nn), "mhz");
     }
 
     /**
@@ -272,15 +166,6 @@ public class SimAction extends Action {
             address = a;
             state = s;
             timeout = t;
-        }
-    }
-
-    public static class AsynchronousExit extends RuntimeException {
-    }
-
-    public class ShutdownThread extends Thread {
-        public void run() {
-            exitSimulation(new AsynchronousExit());            
         }
     }
 }
