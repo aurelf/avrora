@@ -101,8 +101,9 @@ public class RawModule extends Module {
 
     public void addQuotedLabelAt(Token val, Token label) {
         label.image = StringUtil.trimquotes(label.image);
-        int address = StringUtil.evaluateIntegerLiteral(val.image) - section.vma_start + section.lma_start;
-        RawLabel li = new RawLabel(segment, label, address);
+        int vma_addr = StringUtil.evaluateIntegerLiteral(val.image);
+        int lma_addr = vma_addr - section.vma_start + section.lma_start;
+        RawLabel li = new RawLabel(segment, label, vma_addr, lma_addr);
         addItem(li);
         labels.put(label.image.toLowerCase(), li);
     }
@@ -114,24 +115,26 @@ public class RawModule extends Module {
     public static class RawLabel extends Item {
 
         private final AbstractToken name;
-        private final int byteAddress;
+        private final int vma_addr;
+        private final int lma_addr;
 
-        RawLabel(Module.Seg s, AbstractToken n, int a) {
+        RawLabel(Module.Seg s, AbstractToken name, int vma_addr, int lma_addr) {
             super(s);
-            name = n;
-            byteAddress = a;
+            this.name = name;
+            this.vma_addr = vma_addr;
+            this.lma_addr = lma_addr;
         }
 
         public void simplify() {
-            segment.addLabel(byteAddress, name.image);
+            segment.addLabel(name.image, vma_addr, lma_addr);
         }
 
         public int getByteAddress() {
-            return byteAddress;
+            return lma_addr;
         }
 
         public String toString() {
-            return "label: " + name + " in " + segment.getName() + " @ " + byteAddress;
+            return "label: " + name + " in " + segment.getName() + " @ " + lma_addr;
         }
     }
 

@@ -102,14 +102,14 @@ public class ELFParser extends ProgramReader {
     }
 
     private void loadSymbolTables(Program p, RandomAccessFile fis) throws IOException {
-        LabelMapping map = new LabelMapping(p);
+        SourceMapping map = new SourceMapping(p);
         p.setSourceMapping(map);
         if (SYMBOLS.get()) {
             symbolTables = ELFLoader.readSymbolTables(fis, header, sht);
             Iterator i = symbolTables.iterator();
             while (i.hasNext()) {
                 ELFSymbolTable stab = (ELFSymbolTable)i.next();
-                addSymbols(map, stab, stab.getStringTable(), sht);
+                addSymbols(map, stab, stab.getStringTable());
             }
         }
     }
@@ -163,15 +163,24 @@ public class ELFParser extends ProgramReader {
         }
     }
 
-    private static void addSymbols(LabelMapping map, ELFSymbolTable stab, ELFStringTable str, ELFSectionHeaderTable sht) {
+    private void addSymbols(SourceMapping map, ELFSymbolTable stab, ELFStringTable str) {
         for (int cntr = 0; cntr < stab.entries.length; cntr++) {
             ELFSymbolTable.Entry e = stab.entries[cntr];
             if (e.isFunction() || e.isObject()) {
                 String section = sht.getSectionName(e.st_shndx);
                 String name = ELFDumpAction.getName(str, e.st_name);
-                map.newLocation(section, name, e.st_value);
+                map.newLocation(section, name, e.st_value, findLMA(e));
             }
         }
+    }
+
+    private int findLMA(ELFSymbolTable.Entry e) {
+        int vma_start = sht.entries[e.st_shndx].sh_addr;
+        for ( int i = 0; i < pht.entries.length; i++ ) {
+            if ( pht.entries[i].p_vaddr == vma_start )
+                return e.st_value - vma_start + pht.entries[i].p_paddr;
+        }
+        return 0;
     }
 
 }

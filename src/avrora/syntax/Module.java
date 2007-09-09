@@ -33,8 +33,7 @@
 package avrora.syntax;
 
 import avrora.arch.legacy.*;
-import avrora.core.LabelMapping;
-import avrora.core.Program;
+import avrora.core.*;
 import avrora.syntax.atmel.AtmelParser;
 import cck.parser.AbstractParseException;
 import cck.parser.AbstractToken;
@@ -71,7 +70,7 @@ public class Module implements Context {
     static Verbose.Printer modulePrinter = Verbose.getVerbosePrinter("loader");
 
     private static final SyntacticOperand[] NO_OPERANDS = { };
-    private LabelMapping labelMapping;
+    private SourceMapping sourceMapping;
 
     protected class Seg {
 
@@ -116,8 +115,8 @@ public class Module implements Context {
             else newprogram.writeInstr(i, baddr);
         }
 
-        public void addLabel(int baddr, String labelname) {
-            labelMapping.newLocation(name, labelname, baddr);
+        public void addLabel(String name, int vma_addr, int lma_addr) {
+            sourceMapping.newLocation(this.name, name, vma_addr, lma_addr);
         }
 
         public void setOrigin(int org) {
@@ -300,8 +299,8 @@ public class Module implements Context {
     public Program build() {
         newprogram = new Program(LegacyArchitecture.INSTANCE, programSegment.lowest_address, programSegment.highest_address);
 
-        labelMapping = new LabelMapping(newprogram);
-        newprogram.setSourceMapping(labelMapping);
+        sourceMapping = new SourceMapping(newprogram);
+        newprogram.setSourceMapping(sourceMapping);
         Iterator i = itemList.iterator();
         while (i.hasNext()) {
             Item pos = (Item)i.next();

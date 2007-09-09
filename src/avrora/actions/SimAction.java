@@ -88,7 +88,7 @@ public abstract class SimAction extends Action {
         }
 
         List loclist = Collections.list(Collections.enumeration(locset));
-        Collections.sort(loclist, LabelMapping.LOCATION_COMPARATOR);
+        Collections.sort(loclist, SourceMapping.LOCATION_COMPARATOR);
 
         return loclist;
     }

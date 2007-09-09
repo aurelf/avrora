@@ -175,8 +175,8 @@ public class SensorSimulation extends Simulation {
                     if ( location == null ) location = smap.getLocation("node_address");
                     if ( location != null ) {
                         AtmelInterpreter bi = (AtmelInterpreter)simulator.getInterpreter();
-                        bi.writeFlashByte(location.address, Arithmetic.low(id));
-                        bi.writeFlashByte(location.address+1, Arithmetic.high(id));
+                        bi.writeFlashByte(location.lma_addr, Arithmetic.low(id));
+                        bi.writeFlashByte(location.lma_addr +1, Arithmetic.high(id));
                     }
                 }
             }

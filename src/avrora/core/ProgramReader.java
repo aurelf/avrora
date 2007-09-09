@@ -94,7 +94,7 @@ public abstract class ProgramReader extends HelpCategory {
             SourceMapping sm = p.getSourceMapping();
             SourceMapping.Location loc = sm.getLocation(s.substring(0, ind));
             SourceMapping.Location tar = sm.getLocation(s.substring(ind + 1));
-            p.addIndirectEdge(loc.address, tar.address);
+            p.addIndirectEdge(loc.lma_addr, tar.lma_addr);
         }
     }
 

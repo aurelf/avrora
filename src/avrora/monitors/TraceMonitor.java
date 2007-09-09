@@ -33,7 +33,6 @@
 package avrora.monitors;
 
 import avrora.arch.AbstractInstr;
-import avrora.arch.legacy.LegacyState;
 import avrora.core.*;
 import avrora.sim.Simulator;
 import avrora.sim.State;
@@ -182,19 +181,19 @@ public class TraceMonitor extends MonitorFactory {
                 String src = str.substring(0, ind);
                 String dst = str.substring(ind + 1);
 
-                LabelMapping.Location loc = getLocation(src);
-                LabelMapping.Location tar = getLocation(dst);
+                SourceMapping.Location loc = getLocation(src);
+                SourceMapping.Location tar = getLocation(dst);
 
-                addPair(loc.address, tar.address);
+                addPair(loc.lma_addr, tar.lma_addr);
             }
         }
 
-        private LabelMapping.Location getLocation(String src) {
+        private SourceMapping.Location getLocation(String src) {
             SourceMapping lm = program.getSourceMapping();
             SourceMapping.Location loc = lm.getLocation(src);
             if ( loc == null )
                 Util.userError("Invalid program address: ", src);
-            if ( program.readInstr(loc.address) == null )
+            if ( program.readInstr(loc.lma_addr) == null )
                 Util.userError("Invalid program address: ", src);
             return loc;
         }
