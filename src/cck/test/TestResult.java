@@ -65,18 +65,6 @@ public abstract class TestResult {
         return code == SUCCESS;
     }
 
-    public boolean isInternalError() {
-        return code == INTERNAL;
-    }
-
-    public boolean isUnexpectedException() {
-        return code == EXCEPTION;
-    }
-
-    public boolean isMalformed() {
-        return code == MALFORMED;
-    }
-
     public int getColor() {
         return getColor(this.code);
     }

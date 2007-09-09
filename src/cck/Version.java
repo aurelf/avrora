@@ -54,7 +54,7 @@ public class Version {
      * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
      * CVS since the last release).
      */
-    public static final int commit = 68;
+    public static final int commit = 69;
 
     /**
      * The <code>TAG</code> field stores a reference to the version tag for the current
