@@ -51,7 +51,7 @@ public class ArchitectureRegistry {
 
     private static ClassMap archMap;
 
-    public static void addArchitectures() {
+    public static synchronized void addArchitectures() {
         if (archMap == null) {
             archMap = new ClassMap("Architecture", AbstractArchitecture.class);
             //-- DEFAULT ACTIONS

@@ -74,7 +74,7 @@ public class Defaults {
     private static ClassMap monitorMap;
     private static ClassMap simMap;
 
-    private static void addAll() {
+    private static synchronized void addAll() {
         addMicrocontrollers();
         addPlatforms();
         addActions();
@@ -85,7 +85,7 @@ public class Defaults {
         ArchitectureRegistry.addArchitectures();
     }
 
-    private static void addMonitors() {
+    private static synchronized void addMonitors() {
         if (monitorMap == null) {
             monitorMap = new ClassMap("Monitor", MonitorFactory.class);
             //-- DEFAULT MONITORS AVAILABLE
@@ -124,7 +124,7 @@ public class Defaults {
         }
     }
 
-    private static void addTestHarnesses() {
+    private static synchronized void addTestHarnesses() {
         if (harnessMap == null) {
             harnessMap = new ClassMap("Test Harness", TestEngine.Harness.class);
             //-- DEFAULT TEST HARNESSES
@@ -136,7 +136,7 @@ public class Defaults {
         }
     }
 
-    private static void addInputFormats() {
+    private static synchronized void addInputFormats() {
         if (inputs == null) {
             inputs = new ClassMap("Input Format", ProgramReader.class);
             //-- DEFAULT INPUT FORMATS
@@ -160,7 +160,7 @@ public class Defaults {
         }
     }
 
-    private static void addActions() {
+    private static synchronized void addActions() {
         if (actions == null) {
             actions = new ClassMap("Action", Action.class);
             //-- DEFAULT ACTIONS
@@ -187,7 +187,7 @@ public class Defaults {
         }
     }
 
-    private static void addSimulations() {
+    private static synchronized void addSimulations() {
         if (simMap == null) {
             simMap = new ClassMap("Simulation", Simulation.class);
             //-- DEFAULT ACTIONS
@@ -208,7 +208,7 @@ public class Defaults {
         }
     }
 
-    private static void addPlatforms() {
+    private static synchronized void addPlatforms() {
         if (platforms == null) {
             platforms = new ClassMap("Platform", PlatformFactory.class);
             //-- DEFAULT PLATFORMS
@@ -219,7 +219,7 @@ public class Defaults {
         }
     }
 
-    private static void addMicrocontrollers() {
+    private static synchronized void addMicrocontrollers() {
         if (microcontrollers == null) {
             microcontrollers = new ClassMap("Microcontroller", MicrocontrollerFactory.class);
             //-- DEFAULT MICROCONTROLLERS
