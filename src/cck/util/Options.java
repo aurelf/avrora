@@ -144,7 +144,7 @@ public class Options {
 
     }
 
-    private void setOption(String optname, String value) {
+    public void setOption(String optname, String value) {
         Option option = (Option) knownValues.get(optname);
 
         if (option == null) {

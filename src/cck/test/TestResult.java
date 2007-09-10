@@ -189,6 +189,12 @@ public abstract class TestResult {
         public void longReport() {
             Terminal.println("encountered unexpected exception");
             encountered.printStackTrace();
+            Throwable cause = encountered.getCause();
+            if ( cause != null ) {
+                Terminal.printRed("Caused by");
+                Terminal.print(": ");
+                cause.printStackTrace();
+            }
         }
     }
 
