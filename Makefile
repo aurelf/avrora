@@ -3,7 +3,7 @@
 # --> Probably the dumbest makefile ever.
 #
 
-all: cck avrora jintgen
+all: avrora
 
 cck:
 	javac -source 1.4 -d bin `find src/cck -name '*.java'`
@@ -13,7 +13,7 @@ avrora:
 	cp -r src/avrora/gui/images bin/avrora/gui
 
 jintgen:
-	javac5 -d bin `find src/jintgen src/cck -name '*.java'`
+	javac -source 1.5 -d bin `find src/jintgen src/cck -name '*.java'`
 
 clean:
 	rm -rf bin/cck bin/avrora bin/jintgen doc/*.html doc/cck doc/avrora doc/jintgen

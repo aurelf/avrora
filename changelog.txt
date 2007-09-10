@@ -18,6 +18,7 @@
     2    radio  Detect receives of radio bytes and notify radio probes
 
 ----------------------------------- Completed -----------------------------------------
+    1     arch  Architecture registry map not synchronized                    1.7.91
     1    synch  [Andreas Lachenmann] interval synchronizer patch              1.7.88
     1   eeprom  [Sascha Silbe] EEPROM support fixes                           1.7.86
     1      dev  SPIF flag in SPSR register                                    1.7.77
