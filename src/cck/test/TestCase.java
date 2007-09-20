@@ -96,10 +96,10 @@ public abstract class TestCase {
     public TestResult match(Throwable t) {
         // default behavior: no exception = pass
         if (t == null) return new TestResult.TestSuccess();
-
+        // nontermination error encountered.
+        if (t instanceof TestEngine.NonTermination) return new TestResult.NonTermError((TestEngine.NonTermination) t);
         // internal error encountered.
         if (t instanceof Util.InternalError) return new TestResult.InternalError((Util.InternalError) t);
-
         // default: unexpected exception
         return new TestResult.UnexpectedException(t);
     }
@@ -203,13 +203,9 @@ public abstract class TestCase {
          */
         protected TestResult checkError(Throwable t) {
             if (t instanceof SourceError) { // encountered compilation (or runtime) error.
-                SourceError ce = (SourceError) t;
-                return new TestResult.ExpectedPass(ce);
-            } else if (t instanceof Util.InternalError) {
-                return new TestResult.InternalError((Util.InternalError) t);
+                return new TestResult.ExpectedPass((SourceError) t);
             }
-            // default: unexpected exception
-            return new TestResult.UnexpectedException(t);
+            return super.match(t);
         }
 
         /**
@@ -228,11 +224,8 @@ public abstract class TestCase {
                     return new TestResult.TestSuccess();
                 else // incorrect compilation error.
                     return new TestResult.IncorrectError(error, ce);
-            } else if (t instanceof Util.InternalError) {
-                return new TestResult.InternalError((Util.InternalError) t);
             }
-            // default: unexpected exception
-            return new TestResult.UnexpectedException(t);
+            return super.match(t);
         }
     }
 
@@ -276,6 +269,6 @@ public abstract class TestCase {
      * a common task is to record the time taken to execute the test.
      */
     public void reportStatistics() {
-        
+        // default: do nothing.
     }
 }

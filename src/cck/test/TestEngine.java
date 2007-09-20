@@ -56,12 +56,12 @@ import java.util.Properties;
  */
 public class TestEngine {
 
+    public static int MAXIMUM_TEST_TIME = 5000;
+
     public static boolean LONG_REPORT;
     public static boolean PROGRESS_REPORT;
     public static boolean STATISTICS;
     public static int THREADS;
-    public List[] results;
-    public List successes;
 
     /**
      * The <code>TestHarness</code> interface encapsulates the notion of a testing harness that is capable of
@@ -84,9 +84,15 @@ public class TestEngine {
         public TestCase newTestCase(String fname, Properties props) throws Exception;
     }
 
+    public List[] results;
+    public List successes;
+
+    private String[] testNames;
+    private int numTests;
+    private int currentTest;
+    private int finishedTests;
+
     private final ClassMap harnessMap;
-    protected String[] testNames;
-    protected int cursor;
 
     /**
      * The constructor for the <code>TestEngine</code> class creates a new test engine
@@ -131,20 +137,21 @@ public class TestEngine {
         reportStatistics(results);
 
         // return true if all tests passed
-        return successes.size() == testNames.length;
+        return successes.size() == numTests;
     }
 
     private void reportFailures() {
-        report("Internal errors", results, TestResult.INTERNAL, testNames.length);
-        report("Unexpected exceptions", results, TestResult.EXCEPTION, testNames.length);
-        report("Failed", results, TestResult.FAILURE, testNames.length);
-        report("Malformed test cases", results, TestResult.MALFORMED, testNames.length);
+        report("Internal errors", results, TestResult.INTERNAL, numTests);
+        report("Unexpected exceptions", results, TestResult.EXCEPTION, numTests);
+        report("Failed", results, TestResult.FAILURE, numTests);
+        report("Malformed test cases", results, TestResult.MALFORMED, numTests);
+        report("Nonterminating cases", results, TestResult.NONTERM, numTests);
     }
 
     private void reportSuccesses(long time) {
         Terminal.printBrightGreen("Passed");
         Terminal.print(": " + successes.size());
-        Terminal.print(" of " + testNames.length);
+        Terminal.print(" of " + numTests);
         Terminal.print(" in " + TimeUtil.milliToSecs(time) +" seconds");
         Terminal.nextln();
     }
@@ -152,7 +159,8 @@ public class TestEngine {
     private void initTests(String[] fnames) {
         Status.ENABLED = false;
         this.testNames = fnames;
-        cursor = 0;
+        this.numTests = fnames.length;
+        currentTest = 0;
 
         results = new LinkedList[TestResult.MAX_CODE];
         for ( int cntr = 0; cntr < TestResult.MAX_CODE; cntr++ )
@@ -163,21 +171,26 @@ public class TestEngine {
 
     private void runAllTests() {
         try {
-            if ( THREADS > 1 ) {
-                // multi-threaded tests.
-                WorkThread[] threads = new WorkThread[THREADS];
+            // create worker threads
+            WorkThread[] threads = new WorkThread[THREADS];
+            for ( int cntr = 0; cntr < THREADS; cntr++ ) {
+                WorkThread thread = new WorkThread();
+                threads[cntr] = thread;
+                thread.start();
+            }
+            // if any thread is still running, check it hasn't run too long.
+            while ( finishedTests < numTests) {
+                long now = System.currentTimeMillis();
                 for ( int cntr = 0; cntr < THREADS; cntr++ ) {
-                    WorkThread thread = new WorkThread();
-                    threads[cntr] = thread;
-                    thread.start();
+                    WorkThread thread = threads[cntr];
+                    if ( thread.intest && (now - thread.test_began) > MAXIMUM_TEST_TIME) {
+                        thread.interrupt();
+                        thread.stop(new NonTermination(now - thread.test_began));
+                    }
                 }
-                for ( int cntr = 0; cntr < THREADS; cntr++ ) {
-                    threads[cntr].join();
-                }
-            } else {
-                // single-threaded tests.
-                for ( int num = nextTest(); num >= 0; num = nextTest() ) {
-                    runTest(num);
+                synchronized(this) {
+                    // last thread will signal us upon completion, but wait 1000 ms tops.
+                    this.wait(1000);
                 }
             }
         } catch (InterruptedException e) {
@@ -198,11 +211,17 @@ public class TestEngine {
 
     protected int nextTest() {
         synchronized(this) {
-            if ( cursor < testNames.length ) return cursor++;
+            if ( currentTest < numTests) return currentTest++;
             else return -1;
         }
     }
 
+    private void finishTest() {
+        synchronized(this) {
+            finishedTests++;
+            if ( finishedTests >= numTests ) this.notifyAll();
+        }
+    }
     private void reportStatistics(List[] tests) {
         if ( STATISTICS ) {
             for ( int cntr = 0; cntr < tests.length; cntr++ ) {
@@ -307,9 +326,28 @@ public class TestEngine {
         }
     }
 
-    protected class WorkThread extends Thread {
-        public void run() {
-            for ( int num = nextTest(); num >= 0; num = nextTest() ) runTest(num);
+    public class NonTermination extends Util.Error {
+        public long milliseconds;
+
+        public NonTermination(long ms) {
+            super("Nontermination Error", "test did not terminate after "+ms+" ms");
+            milliseconds = ms;
         }
+    }
+
+    protected class WorkThread extends Thread {
+        volatile boolean intest;
+        volatile long test_began;
+
+        public void run() {
+            for ( int num = nextTest(); num >= 0; num = nextTest() ) {
+                test_began = System.currentTimeMillis();
+                intest = true;
+                runTest(num);
+                finishTest();
+                intest = false;
+            }
+        }
+
     }
 }
