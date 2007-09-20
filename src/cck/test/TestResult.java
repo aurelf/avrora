@@ -51,7 +51,8 @@ public abstract class TestResult {
     public static final int EXCEPTION = 2;
     public static final int INTERNAL = 3;
     public static final int MALFORMED = 4;
-    public static final int MAX_CODE = 5;
+    public static final int NONTERM = 5;
+    public static final int MAX_CODE = 6;
 
     public final int code;
 
@@ -74,6 +75,7 @@ public abstract class TestResult {
             case SUCCESS: return Terminal.COLOR_GREEN;
             case EXCEPTION: return Terminal.COLOR_YELLOW;
             case INTERNAL: return Terminal.COLOR_YELLOW;
+            case NONTERM: return Terminal.COLOR_YELLOW;
             case MALFORMED: return Terminal.COLOR_CYAN;
         }
         return Terminal.COLOR_RED;
@@ -169,6 +171,20 @@ public abstract class TestResult {
 
         public void longReport() {
             Terminal.print("encountered internal error\n");
+            encountered.report();
+        }
+    }
+
+    public static class NonTermError extends TestFailure {
+        public final TestEngine.NonTermination encountered;
+
+        public NonTermError(TestEngine.NonTermination e) {
+            super("Test did not terminate after " + e.milliseconds+" ms", e);
+            encountered = e;
+        }
+
+        public void longReport() {
+            Terminal.print("test did not terminate\n");
             encountered.report();
         }
     }
