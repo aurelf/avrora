@@ -858,6 +858,9 @@ public class StringUtil {
 
     // TODO: test this routine with negative numbers!
     public static String toFixedFloat(float fval, int places) {
+        if ( Float.isInfinite(fval) ) return "(inf)";
+        if ( Float.isNaN(fval) ) return "(NaN)";
+
         StringBuffer buf = new StringBuffer(places + 5);
         // append the whole part
         long val = (long) fval;
