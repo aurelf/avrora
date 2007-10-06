@@ -61,7 +61,7 @@ public class TestEngine {
     public static boolean LONG_REPORT;
     public static boolean PROGRESS_REPORT;
     public static boolean STATISTICS;
-    public static int THREADS;
+    public static int THREADS = 1;
 
     /**
      * The <code>TestHarness</code> interface encapsulates the notion of a testing harness that is capable of
