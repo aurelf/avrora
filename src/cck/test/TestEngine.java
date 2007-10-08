@@ -56,7 +56,7 @@ import java.util.Properties;
  */
 public class TestEngine {
 
-    public static int MAXIMUM_TEST_TIME = 5000;
+    public static int MAXIMUM_TEST_MS = 5000;
 
     public static boolean LONG_REPORT;
     public static boolean PROGRESS_REPORT;
@@ -183,7 +183,7 @@ public class TestEngine {
                 long now = System.currentTimeMillis();
                 for ( int cntr = 0; cntr < THREADS; cntr++ ) {
                     WorkThread thread = threads[cntr];
-                    if ( thread.intest && (now - thread.test_began) > MAXIMUM_TEST_TIME) {
+                    if ( thread.intest && (now - thread.test_began) > MAXIMUM_TEST_MS) {
                         thread.interrupt();
                         thread.stop(new NonTermination(now - thread.test_began));
                     }
