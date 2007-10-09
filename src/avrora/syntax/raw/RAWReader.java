@@ -104,13 +104,13 @@ public class RAWReader extends ProgramReader {
         Iterator i = records.iterator();
         while (i.hasNext()) {
             Record r = (Record)i.next();
-            if (!init) {
+            if (init) {
+                min = Arithmetic.min(min, r.addr);
+                max = Arithmetic.max(max, r.addr + r.bytes.size());
+            } else {
                 init = true;
                 min = r.addr;
                 max = r.addr + r.bytes.size();
-            } else {
-                min = Arithmetic.min(min, r.addr);
-                max = Arithmetic.max(max, r.addr + r.bytes.size());
             }
         }
         return new Program(arch, min, max);

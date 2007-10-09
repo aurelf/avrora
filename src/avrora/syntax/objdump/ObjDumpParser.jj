@@ -61,6 +61,7 @@ PARSER_BEGIN(ObjDumpParser)
 
 package avrora.syntax.objdump;
 
+import cck.parser.SimpleCharStream;
 import avrora.*;
 import avrora.syntax.*;
 
@@ -83,14 +84,14 @@ public class ObjDumpParser extends AbstractParser  {
     }
 
     public ObjDumpParser(java.io.Reader stream, RawModule m, String fname) {
-        this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
+        this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1, 4096), fname));
 
         module = m;
         rawModule = m;
     }
 
     public void ReInit(java.io.Reader stream, RawModule m, String fname) {
-        ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
+        ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1, 4096), fname));
 
         module = m;
         rawModule = m;

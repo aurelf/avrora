@@ -54,7 +54,7 @@ public abstract class SyntacticOperand extends ASTNode implements LegacyOperand 
     protected final AbstractToken left;
     protected final AbstractToken right;
 
-    SyntacticOperand(AbstractToken l, AbstractToken r) {
+    protected SyntacticOperand(AbstractToken l, AbstractToken r) {
         left = l;
         right = r;
     }
@@ -143,11 +143,9 @@ public abstract class SyntacticOperand extends ASTNode implements LegacyOperand 
 
         public int getValueAsWord() {
             if (!simplified) throw Util.failure("expression operand not yet simplified: " + expr);
-            if (!useByteAddress) // already using a word address for this.
-                return value;
-            else {
+            if (useByteAddress) {
                 return (value >> 1);
-            }
+            } else return value;
         }
 
         public void simplify(int nextByteAddress, Context c) {

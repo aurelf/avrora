@@ -53,10 +53,7 @@ public class ODPPAction extends Action {
     protected final Option.Str FILE = newOption("file", "", "The \"file\" option, when set, indicates the file to which to output the " + "preprocessed objdump output.");
     protected final Option.List SECTIONS = newOptionList("sections", ".text,.data", "This option specifies a list of sections that the loader should load from " + "the output.");
 
-    protected final Verbose.Printer printer = Verbose.getVerbosePrinter("reader.objdump");
     private static final String HELP = "The \"odpp\" action tests the functionality of the objdump preprocessor that " + "cleans up the output of objdump into something more suitable for automated parsing.";
-
-    HashSet sections = new HashSet();
 
     public ODPPAction() {
         super(HELP);
@@ -69,13 +66,13 @@ public class ODPPAction extends Action {
 
     public void run(String[] args) throws Exception {
         ObjDumpReformatter rf = new ObjDumpReformatter(SECTIONS.get());
-        if (!FILE.isBlank()) {
+        if (FILE.isBlank()) {
+            System.out.println(rf.cleanCode(args[0]));
+        } else {
             FileOutputStream outf = new FileOutputStream(FILE.get());
             PrintWriter p = new PrintWriter(outf);
             p.write(rf.cleanCode(args[0]).toString());
             p.close();
-        } else {
-            System.out.println(rf.cleanCode(args[0]));
         }
     }
 }

@@ -61,6 +61,7 @@ PARSER_BEGIN(AtmelParser)
 
 package avrora.syntax.atmel;
 
+import cck.parser.SimpleCharStream;
 import avrora.*;
 import avrora.syntax.*;
 
@@ -81,13 +82,13 @@ public class AtmelParser extends AbstractParser {
     }
 
     public AtmelParser(java.io.Reader stream, Module m, String fname) {
-        this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
+        this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1, 4096), fname));
 
         module = m;
     }
 
     public void ReInit(java.io.Reader stream, Module m, String fname) {
-        ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
+        ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1, 4096), fname));
 
         module = m;
     }

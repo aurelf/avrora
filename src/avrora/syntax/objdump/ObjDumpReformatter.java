@@ -225,7 +225,6 @@ public class ObjDumpReformatter {
      * @return true if statement is of the form: <hexdig> <\<LABEL\>:>
      */
     private boolean isLabel(String s) {
-        if (s.indexOf('<') == -1) return false;
-        return s.indexOf(">:") != -1;
+        return s.indexOf('<') != -1 && s.indexOf(">:") != -1;
     }
 }
