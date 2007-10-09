@@ -3,25 +3,8 @@ package avrora.syntax.objdump;
 
 public interface ObjDumpParserConstants {
 
-    int EOF = 0;
-    int SINGLE_LINE_COMMENT = 7;
     int INTEGER_LITERAL = 9;
-    int DECIMAL_LITERAL = 10;
-    int HEX_LITERAL = 11;
-    int BIN_LITERAL = 12;
-    int OCTAL_LITERAL = 13;
-    int CHARACTER_LITERAL = 14;
     int STRING_LITERAL = 15;
-    int LOW = 16;
-    int HIGH = 17;
-    int BYTE2 = 18;
-    int BYTE3 = 19;
-    int BYTE4 = 20;
-    int LWRD = 21;
-    int HWRD = 22;
-    int PAGE = 23;
-    int EXP2 = 24;
-    int LOG2 = 25;
     int WORD = 26;
     int START = 27;
     int SECTION = 28;
@@ -146,13 +129,7 @@ public interface ObjDumpParserConstants {
     int TST = 147;
     int WDR = 148;
     int IDENTIFIER = 149;
-    int LETTER = 150;
-    int DIGIT = 151;
     int DOT_IDENTIFIER = 152;
-    int ADDRESS = 153;
-
-    int DEFAULT = 0;
-    int IN_SINGLE_LINE_COMMENT = 1;
 
     String[] tokenImage = { "<EOF>", "\" \"", "\"\\t\"", "\"\\n\"", "\"\\r\"", "\"\\f\"", "\";\"",
             "<SINGLE_LINE_COMMENT>", "<token of kind 8>", "<INTEGER_LITERAL>", "<DECIMAL_LITERAL>",

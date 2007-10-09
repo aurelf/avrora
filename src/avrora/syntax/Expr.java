@@ -286,7 +286,7 @@ public abstract class Expr extends ASTNode {
 
         public final AbstractToken token;
 
-        Term(AbstractToken tok) {
+        protected Term(AbstractToken tok) {
             token = tok;
         }
 
@@ -362,37 +362,6 @@ public abstract class Expr extends ASTNode {
                 }
             }
         }
-    }
-
-    /**
-     * The <code>CharLiteral</code> class represents a character literal in the program that can be used as an
-     * integer value.
-     */
-    public static class CharLiteral extends Term {
-
-        public final int value;
-
-        public CharLiteral(AbstractToken tok) {
-            super(tok);
-            try {
-                value = StringUtil.evaluateCharLiteral(tok.image);
-            } catch (Exception e) {
-                throw Util.unexpected(e);
-            }
-        }
-
-        /**
-         * The <code>evaluate()</code> method computes the value of the expression in this context and returns
-         * its value. Since this is a constant, it simply returns its value.
-         *
-         * @param currentByteAddress the current byte address within the program
-         * @param c                  the context in which to evaluate this expression
-         * @return the value of the expression as a 32-bit integer
-         */
-        public int evaluate(int currentByteAddress, Context c) {
-            return value;
-        }
-
     }
 
     /**

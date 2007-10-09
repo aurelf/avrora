@@ -101,18 +101,18 @@ public class Module implements Context {
         }
 
         public void writeDataBytes(ASTNode loc, int baddr, byte[] b) {
-            if (!acceptsData) ERROR.DataCannotBeInSegment(name, loc);
-            else newprogram.writeProgramBytes(b, baddr);
+            if (acceptsData) newprogram.writeProgramBytes(b, baddr);
+            else ERROR.DataCannotBeInSegment(name, loc);
         }
 
         public void writeDataByte(ASTNode loc, int baddr, byte b) {
-            if (!acceptsData) ERROR.DataCannotBeInSegment(name, loc);
-            else newprogram.writeProgramByte(b, baddr);
+            if (acceptsData) newprogram.writeProgramByte(b, baddr);
+            else ERROR.DataCannotBeInSegment(name, loc);
         }
 
         public void writeInstr(AbstractToken loc, int baddr, LegacyInstr i) {
-            if (!acceptsInstrs) ERROR.InstructionCannotBeInSegment(name, loc);
-            else newprogram.writeInstr(i, baddr);
+            if (acceptsInstrs) newprogram.writeInstr(i, baddr);
+            else ERROR.InstructionCannotBeInSegment(name, loc);
         }
 
         public void addLabel(String name, int vma_addr, int lma_addr) {
@@ -278,13 +278,6 @@ public class Module implements Context {
 
     // <label>
     public void addLabel(AbstractToken name) {
-        Item.Label li = new Item.Label(segment, name);
-        addItem(li);
-        labels.put(name.image.toLowerCase(), li);
-    }
-
-    public void addQuotedLabel(AbstractToken name) {
-        name.image = StringUtil.trimquotes(name.image);
         Item.Label li = new Item.Label(segment, name);
         addItem(li);
         labels.put(name.image.toLowerCase(), li);

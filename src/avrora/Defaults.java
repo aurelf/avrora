@@ -45,7 +45,6 @@ import avrora.sim.platform.*;
 import avrora.sim.types.*;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.elf.ELFParser;
-import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.objdump.*;
 import avrora.syntax.raw.RAWReader;
 import avrora.test.*;
@@ -142,7 +141,6 @@ public class Defaults {
             //-- DEFAULT INPUT FORMATS
             inputs.addClass("auto", AutoProgramReader.class);
             inputs.addClass("raw", RAWReader.class);
-            inputs.addClass("gas", GASProgramReader.class);
             inputs.addClass("atmel", AtmelProgramReader.class);
             inputs.addClass("objdump", ObjDumpProgramReader.class);
             inputs.addClass("odpp", ObjDump2ProgramReader.class);
@@ -414,8 +412,6 @@ public class Defaults {
             ProgramReader reader = null;
             if (".asm".equals(extension))
                 reader = new AtmelProgramReader();
-            else if (".s".equals(extension))
-                reader = new GASProgramReader();
             else if (".od".equals(extension))
                 reader = new ObjDumpProgramReader();
             else if (".odpp".equals(extension))

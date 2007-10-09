@@ -3,14 +3,7 @@ package avrora.syntax.atmel;
 
 public interface AtmelParserConstants {
 
-    int EOF = 0;
-    int SINGLE_LINE_COMMENT = 7;
     int INTEGER_LITERAL = 9;
-    int DECIMAL_LITERAL = 10;
-    int HEX_LITERAL = 11;
-    int BIN_LITERAL = 12;
-    int OCTAL_LITERAL = 13;
-    int CHARACTER_LITERAL = 14;
     int STRING_LITERAL = 15;
     int LOW = 16;
     int HIGH = 17;
@@ -139,11 +132,6 @@ public interface AtmelParserConstants {
     int TST = 140;
     int WDR = 141;
     int IDENTIFIER = 142;
-    int LETTER = 143;
-    int DIGIT = 144;
-
-    int DEFAULT = 0;
-    int IN_SINGLE_LINE_COMMENT = 1;
 
     String[] tokenImage = { "<EOF>", "\" \"", "\"\\t\"", "\"\\n\"", "\"\\r\"", "\"\\f\"", "\";\"",
             "<SINGLE_LINE_COMMENT>", "<token of kind 8>", "<INTEGER_LITERAL>", "<DECIMAL_LITERAL>",

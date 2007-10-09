@@ -76,7 +76,4 @@ public class ExprList extends ASTNode {
         length++;
     }
 
-    public int length() {
-        return length;
-    }
 }
