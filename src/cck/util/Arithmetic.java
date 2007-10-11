@@ -290,4 +290,18 @@ public class Arithmetic {
     public static int min(int m1, int m2) {
         return m1 < m2 ? m1 : m2;
     }
+
+    public static byte packBits(boolean b0, boolean b1, boolean b2, boolean b3,
+                                boolean b4, boolean b5, boolean b6, boolean b7) {
+        int val = 0;
+        if ( b0 ) val |= 0x1;
+        if ( b1 ) val |= 0x1 << 1;
+        if ( b2 ) val |= 0x1 << 2;
+        if ( b3 ) val |= 0x1 << 3;
+        if ( b4 ) val |= 0x1 << 4;
+        if ( b5 ) val |= 0x1 << 5;
+        if ( b6 ) val |= 0x1 << 6;
+        if ( b7 ) val |= 0x1 << 7;
+        return (byte)val;
+    }
 }

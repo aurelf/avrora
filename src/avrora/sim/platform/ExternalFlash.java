@@ -150,11 +150,11 @@ public class ExternalFlash {
         stateMachine = new FiniteStateMachine(clock, startMode, modeName, 0);
         // connect Pins
         // output
-        mcu.getPin("PA3").connect(new PA3Output());
-        mcu.getPin("PD3").connect(new PD3Output());
-        mcu.getPin("PD5").connect(new PD5Output());
+        mcu.getPin("PA3").connectOutput(new PA3Output());
+        mcu.getPin("PD3").connectOutput(new PD3Output());
+        mcu.getPin("PD5").connectOutput(new PD5Output());
         // input
-        mcu.getPin("PD2").connect(new PD2Input());
+        mcu.getPin("PD2").connectInput(new PD2Input());
 
         //setup energy recording
         new Energy("flash", modeAmpere, stateMachine);
@@ -222,7 +222,7 @@ public class ExternalFlash {
     }
 
     // Flash_CS as output pin
-    protected class PA3Output extends Microcontroller.OutputPin {
+    protected class PA3Output implements Microcontroller.Pin.Output {
         // Flash_CS is connected inverted
         public void write(boolean level) {
             if (!level && !isSelected) {
@@ -360,7 +360,7 @@ public class ExternalFlash {
     }
 
     // USART1_TXD as output pin connected to SI
-    protected class PD3Output extends Microcontroller.OutputPin {
+    protected class PD3Output implements Microcontroller.Pin.Output {
 
         public void write(boolean level) {
             si = level;
@@ -368,7 +368,7 @@ public class ExternalFlash {
     }
 
     // USART1_CLK as output pin connected to SCK
-    protected class PD5Output extends Microcontroller.OutputPin {
+    protected class PD5Output implements Microcontroller.Pin.Output {
         private short temp;
 
         public void write(boolean level) {
@@ -623,7 +623,7 @@ public class ExternalFlash {
     }
 
     // Flash_RXD as input pin from SO
-    protected class PD2Input extends Microcontroller.InputPin {
+    protected class PD2Input implements Microcontroller.Pin.Input {
         // connected to serial output of dataflash
         public boolean read() {
             return so;

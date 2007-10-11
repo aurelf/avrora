@@ -82,6 +82,46 @@ public class RegisterUtil {
         }
     }
 
+    public static class ByteArrayView implements RegisterView {
+        protected final byte[] values;
+        protected final int index;
+
+        public ByteArrayView(byte[] v, int i) {
+            values = v;
+            index = i;
+        }
+        public int getWidth() {
+            return 8;
+        }
+        public int getValue() {
+            return values[index];
+        }
+
+        public void setValue(int val) {
+            values[index] = (byte)val;
+        }
+    }
+
+    public static class CharArrayView implements RegisterView {
+        protected final char[] values;
+        protected final int index;
+
+        public CharArrayView(char[] v, int i) {
+            values = v;
+            index = i;
+        }
+        public int getWidth() {
+            return 16;
+        }
+        public int getValue() {
+            return values[index];
+        }
+
+        public void setValue(int val) {
+            values[index] = (char)val;
+        }
+    }
+
     public static class BitRangeView implements RegisterView {
         protected final RegisterView reg;
         protected final byte low;

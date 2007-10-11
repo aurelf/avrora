@@ -265,19 +265,14 @@ public class SensorSimulation extends Simulation {
     }
 
     private void createNodes(String[] args, PlatformFactory pf) throws Exception {
-        int cntr = 0;
         Iterator i = NODECOUNT.get().iterator();
-        while (i.hasNext()) {
-
-            if (args.length <= cntr) break;
-
-            String pname = args[cntr++];
-            LoadableProgram lp = new LoadableProgram(pname);
+        for ( int arg = 0; arg < args.length; arg++ ) {
+            int count = i.hasNext() ? StringUtil.evaluateIntegerLiteral((String)i.next()) : 1;
+            LoadableProgram lp = new LoadableProgram(args[arg]);
             lp.load();
 
             // create a number of nodes with the same program
-            int max = StringUtil.evaluateIntegerLiteral((String)i.next());
-            for (int node = 0; node < max; node++) {
+            for (int node = 0; node < count; node++) {
                 SensorNode n = (SensorNode)createNode(pf, lp);
                 long r = processRandom();
                 long s = processStagger();

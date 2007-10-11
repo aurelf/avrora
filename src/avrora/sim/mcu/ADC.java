@@ -48,14 +48,14 @@ public class ADC extends AtmelInternalDevice {
     public static final int GND_LEVEL = 0x000;
 
     private static final ADCInput VBG_INPUT = new ADCInput() {
-        public int getLevel() {
-            return VBG_LEVEL; // figure out correct value for this eventually
+        public int getVoltage() {
+            return VBG_LEVEL;
         }
     };
 
     private static final ADCInput GND_INPUT = new ADCInput() {
-        public int getLevel() {
-            return GND_LEVEL; // figure out correct value for this eventually
+        public int getVoltage() {
+            return GND_LEVEL;
         }
     };
 
@@ -68,6 +68,8 @@ public class ADC extends AtmelInternalDevice {
 
     final ADCInput[] connectedDevices;
 
+    int voltageRef = VBG_LEVEL;
+
     /**
      * The <code>ADCInput</code> interface is used by inputs into the analog to digital converter.
      */
@@ -76,9 +78,9 @@ public class ADC extends AtmelInternalDevice {
         /**
          * Report the current voltage level of the input.
          *
-         * @return an integer value representing the voltage level of the input
+         * @return an integer value representing the voltage level of the input, in millivolts
          */
-        public int getLevel();
+        public int getVoltage();
     }
 
 
@@ -103,15 +105,21 @@ public class ADC extends AtmelInternalDevice {
         interpreter.getInterruptTable().registerInternalNotification(ADCSRA_reg, interruptNum);
     }
 
-    private int calculateADC(int channel) {
+    /**
+     * The <code>setVoltageRef()</code> method sets the external (Vref) voltage for the ADC converter.
+     * @param vref the voltage reference in millivolts
+     */
+    public void setVoltageRef(int vref) {
+        voltageRef = vref;
+    }
 
-        if (ADMUX_reg.singleEndedInput) {
-            //return 1;// VIN * 102/ VREG
-            if (connectedDevices[channel] != null) return connectedDevices[channel].getLevel();
-            else return 0;
-        } else {
-            return 2; // (VPOS - VNEG) * GAIN * 512 / VREF
-        }
+    /**
+     * The <code>getVoltageRef()</code> method returns the external (Vref) voltage that is currently
+     * being used by the ADC converter.
+     * @return the voltage reference in millivolts
+     */
+    public int getVoltageRef() {
+        return voltageRef;
     }
 
     /**
@@ -325,7 +333,7 @@ public class ADC extends AtmelInternalDevice {
         }
 
         /**
-         * The conversion event for the ADC. It is first at a certain interval after the start conversion bit
+         * The conversion event for the ADC. It is fired at a certain delay after the start conversion bit
          * in the control register is set.
          */
         private class Conversion implements Simulator.Event {
@@ -333,7 +341,7 @@ public class ADC extends AtmelInternalDevice {
             public void fire() {
 
                 int channel = ADMUX_reg.singleInputIndex;
-                int val = calculateADC(channel);
+                int val = convertVoltage(channel);
                 if (devicePrinter.enabled) {
                     devicePrinter.println("ADC: Conversion completed on channel " + channel + ": " + StringUtil.to0xHex(val, 3));
                 }
@@ -350,6 +358,22 @@ public class ADC extends AtmelInternalDevice {
                 }
             }
         }
+
+        private int convertVoltage(int channel) {
+            ADCInput dev = connectedDevices[channel];
+            int vin = dev != null ? dev.getVoltage() : 0;
+            int vref = voltageRef; // TODO: select correct voltage reference from ADMUX register.
+            if (ADMUX_reg.singleEndedInput) {
+                // single ended conversions don't require amplification
+                if ( vin >= vref ) return 0x3ff;
+                return 0x3ff & (vin * 1024 / vref);
+            } else {
+                // differential gain amplifier.
+                // TODO: calculate (VPOS - VNEG) * GAIN * 512 / VREF
+                return 0x3ff & (vin * 1024 / vref);
+            }
+        }
+
 
         public void force(int inum) {
             // set the interrupt flag accordingly

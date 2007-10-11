@@ -155,11 +155,11 @@ public abstract class DefaultMCU implements Microcontroller {
             number = num;
         }
 
-        public void connect(Output o) {
+        public void connectOutput(Output o) {
             output = o;
         }
 
-        public void connect(Input i) {
+        public void connectInput(Input i) {
             input = i;
         }
 

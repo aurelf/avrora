@@ -38,8 +38,7 @@ import avrora.sim.clock.ClockDomain;
 import avrora.sim.mcu.*;
 import avrora.sim.platform.sensors.LightSensor;
 import avrora.sim.platform.sensors.SensorBoard;
-import avrora.sim.radio.CC2420Radio;
-import avrora.sim.radio.Radio;
+import avrora.sim.radio.*;
 import cck.text.Terminal;
 
 /**
@@ -74,7 +73,7 @@ public class MicaZ extends Platform {
 
     protected final Simulator sim;
 
-    protected Radio radio;
+    protected CC2420Radio radio;
     protected SensorBoard sensorboard;
     protected ExternalFlash externalFlash;
     protected LightSensor lightSensor;
@@ -98,12 +97,24 @@ public class MicaZ extends Platform {
         green.enablePrinting();
         red.enablePrinting();
 
-        mcu.getPin("PA0").connect(yellow);
-        mcu.getPin("PA1").connect(green);
-        mcu.getPin("PA2").connect(red);
+        mcu.getPin("PA0").connectOutput(yellow);
+        mcu.getPin("PA1").connectOutput(green);
+        mcu.getPin("PA2").connectOutput(red);
 
-        // radio
-        radio = new CC2420Radio(mcu, MAIN_HZ * 2);
+        // install the new CC2420 radio
+        CC2420Radio radio = new CC2420Radio(mcu, MAIN_HZ * 2);
+        mcu.getPin(11).connectOutput(radio.SCLK_pin);
+        mcu.getPin(12).connectOutput(radio.MOSI_pin);
+        mcu.getPin(13).connectInput(radio.MISO_pin);
+        mcu.getPin(17).connectInput(radio.FIFO_pin);
+        mcu.getPin(8).connectInput(radio.FIFOP_pin);
+        mcu.getPin(31).connectInput(radio.CCA_pin);
+        mcu.getPin(29).connectInput(radio.SFD_pin);
+        mcu.getPin(10).connectOutput(radio.CS_pin);
+        ADC adc = (ADC)getDevice("adc");
+        adc.connectADCInput(radio.adcInterface, 0);
+        SPI spi = (SPI)getDevice("spi");
+        spi.connect(radio.spiInterface);
         addDevice("radio", radio);
         // sensor board
         sensorboard = new SensorBoard(sim);

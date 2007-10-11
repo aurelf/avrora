@@ -54,14 +54,14 @@ public class LightSensor extends Sensor {
     public LightSensor(AtmelMicrocontroller m, int adcChannel, String onPin, String powPin) {
         mcu = m;
         channel = adcChannel;
-        mcu.getPin(onPin).connect(new OnPin());
-        mcu.getPin(powPin).connect(new PowerPin());
+        mcu.getPin(onPin).connectOutput(new OnPin());
+        mcu.getPin(powPin).connectOutput(new PowerPin());
         fsm = new FiniteStateMachine(mcu.getClockDomain().getMainClock(), 0, names, 0);
         ADC adc = (ADC)mcu.getDevice("adc");
         adc.connectADCInput(new ADCInput(), channel);
     }
 
-    class OnPin extends Microcontroller.OutputPin {
+    class OnPin implements Microcontroller.Pin.Output {
         public void write(boolean val) {
             // TODO: is there an inverter?
             on = !val;
@@ -69,7 +69,7 @@ public class LightSensor extends Sensor {
         }
     }
 
-    class PowerPin extends Microcontroller.OutputPin {
+    class PowerPin implements Microcontroller.Pin.Output {
         public void write(boolean val) {
             power = val;
             fsm.transition(state());
@@ -83,7 +83,7 @@ public class LightSensor extends Sensor {
     }
 
     class ADCInput implements ADC.ADCInput {
-        public int getLevel() {
+        public int getVoltage() {
             if ( data == null ) return ADC.GND_LEVEL;
             if ( !power || !on ) return ADC.GND_LEVEL;
             return data.reading();
