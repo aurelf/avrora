@@ -1111,7 +1111,7 @@ public class CC1000Radio implements Radio {
             spiDevice = d;
         }
 
-        public int getLevel() {
+        public int getVoltage() {
             // ask the air for the current RSSI value
             if ( air != null )
                 return air.sampleRSSI(CC1000Radio.this);
@@ -1170,10 +1170,10 @@ public class CC1000Radio implements Radio {
             readerPrinter = SimUtil.getPrinter(sim, "radio.cc1000.pinconfig");
 
             //install outputs
-            mcu.getPin(31).connect(new PCLKOutput());
-            mcu.getPin(32).connect(new PDATAOutput());
-            mcu.getPin(32).connect(new PDATAInput());
-            mcu.getPin(29).connect(new PALEOutput());
+            mcu.getPin(31).connectOutput(new PCLKOutput());
+            mcu.getPin(32).connectOutput(new PDATAOutput());
+            mcu.getPin(32).connectInput(new PDATAInput());
+            mcu.getPin(29).connectOutput(new PALEOutput());
 
         }
 
@@ -1181,7 +1181,7 @@ public class CC1000Radio implements Radio {
          * Clocking the PCLK pin is what drives the action of the configuration interface. One bit of data on
          * PDATA per clock.
          */
-        protected class PCLKOutput extends Microcontroller.OutputPin {
+        protected class PCLKOutput implements Microcontroller.Pin.Output {
             protected boolean last;
             public void write(boolean level) {
                 // only trigger on level changes
@@ -1192,20 +1192,20 @@ public class CC1000Radio implements Radio {
             }
         }
 
-        protected class PDATAInput extends Microcontroller.InputPin {
+        protected class PDATAInput implements Microcontroller.Pin.Input {
             public boolean read() {
                 return outputPin;
             }
         }
 
-        protected class PDATAOutput extends Microcontroller.OutputPin {
+        protected class PDATAOutput implements Microcontroller.Pin.Output {
 
             public void write(boolean level) {
                 inputPin = level;
             }
         }
 
-        protected class PALEOutput extends Microcontroller.OutputPin {
+        protected class PALEOutput implements Microcontroller.Pin.Output {
             protected boolean last;
             public void write(boolean level) {
                 if ( level == last ) return;

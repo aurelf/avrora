@@ -102,9 +102,9 @@ public class Mica2 extends Platform {
         //green.enablePrinting();
         //red.enablePrinting();
 
-        mcu.getPin("PA0").connect(yellow);
-        mcu.getPin("PA1").connect(green);
-        mcu.getPin("PA2").connect(red);
+        mcu.getPin("PA0").connectOutput(yellow);
+        mcu.getPin("PA1").connectOutput(green);
+        mcu.getPin("PA2").connectOutput(red);
 
         // radio
         radio = new CC1000Radio(mcu, RADIO_HZ);

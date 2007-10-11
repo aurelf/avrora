@@ -89,6 +89,7 @@
     2    probe  Event profiler that collects min, max, mean statistics
 
 ----------------------------------- Completed -----------------------------------------
+    2     devs  Added Medium implementation                                  1.7.93
     1      sim  [Sascha Silbe] Allow loading of EEPROM image from a file     1.7.86
     1   probes  Added SPIForwarder and SPIMonitor                            1.7.78
     1   probes  [Sascha Silbe] added support for multiple USART connx        1.7.77
@@ -151,6 +152,10 @@
     2     devs  Introduce Channel class to simplify SPI and USART implem.
 
 ----------------------------------- Completed -----------------------------------------
+    1      sim  sensor-network nodecount option now smarter                  1.7.93
+    1     devs  Removed enableInput() methods from Pin.Input, etc            1.7.93
+    1     devs  Refactored ADC to use millivolts inputs                      1.7.93
+    3     devs  Completely new CC2420 implementation                         1.7.93
     1    input  Removed GASParser and cleaned up all parsers                 1.7.92
     1    input  Factored all SimpleCharStreams to use cck.parser             1.7.92
     1     devs  Added LED.LEDGroup for use with red/green/yellow mica2       1.7.71

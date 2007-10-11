@@ -47,7 +47,7 @@ import cck.text.Terminal;
  *
  * @author Ben L. Titzer
  */
-public class LED extends Microcontroller.OutputPin {
+public class LED implements Microcontroller.Pin.Output {
     protected Simulator sim;
 
     protected final int colornum;

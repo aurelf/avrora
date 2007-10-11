@@ -126,7 +126,7 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
      * @return a reference to the <code>Field</code> object that represents the field
      */
     public RegisterSet.Field getField(String fname) {
-	return registers.getField(fname);
+	    return registers.getField(fname);
     }
 
     /**
@@ -138,7 +138,7 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
      * @return the new field installed
      */
     public RegisterSet.Field installField(String fname, RegisterSet.Field fo) {
-	return registers.installField(fname, fo);
+	    return registers.installField(fname, fo);
     }
 
     /**

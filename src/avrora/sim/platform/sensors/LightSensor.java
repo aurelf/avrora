@@ -50,7 +50,6 @@ public class LightSensor extends Sensor {
     protected static final String[] names = { "power down", "off", "on" };
     protected boolean power;
     protected boolean on;
-    public ADC adcDevice;
 
     public LightSensor(AtmelMicrocontroller m, int adcChannel, String onPin, String powPin) {
         mcu = m;
@@ -58,8 +57,8 @@ public class LightSensor extends Sensor {
         mcu.getPin(onPin).connectOutput(new OnPin());
         mcu.getPin(powPin).connectOutput(new PowerPin());
         fsm = new FiniteStateMachine(mcu.getClockDomain().getMainClock(), 0, names, 0);
-        adcDevice = (ADC)mcu.getDevice("adc");
-        adcDevice.connectADCInput(new ADCInput(), channel);
+        ADC adc = (ADC)mcu.getDevice("adc");
+        adc.connectADCInput(new ADCInput(), channel);
     }
 
     class OnPin implements Microcontroller.Pin.Output {
@@ -84,12 +83,10 @@ public class LightSensor extends Sensor {
     }
 
     class ADCInput implements ADC.ADCInput {
-        public float getVoltage() {
+        public int getVoltage() {
             if ( data == null ) return ADC.GND_LEVEL;
             if ( !power || !on ) return ADC.GND_LEVEL;
-            int read = data.reading();
-            // scale the reading back to a voltage.
-            return adcDevice.getVoltageRef() * ((float)read) / 0x3ff;
+            return data.reading();
         }
     }
 }
