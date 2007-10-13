@@ -250,13 +250,17 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
 
         public byte read() {
             byte value = 0;
-	    for (int bit = 0; bit < pins.length; bit++)
-		value |= (pins[bit] != null && pins[bit].read()) ? 1 << bit : 0;
+            for (int bit = 0; bit < pins.length; bit++)
+                value |= pinHigh(bit) ? 1 << bit : 0;
             return value;
         }
 
         public boolean readBit(int bit) {
-            return (pins[bit] != null) && pins[bit].read(); // Disconnected read always zero
+            return pinHigh(bit); // Disconnected read always zero
+        }
+
+        private boolean pinHigh(int bit) {
+            return pins[bit] != null && pins[bit].read();
         }
 
         public void write(byte val) {

@@ -292,4 +292,23 @@ public class RegisterUtil {
     public static void instrumentRegister(SimUtil.SimPrinter sp, Register reg, String name) {
         if ( sp.enabled ) reg.addWatch(new RegisterPrinter(sp, name));
     }
+
+    public static class ConstantBehavior extends VolatileBehavior {
+        public final int value;
+        public ConstantBehavior(int val) {
+            value = val;
+        }
+        public int read(int cur) {
+            return value;
+        }
+        public int write(int cur, int nv) {
+            return value;
+        }
+    }
+
+    public static class ReadonlyBehavior extends VolatileBehavior {
+        public int write(int cur, int nv) {
+            return cur;
+        }
+    }
 }

@@ -57,7 +57,7 @@ public class InterpreterError {
     }
 
     /**
-     * The <code>PCOutOfBoundsException</code> is thrown when the progrma attempts to execute
+     * The <code>PCOutOfBoundsException</code> is thrown when the program attempts to execute
      * an instruction outside the bounds of the flash.
      */
     public static class PCOutOfBoundsException extends Util.Error {

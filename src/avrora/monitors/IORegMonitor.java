@@ -154,10 +154,13 @@ public class IORegMonitor extends MonitorFactory {
              *
              * @param state     the state of the simulation
              * @param data_addr the address of the data being referenced
-             * @param value     the value of the memory location being read
              */
-            public void fireAfterRead(State state, int data_addr, byte value) {
-                printer.println(name+"      -> "+render(value));
+            public void fireBeforeRead(State state, int data_addr) {
+                printer.println(name+"      -> xx xxxxxxxx");
+            }
+
+            public void fireAfterRead(State state, int data_addr, byte val) {
+                printer.println(name+"      -> "+render(val));
             }
 
         }

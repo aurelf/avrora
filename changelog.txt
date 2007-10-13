@@ -89,44 +89,44 @@
     2    probe  Event profiler that collects min, max, mean statistics
 
 ----------------------------------- Completed -----------------------------------------
-    2     devs  Added Medium implementation                                  1.7.93
-    1      sim  [Sascha Silbe] Allow loading of EEPROM image from a file     1.7.86
-    1   probes  Added SPIForwarder and SPIMonitor                            1.7.78
-    1   probes  [Sascha Silbe] added support for multiple USART connx        1.7.77
-    1   probes  Added VirgilMonitor for watching for Virgil-level exceptions 1.7.76
-    1     devs  Added ATMega169 from Anttu Koski                             1.7.70
-    2     devs  Added new versions of ATMega, ATMegaTimer                    1.7.66
-    1     devs  Added first version of ATMegaTimer class                     1.7.65
-    2    probe  Implemented CallTrace and CallStack utilities for probes     1.7.57
-    2    probe  [John Regehr] added Break, Icall, Print, etc monitors        1.7.56
-    1    input  ELF format loads symbols for use in monitors                 1.7.56
-    1    probe  Implement stack change probe that uses probes, watches       1.7.38
-  2-3    input  ELF format reader                                            1.7.xx
+    2     devs  Added Medium implementation                                  1.7.093
+    1      sim  [Sascha Silbe] Allow loading of EEPROM image from a file     1.7.086
+    1   probes  Added SPIForwarder and SPIMonitor                            1.7.078
+    1   probes  [Sascha Silbe] added support for multiple USART connx        1.7.077
+    1   probes  Added VirgilMonitor for watching for Virgil-level exceptions 1.7.076
+    1     devs  Added ATMega169 from Anttu Koski                             1.7.070
+    2     devs  Added new versions of ATMega, ATMegaTimer                    1.7.066
+    1     devs  Added first version of ATMegaTimer class                     1.7.065
+    2    probe  Implemented CallTrace and CallStack utilities for probes     1.7.057
+    2    probe  [John Regehr] added Break, Icall, Print, etc monitors        1.7.056
+    1    input  ELF format loads symbols for use in monitors                 1.7.056
+    1    probe  Implement stack change probe that uses probes, watches       1.7.038
+  2-3    input  ELF format reader                                            1.7.xxx
     1    probe  Added simplest interactive monitor                           1.5.118
     1      sim  Automatically patch node ID for TinyOS and SOS               1.5.116
     1      sim  [Bastian Schlich] ATMega16 device added                      1.5.109
   2-3      sim  Full support for ATMega32 device                             1.5.105
     1     devs  Added lightsensor, RandomSensorData                          1.5.103
     1     devs  First version of RegisterSet for bitfields                   1.5.102
-    1    input  Fixed sections option to allow loading user sections         1.5.94
-    2    probe  Implemented probing of interrupts                            1.5.94
-    2    radio  Implemented probing interface for radio                      1.5.89
-    1    probe  [Simon Han] improved TripTimeMonitor                         1.5.89
-    1   energy  [Olaf Landsiedel] ported Energy to use FSM.Probe             1.5.88
-    2     devs  [Thomas Gaertner] implemented external flash                 1.5.88
-    2    probe  [Jey Kottalam] added probing for invalid mem accesses        1.5.85
-    2    stack  Added first version of ISE abstract interpreter              1.5.79
-    2      sim  Added interrupt scheduling patch from John Regehr            1.5.77
-    1      sim  Started work on ATMega32 device                              1.5.69
-    3      sim  Support dynamic code update with SPM                         1.5.66
-    2      sim  PinWire and PinConnection code from Jacob Everist            1.5.57
-    2      sim  Ability to boot from locations other than 0x0000             1.5.54
-    4  jintgen  Generate Disassembler                                        1.5.51
-    2  jintgen  Generate tests for Disassembler                              1.5.50
-    1    probe  implemented simple call / return monitor                     1.5.42
-    1    probe  implemented simple command line probing of IORegs            1.5.40
-    2    probe  Implement probing for IO registers                           1.5.40
-    1     sim   new: ClockDomain, refactored MCU construction                1.5.32
+    1    input  Fixed sections option to allow loading user sections         1.5.094
+    2    probe  Implemented probing of interrupts                            1.5.094
+    2    radio  Implemented probing interface for radio                      1.5.089
+    1    probe  [Simon Han] improved TripTimeMonitor                         1.5.089
+    1   energy  [Olaf Landsiedel] ported Energy to use FSM.Probe             1.5.088
+    2     devs  [Thomas Gaertner] implemented external flash                 1.5.088
+    2    probe  [Jey Kottalam] added probing for invalid mem accesses        1.5.085
+    2    stack  Added first version of ISE abstract interpreter              1.5.079
+    2      sim  Added interrupt scheduling patch from John Regehr            1.5.077
+    1      sim  Started work on ATMega32 device                              1.5.069
+    3      sim  Support dynamic code update with SPM                         1.5.066
+    2      sim  PinWire and PinConnection code from Jacob Everist            1.5.057
+    2      sim  Ability to boot from locations other than 0x0000             1.5.054
+    4  jintgen  Generate Disassembler                                        1.5.051
+    2  jintgen  Generate tests for Disassembler                              1.5.050
+    1    probe  implemented simple call / return monitor                     1.5.042
+    1    probe  implemented simple command line probing of IORegs            1.5.040
+    2    probe  Implement probing for IO registers                           1.5.040
+    1     sim   new: ClockDomain, refactored MCU construction                1.5.032
     1    probe  FiniteStateMachine, probing                                  1.5.x
     4    probe  Implement GDB server backend                                 1.4.0
   2-3  jintgen  Constant/copy propagation optimizations                      1.4.0
@@ -152,35 +152,37 @@
     2     devs  Introduce Channel class to simplify SPI and USART implem.
 
 ----------------------------------- Completed -----------------------------------------
-    1      sim  sensor-network nodecount option now smarter                  1.7.93
-    1     devs  Removed enableInput() methods from Pin.Input, etc            1.7.93
-    1     devs  Refactored ADC to use millivolts inputs                      1.7.93
-    3     devs  Completely new CC2420 implementation                         1.7.93
-    1    input  Removed GASParser and cleaned up all parsers                 1.7.92
-    1    input  Factored all SimpleCharStreams to use cck.parser             1.7.92
-    1     devs  Added LED.LEDGroup for use with red/green/yellow mica2       1.7.71
-    1     devs  Added first version of avrora.sim.state.Register             1.7.66
-    1     devs  Added some utility methods to AtmelMicrocontroller           1.7.65
-    1    probe  migrate to SourceMapping, remove Program.Location            1.7.42
-    2     util  Extracted util.* into cck repository                         1.7.xx
+    3      sim  Refactored AtmelInterpreter to use VolatileBehavior          1.7.094
+    1      sim  VolatileBehavior to eventually replace ActiveRegister        1.7.094
+    1      sim  sensor-network nodecount option now smarter                  1.7.093
+    1     devs  Removed enableInput() methods from Pin.Input, etc            1.7.093
+    1     devs  Refactored ADC to use millivolts inputs                      1.7.093
+    3     devs  Completely new CC2420 implementation                         1.7.093
+    1    input  Removed GASParser and cleaned up all parsers                 1.7.092
+    1    input  Factored all SimpleCharStreams to use cck.parser             1.7.092
+    1     devs  Added LED.LEDGroup for use with red/green/yellow mica2       1.7.071
+    1     devs  Added first version of avrora.sim.state.Register             1.7.066
+    1     devs  Added some utility methods to AtmelMicrocontroller           1.7.065
+    1    probe  migrate to SourceMapping, remove Program.Location            1.7.042
+    2     util  Extracted util.* into cck repository                         1.7.xxx
     2      sim  Introduce Simulation class                                   1.5.104
     2      sim  read/write vs get/set for State                              1.5.102
     2     devs  USART abstracted to work on multiple devices                 1.5.101
-    2      sim  Simplified and streamlined interrupt handling                1.5.94
-  2-3    radio  Separate synch mechanism from Radio implementation           1.5.83
-    1      sim  Renamed Radio.RadioPacket to Radio.Transmission              1.5.76
-    2      sim  Introduced Synchronizer abstract                             1.5.75
-    2    probe  Changed fireXXX() to accept only state and PC                1.5.62
-    1      sim  Introduced Segment class for SRAM, flash, EEPROM             1.5.62
-    2      sim  Introduce SourceMapping class                                1.5.42
-    1      sim  Rename and move IOReg interface out of State                 1.5.39
-    1      sim  Move timeouts out of Simulator                               1.5.39
-    1    input  Added help for input formats                                 1.5.38
-    1    input  Moved handling of indirect edges to ProgramReader            1.5.38
-    2    probe  Migrate sleep probe to FiniteStateMachine.Probe              1.5.37
-  3-4     devs  Extract ATMega128L devices                                   1.5.37
-    2     help  global migrate to HelpSystem, HelpCategories                 1.5.30
-    1     main  Remove shortName from Action, MonitorFactory                 1.5.28
+    2      sim  Simplified and streamlined interrupt handling                1.5.094
+  2-3    radio  Separate synch mechanism from Radio implementation           1.5.083
+    1      sim  Renamed Radio.RadioPacket to Radio.Transmission              1.5.076
+    2      sim  Introduced Synchronizer abstract                             1.5.075
+    2    probe  Changed fireXXX() to accept only state and PC                1.5.062
+    1      sim  Introduced Segment class for SRAM, flash, EEPROM             1.5.062
+    2      sim  Introduce SourceMapping class                                1.5.042
+    1      sim  Rename and move IOReg interface out of State                 1.5.039
+    1      sim  Move timeouts out of Simulator                               1.5.039
+    1    input  Added help for input formats                                 1.5.038
+    1    input  Moved handling of indirect edges to ProgramReader            1.5.038
+    2    probe  Migrate sleep probe to FiniteStateMachine.Probe              1.5.037
+  3-4     devs  Extract ATMega128L devices                                   1.5.037
+    2     help  global migrate to HelpSystem, HelpCategories                 1.5.030
+    1     main  Remove shortName from Action, MonitorFactory                 1.5.028
     1     main  Move class maps and defaults to Defaults                     1.5.x
     1      sim  Refactor microcontroller instantiation                       1.5.x
     1    input  Check for invalid register names                             1.5.x
@@ -212,11 +214,11 @@
     1      sim  Probes for skip instructions (instr. size calculation)
 
 ----------------------------------- Completed -----------------------------------------
-    3  jintgen  ISDL errors                                                  1.7.3x
-    1     test  Moved testcases from source directory to test dir            1.7.1
+    3  jintgen  ISDL errors                                                  1.7.03x
+    1     test  Moved testcases from source directory to test dir            1.7.001
     1      sim  First interrupt schedule testcases added                     1.5.101
-    1    probe  Fixed probe testcases to reflect transactional list          1.5.85
-    2  jintgen  Fix Disassembler testcases for relative branches             1.5.53
+    1    probe  Fixed probe testcases to reflect transactional list          1.5.085
+    2  jintgen  Fix Disassembler testcases for relative branches             1.5.053
 
 ============================= O P T I M I Z A T I O N S ===============================
  Comp   Module  Item                                              Completion (Version)
@@ -249,10 +251,10 @@
     1      sim  Growable / multi-level flash memory implementation
 
 ----------------------------------- Completed -----------------------------------------
-    1      sim  Disabling interrupts does not terminate fast loop             1.5.65
-    1      sim  Use shared_instr[] array directly in fast loop                1.5.64
-    1      sim  Allocate all SPI.Frame's statically                           1.5.35
-    1      sim  Optimize getSP() and setSP() methods                          1.5.31
+    1      sim  Disabling interrupts does not terminate fast loop             1.5.065
+    1      sim  Use shared_instr[] array directly in fast loop                1.5.064
+    1      sim  Allocate all SPI.Frame's statically                           1.5.035
+    1      sim  Optimize getSP() and setSP() methods                          1.5.031
   1-2      sim  Consolidate regs and sram in interpreter                      1.5.x
     1      sim  ProbedInstr refactoring                                       1.5.x
     1      sim  Move boolean xor usages to !=                                 1.4.0

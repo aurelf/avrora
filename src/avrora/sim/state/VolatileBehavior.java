@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2005, Regents of the University of California
+ * Copyright (c) 2007, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,36 +29,45 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Sep 12, 2005
+ * Created Oct 12, 2007
  */
-
-package cck;
-
-import cck.util.VersionTag;
+package avrora.sim.state;
 
 /**
- * The <code>Version</code> class records the version information for this module.
- * It has a single static method called <code>getVersion()</code> to retrieve the
- * version for this module in a <code>VersionTag</code> object.
- * <p/>
- * </p>
- * This file is automatically updated by CVS commit scripts that increment the
- * commit number each time code is committed to CVS. This guarantees that the
- * version number uniquely determines the version of the software.
+ * The <code>VolatileBehavior</code> class represents the behavior associated
+ * with a volatile register. This class does not actually store the state of
+ * the register, but is intended to implement the behavior associated with
+ * a state query or update.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public class VolatileBehavior {
 
     /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
+     * The <code>read()</code> method implements the behavior associated
+     * with reading this volatile variable. The current state of the
+     * register is supplied, and this method should return the new state
+     * of the register.
+     * @param cur the current state of the register
+     * @return the new state of the register; the default behavior is to
+     * return the current state
      */
-    public static final int commit = 77;
+    public int read(int cur) {
+        return cur;
+    }
 
     /**
-     * The <code>TAG</code> field stores a reference to the version tag for the current
-     * release and commit number.
+     * The <code>write()</code> method implements the behavior associated
+     * with writing this volatile variable to a new state. The current state
+     * of the register is supplied with the new (written) value. This method
+     * therefore takes the appropriate actions and returns the new state
+     * of the register or variable.
+     * @param cur the current state of the register or variable
+     * @param newv the new (written) value to the register or variable
+     * @return the new state of the register; the default behavior is to
+     * return the written value.
      */
-    public static final VersionTag TAG = new VersionTag("cck", "Stable", 0, 1, commit);
+    public int write(int cur, int newv) {
+        return newv;
+    }
 }

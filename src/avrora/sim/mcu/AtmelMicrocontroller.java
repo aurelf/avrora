@@ -103,7 +103,7 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
      * @param reg the register to install
      */
     protected ActiveRegister installIOReg(String name, ActiveRegister reg) {
-        registers.setReg(properties.getIOReg(name), reg);
+        interpreter.installIOReg(properties.getIOReg(name), reg);
 	return reg;
     }
 
@@ -114,7 +114,7 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
      * @return a reference to the active register object if it exists
      */
     protected ActiveRegister getIOReg(String name) {
-        return registers.getReg(properties.getIOReg(name));
+        return interpreter.getIOReg(properties.getIOReg(name));
     }
 
     /**

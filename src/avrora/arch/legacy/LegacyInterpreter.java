@@ -413,7 +413,7 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
 
     public void visit(LegacyInstr.BCLR i) {
         nextPC = pc + 2;
-        getIOReg(SREG).writeBit(i.imm1, false);
+        setFlag(i.imm1, false);
         cyclesConsumed += 1;
     }
 
@@ -425,7 +425,7 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
 
     public void visit(LegacyInstr.BRBC i) {
         nextPC = pc + 2;
-        if (!getIOReg(SREG).readBit(i.imm1)) {
+        if (!getFlag(i.imm1)) {
             int tmp_0 = i.imm2;
             int tmp_1 = tmp_0;
             int tmp_2 = tmp_1 * 2 + nextPC;
@@ -438,7 +438,7 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
 
     public void visit(LegacyInstr.BRBS i) {
         nextPC = pc + 2;
-        if (getIOReg(SREG).readBit(i.imm1)) {
+        if (getFlag(i.imm1)) {
             int tmp_0 = i.imm2;
             int tmp_1 = tmp_0;
             int tmp_2 = tmp_1 * 2 + nextPC;
@@ -691,7 +691,7 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
 
     public void visit(LegacyInstr.BSET i) {
         nextPC = pc + 2;
-        getIOReg(SREG).writeBit(i.imm1, true);
+        setFlag(i.imm1, true);
         cyclesConsumed += 1;
     }
 
@@ -715,7 +715,7 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
 
     public void visit(LegacyInstr.CBI i) {
         nextPC = pc + 2;
-        getIOReg(i.imm1).writeBit(i.imm2, false);
+        setIORegBit(i.imm1, i.imm2, false);
         cyclesConsumed += 2;
     }
 
@@ -1361,13 +1361,13 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
 
     public void visit(LegacyInstr.SBI i) {
         nextPC = pc + 2;
-        getIOReg(i.imm1).writeBit(i.imm2, true);
+        setIORegBit(i.imm1, i.imm2, true);
         cyclesConsumed += 2;
     }
 
     public void visit(LegacyInstr.SBIC i) {
         nextPC = pc + 2;
-        if (!getIOReg(i.imm1).readBit(i.imm2)) {
+        if (!getIORegBit(i.imm1, i.imm2)) {
             int tmp_0 = getInstrSize(nextPC);
             nextPC = nextPC + tmp_0;
             if (tmp_0 == 4) {
@@ -1382,7 +1382,7 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
 
     public void visit(LegacyInstr.SBIS i) {
         nextPC = pc + 2;
-        if (getIOReg(i.imm1).readBit(i.imm2)) {
+        if (getIORegBit(i.imm1, i.imm2)) {
             int tmp_0 = getInstrSize(nextPC);
             nextPC = nextPC + tmp_0;
             if (tmp_0 == 4) {
