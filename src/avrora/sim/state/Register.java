@@ -56,6 +56,7 @@ public class Register implements RegisterView {
 
     protected int value;
 
+    protected VolatileBehavior behavior;
     protected TransactionalList watches;
 
     /**
@@ -104,17 +105,16 @@ public class Register implements RegisterView {
      * @param val the value to write to this register
      */
     public void write(int val) {
+        val = val & mask;
         int oldv = value;
+        value = (behavior != null ? mask & behavior.write(value, val) : val);
         if ( watches != null ) {
             // call instrumentation code.
-            value = val & mask;
             watches.beginTransaction();
             for ( TransactionalList.Link n = watches.getHead(); n != null; n = n.next ) {
                 ((Watch)n.object).fireAfterWrite(this, oldv, val);
             }
             watches.endTransaction();
-        } else {
-            value = val & mask;
         }
     }
     /**
@@ -124,6 +124,7 @@ public class Register implements RegisterView {
      */
     public int read() {
         int oldv = value;
+        if ( behavior != null ) value = mask & behavior.read(value);
         if ( watches != null ) {
             // call instrumentation code.
             watches.beginTransaction();
@@ -133,6 +134,14 @@ public class Register implements RegisterView {
             watches.endTransaction();
         }
         return value;
+    }
+
+    /**
+     * The <code>setBehavior()</code> method sets the behavior of this register.
+     * @param b the behavior for this register
+     */
+    public void setBehavior(VolatileBehavior b) {
+        behavior = b;
     }
 
     /**

@@ -469,7 +469,7 @@ public abstract class Simulation extends HelpCategory {
     /**
      * The <code>join()</code> method waits for the simulation to terminate before returning. After this method
      * returns, the nodes are all guaranteed to be have terminated.
-     * @throws InterruptedException
+     * @throws InterruptedException if the thread is interrupt
      */
     public synchronized void join() throws InterruptedException {
         synchronizer.join();

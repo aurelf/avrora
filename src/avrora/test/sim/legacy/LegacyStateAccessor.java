@@ -38,6 +38,7 @@ import avrora.arch.legacy.*;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.test.sim.StateAccessor;
+import cck.util.Arithmetic;
 
 /**
  * The <code>LegacyStateAccessor</code> class provides access to the state of the AVR simulator
@@ -175,10 +176,10 @@ public class LegacyStateAccessor extends StateAccessor {
             bit = b;
         }
         protected int get() {
-            return interpreter.SREG_reg.readBit(bit) ? 1 : 0;
+            return interpreter.getFlag(bit) ? 1 : 0;
         }
         protected void set(int val) {
-            interpreter.SREG_reg.writeBit(bit, val != 0);
+            interpreter.setFlag(bit, val != 0);
         }
     }
 

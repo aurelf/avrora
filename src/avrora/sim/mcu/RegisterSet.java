@@ -67,18 +67,15 @@ public class RegisterSet {
      * in <code>RegisterSet</code>.
      */
     public static class Field {
-        boolean consistent;
         public int value;
 
         public void write(int nval, int wmask) {
             value = value & ~wmask | nval;
-            consistent = true;
             update();
         }
 
         public void write(int nval) {
             value = nval;
-            consistent = true;
             update();
         }
 
@@ -321,16 +318,6 @@ public class RegisterSet {
     }
 
     /**
-     * The <code>installIOReg()</code> method installs a new register at the specified address. This is intented
-     * to be used only in the device implementations.
-     * @param ar the active register to install
-     * @param ior the address to install the active register to
-     */
-    public void installIOReg(ActiveRegister ar, int ior) {
-        registers[ior] = ar;
-    }
-
-    /**
      * The <code>getRegisterLayout()</code> method gets a reference to the register layout object for this
      * register set. The register layout describes where each IO register is and what fields it contains.
      * @return a reference to the register layout for this register set
@@ -382,13 +369,5 @@ public class RegisterSet {
         FieldWriter fwriter = getFieldWriter(fname);
         fwriter.fobject = fo;
         return fo;
-    }
-
-    public ActiveRegister getReg(int ior) {
-        return registers[ior];
-    }
-
-    public void setReg(int ior, ActiveRegister ar) {
-        registers[ior] = ar;
     }
 }

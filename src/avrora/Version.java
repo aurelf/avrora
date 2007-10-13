@@ -52,7 +52,7 @@ public class Version {
      * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
      * CVS since the last release).
      */
-    public static final int commit = 93;
+    public static final int commit = 94;
 
     /**
      * The <code>TAG</code> field stores a reference to the version tag for the current
@@ -67,6 +67,6 @@ public class Version {
      * @param args the arguments given at the command line
      */
     public static void main(String[] args) {
-        System.out.println(TAG.toPathSuffix());
+        System.out.println(TAG.suffix);
     }
 }

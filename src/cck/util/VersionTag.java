@@ -84,12 +84,19 @@ public class VersionTag {
     /**
      * The <code>string</code> field stores a reference to this version instance represented as a string.
      */
-    private final String string;
+    public final String string;
+
+    /**
+     * The <code>suffix</code> field stores a reference to this version instance represented as a string
+     * that is suitable as a file suffix.
+     */
+    public final String suffix;
 
     /**
      * The constructor for the <code>Version</code> class creates a new version object that represents
      * the version of the code.
      *
+     * @param mod the module name
      * @param prefix a string representing the release name, such as <code>"Beta"</code> for example
      * @param maj    the major version number
      * @param min    the minor version number
@@ -101,7 +108,8 @@ public class VersionTag {
         this.major = maj;
         this.minor = min;
         this.commit = comm;
-        this.string = prefix + ' ' + major + '.' + minor + '.' + commit;
+        this.string = prefixString(false, ' ') + major + '.' + minor + '.' + commitNumber();
+        this.suffix = prefixString(true, '-') + major + '.' + minor + '.' + commitNumber();
         tags.put(mod, this);
     }
 
@@ -114,16 +122,15 @@ public class VersionTag {
         return string;
     }
 
-    /**
-     * The <code>toPathSuffix()</code> method returns a representation of this version
-     * number that is more natural for appending to file names and paths that use the version
-     * number to distinguish between different branches of the code.
-     *
-     * @return a string representation of this version number that is suitable for use in filenames
-     */
-    public String toPathSuffix() {
-        String s = prefix.length() == 0 ? "" : prefix.toLowerCase() + '-';
-        return s + major + '.' + minor + '.' + commit;
+    private String prefixString(boolean lower, char suffix) {
+        if ( prefix.length() == 0 ) return "";
+        return (lower ? prefix.toLowerCase() : prefix) + suffix;
+    }
+
+    private String commitNumber() {
+        if ( commit < 10 ) return "00"+commit;
+        if ( commit < 100 ) return "0"+commit;
+        return Integer.toString(commit);
     }
 
     /**
