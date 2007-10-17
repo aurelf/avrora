@@ -249,28 +249,6 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
             // TODO: implement write collision detection
             transmitReg.write(val);
         }
-
-        /**
-         * The <code>readBit()</code> method
-         *
-         * @param num
-         * @return false
-         */
-        public boolean readBit(int num) {
-            if ( spifAccessed ) unpostSPIInterrupt();
-            return receiveReg.readBit(num);
-
-        }
-
-        /**
-         * The <code>writeBit()</code>
-         *
-         * @param num
-         */
-        public void writeBit(int num, boolean val) {
-            transmitReg.writeBit(num, val);
-
-        }
     }
 
     /**

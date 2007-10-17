@@ -60,20 +60,4 @@ public interface ActiveRegister {
      */
     public void write(byte val);
 
-    /**
-     * The <code>readBit()</code> method reads a single bit from the IO register.
-     *
-     * @param num the number of the bit to read
-     * @return the value of the bit as a boolean
-     */
-    public boolean readBit(int num);
-
-    /**
-     * The <code>writeBit()</code> method writes a single bit value into the IO register at the specified
-     * bit offset.
-     *
-     * @param num the number of the bit to write
-     * @param val the value of the bit to write
-     */
-    public void writeBit(int num, boolean val);
 }

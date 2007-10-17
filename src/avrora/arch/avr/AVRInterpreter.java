@@ -107,43 +107,6 @@ public class AVRInterpreter extends AVRInstrInterpreter {
             C = (val & SREG_C_MASK) != 0;
         }
 
-        /**
-         * The <code>readBit()</code> method reads a single bit from the IO register.
-         *
-         * @param num the number of the bit to read
-         * @return the value of the bit as a boolean
-         */
-        public boolean readBit(int num) {
-            switch (num) {
-                case SREG_I: return I;
-                case SREG_T: return T;
-                case SREG_H: return H;
-                case SREG_S: return S;
-                case SREG_V: return V;
-                case SREG_N: return N;
-                case SREG_Z: return Z;
-                case SREG_C: return C;
-            }
-            throw Util.failure("bit out of range: " + num);
-        }
-
-        public void writeBit(int num, boolean value) {
-            switch (num) {
-                case SREG_I:
-                    if (value) enableInterrupts();
-                    else disableInterrupts();
-                    break;
-                case SREG_T: T = value; break;
-                case SREG_H: H = value; break;
-                case SREG_S: S = value; break;
-                case SREG_V: V = value; break;
-                case SREG_N: N = value; break;
-                case SREG_Z: Z = value; break;
-                case SREG_C: C = value; break;
-                default:
-                    throw Util.failure("bit out of range: " + num);
-            }
-        }
     }
 
     protected int RAMPZ; // location of the RAMPZ IO register
@@ -286,11 +249,12 @@ public class AVRInterpreter extends AVRInstrInterpreter {
     }
 
     protected boolean getIORbit(int ior, int bit) {
-        return ioregs[ior].readBit(bit);
+        return Arithmetic.getBit(ioregs[ior].read(), bit);
     }
 
     protected void setIORbit(int ior, int bit, boolean v) {
-        ioregs[ior].writeBit(bit, v);
+        byte val = ioregs[ior].read();
+        ioregs[ior].write(Arithmetic.setBit(val, bit, v));
     }
 
 

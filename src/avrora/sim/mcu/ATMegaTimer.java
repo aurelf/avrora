@@ -619,18 +619,10 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             compareMatchBlocked = true;
         }
 
-        public void writeBit(int bit, boolean val) {
-            register.writeBit(bit, val);
-            compareMatchBlocked = true;
-        }
-
         public byte read() {
             return register.read();
         }
 
-        public boolean readBit(int bit) {
-            return register.readBit(bit);
-        }
     }
 
     /**
@@ -685,11 +677,6 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             mode.registerWritten(this);
         }
 
-        public void writeBit(int bit, boolean val) {
-            value = Arithmetic.setBit(value, bit, val);
-            mode.registerWritten(this);
-        }
-
         public int readBuffer() {
             return super.read16();
         }
@@ -704,10 +691,6 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
 
         public int mask() {
             return 0xffff;    // When used as TOP, never mask any bits, independent of the size
-        }
-
-        public boolean readBit(int bit) {
-            return (null != reg8)? reg8.readBit(bit): reg16.readBit(bit);
         }
 
         public void flush() {
@@ -745,19 +728,11 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             reg.write((tempHighReg.read() << 8) + val);
         }
 
-        public void writeBit(int bit, boolean val) {
-            reg.write((tempHighReg.read() << 8) | Arithmetic.setBit(reg.read16(), bit, val));
-        }
-
         public byte read() {
             tempHighReg.write((byte)(reg.read16() >> 8));
             return (byte)reg.read16();
         }
 
-        public boolean readBit(int bit) {
-            byte val = read();
-            return Arithmetic.getBit(val, bit);
-        }
     }
 
     /**
@@ -769,18 +744,10 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
             tempHighReg.write(val);
         }
 
-        public void writeBit(int bit, boolean val) {
-            tempHighReg.writeBit(bit, val);
-        }
-
         public byte read() {
             return tempHighReg.read();
         }
 
-        public boolean readBit(int bit) {
-            byte val = read();
-            return Arithmetic.getBit(val, bit);
-        }
     }
 
     /**

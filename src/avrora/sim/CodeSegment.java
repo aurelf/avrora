@@ -100,7 +100,6 @@ public class CodeSegment extends Segment {
     protected LegacyInstr[] segment_instr;
 
     protected final NoLegacyInstr NO_INSTR = new NoLegacyInstr();
-    protected final MisalignedLegacyInstr MISALIGNED_INSTR = new MisalignedLegacyInstr();
 
     protected CodeSharer codeSharer;
 
@@ -350,56 +349,6 @@ public class CodeSegment extends Segment {
         public LegacyInstr asInstr() {
             return null;
         }
-    }
-
-    /**
-     * The <code>MisalignedLegacyInstr</code> class is used for instructions that are not aligned in the flash
-     * memory correctly.
-     */
-    private class MisalignedLegacyInstr extends LegacyInstr {
-
-        MisalignedLegacyInstr() {
-            super(NO_INSTR_PROPS);
-        }
-
-        /**
-         * The <code>getOperands()</code> method returns a string representation of the operands of the
-         * instruction. This is useful for printing and tracing of instructions as well as generating
-         * listings.
-         *
-         * @return a string representing the operands of the instruction
-         */
-        public String getOperands() {
-            throw Util.failure("no instruction here");
-        }
-
-        /**
-         * The <code>accept()</code> method is part of the visitor pattern for instructions. The visitor
-         * pattern uses two virtual dispatches combined with memory overloading to achieve dispatching on
-         * multiple types. The result is clean and modular code.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(LegacyInstrVisitor v) {
-            throw new InterpreterError.PCAlignmentException(interpreter.getState().getPC());
-        }
-
-        /**
-         * The <code>build()</code> method constructs a new <code>LegacyInstr</code> instance with the given
-         * operands, checking the operands against the constraints that are specific to each instruction.
-         *
-         * @param pc  the address at which the instruction will be located
-         * @param ops the operands to the instruction
-         * @return a new <code>LegacyInstr</code> instance representing the instruction with the given operands
-         */
-        public LegacyInstr build(int pc, LegacyOperand[] ops) {
-            throw Util.failure("no instruction here");
-        }
-
-        public LegacyInstr asInstr() {
-            return null;
-        }
-
     }
 
 }

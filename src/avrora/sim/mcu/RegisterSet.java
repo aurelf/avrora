@@ -35,7 +35,6 @@ package avrora.sim.mcu;
 import avrora.sim.ActiveRegister;
 import avrora.sim.RWRegister;
 import cck.text.StringUtil;
-import cck.util.Arithmetic;
 import cck.util.Util;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -168,22 +167,6 @@ public class RegisterSet {
         }
     }
 
-    class BitWriter {
-        final int fval;
-        final FieldWriter fwriter;
-
-        BitWriter(int fval, FieldWriter fw) {
-            this.fval = fval;
-            fwriter = fw;
-        }
-
-        void write(boolean val) {
-            if ( val ) fwriter.value |= fval;
-            fwriter.writtenMask |= fval;
-            fwriter.commit();
-        }
-    }
-
     /**
      * The <code>MultiFieldRegister</code> class implements an IO register that is
      * directly read and written by the program. This IO register implements writes
@@ -193,19 +176,13 @@ public class RegisterSet {
 
         byte value;
         final SubRegWriter[] subFields;
-        final BitWriter[] bits;
 
-        MultiFieldRegister(SubRegWriter[] srw, BitWriter[] b) {
+        MultiFieldRegister(SubRegWriter[] srw) {
             subFields = srw;
-            bits = b;
         }
 
         public byte read() {
             return value;
-        }
-
-        public boolean readBit(int bit) {
-            return Arithmetic.getBit(value, bit);
         }
 
         public void write(byte nval) {
@@ -214,10 +191,6 @@ public class RegisterSet {
                 SubRegWriter sf = subFields[cntr];
                 sf.write(nval);
             }
-        }
-
-        public void writeBit(int bit, boolean val) {
-            bits[bit].write(val);
         }
 
     }
@@ -263,24 +236,7 @@ public class RegisterSet {
         for ( int cntr = 0; cntr < srw.length; cntr++ ) {
             createSubRegWriter(ri, cntr, srw);
         }
-        BitWriter[] bw = createBitWriters(ri.subfields);
-        return new MultiFieldRegister(srw, bw);
-    }
-
-    private BitWriter[] createBitWriters(RegisterLayout.SubField[] sfs) {
-        BitWriter[] bw = new BitWriter[8];
-        int bwcount = 0;
-        for ( int cntr = 0; cntr < sfs.length; cntr++ ) {
-            RegisterLayout.SubField sf = sfs[cntr];
-            for ( int bit = 0; bit < sf.length; bit++ ) {
-                bw[bwcount++] = new BitWriter(sf.field_low_bit+bit, getFieldWriter(sf));
-            }
-        }
-        // check that there are exactly 8 bits
-        if ( bwcount != 8 ) {
-            throw new Util.Error("RegisterSet Error", "expected 8 bits, found: "+bwcount);
-        }
-        return bw;
+        return new MultiFieldRegister(srw);
     }
 
     private FieldWriter getFieldWriter(RegisterLayout.SubField sf) {

@@ -255,10 +255,6 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
             return value;
         }
 
-        public boolean readBit(int bit) {
-            return pinHigh(bit); // Disconnected read always zero
-        }
-
         private boolean pinHigh(int bit) {
             return pins[bit] != null && pins[bit].read();
         }
@@ -267,9 +263,6 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
             // ignore writes.
         }
 
-        public void writeBit(int num, boolean val) {
-            // ignore writes
-        }
     }
 
     protected ATMegaFamilyNew(ClockDomain cd, AVRProperties p, FiniteStateMachine fsm) {
