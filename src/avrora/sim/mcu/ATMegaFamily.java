@@ -256,17 +256,10 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             return (byte)value;
         }
 
-        public boolean readBit(int bit) {
-            return pins[bit].read();
-        }
-
         public void write(byte val) {
             // ignore writes.
         }
 
-        public void writeBit(int num, boolean val) {
-            // ignore writes
-        }
     }
 
     protected ATMegaFamily(ClockDomain cd, AVRProperties p, FiniteStateMachine fsm) {

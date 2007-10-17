@@ -64,25 +64,4 @@ public class RW16Register { // TODO implements ActiveRegister
         value = (short)val;
     }
 
-    /**
-     * The <code>readBit()</code> method reads a single bit from the IO register.
-     *
-     * @param num the number of the bit to read
-     * @return the value of the bit as a boolean
-     */
-    public boolean readBit(int num) {
-        return Arithmetic.getBit(value, num);
-    }
-
-    /**
-     * The <code>writeBit()</code> method writes a single bit value into the IO register at the specified bit
-     * offset. For simple <code>RWRegister</code> instances, this simply updates the bit in the internally
-     * stored value
-     *
-     * @param num the number of the bit to write
-     * @param val the value of the bit to write
-     */
-    public void writeBit(int num, boolean val) {
-        value = (short)Arithmetic.setBit(value, num, val);
-    }
 }

@@ -156,14 +156,10 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
      * is useful for external devices that need to connect to the input of internal devices.
      *
      * @param name the name of the internal device as a string
-     * @return a reference to the internal device if it exists
-     * @throws NoSuchElementException if no device with that name exists
+     * @return a reference to the internal device if it exists; null otherwise
      */
     public AtmelInternalDevice getDevice(String name) {
-        AtmelInternalDevice device = (AtmelInternalDevice)devices.get(name);
-        if ( device == null )
-            throw new NoSuchElementException(StringUtil.quote(name)+" device not found");
-        return device;
+        return (AtmelInternalDevice)devices.get(name);
     }
 
     public static void addPin(HashMap pinMap, int p, String n) {
