@@ -34,8 +34,10 @@
 package avrora.actions;
 
 import cck.util.Option;
+import cck.util.Arithmetic;
 import cck.text.StringUtil;
 import cck.text.Terminal;
+import avrora.sim.state.*;
 import avrora.sim.radio.Medium;
 import avrora.sim.clock.Clock;
 import avrora.sim.clock.MainClock;
@@ -60,7 +62,7 @@ public class MediumTestAction extends Action {
 
     public void run(String[] args) throws Exception {
         // create a medium and test it.
-        Medium m = new Medium(null, null, 300, 102, 8, 128);
+        Medium m = new Medium(null, 300, 0, 8, 128);
         MainClock c = new MainClock("main", 3000);
         final Medium.Transmitter t = new TestTransmitter(m, c);
         final Medium.Receiver r = new TestReceiver(m, c);
@@ -104,11 +106,8 @@ public class MediumTestAction extends Action {
         TestReceiver(Medium m, Clock c) {
             super(m, c);
         }
-        public void nextByte(boolean lock, byte b) {
-            if (lock)
-                Terminal.println(clock.getCount()+" "+StringUtil.toMultirepString(b, 8));
-            else
-                Terminal.println(clock.getCount()+" lock end");
+        public void nextByte(byte b) {
+            Terminal.println(clock.getCount()+" "+StringUtil.toMultirepString(b, 8));    
         }
     }
 }

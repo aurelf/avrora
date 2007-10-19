@@ -262,21 +262,13 @@ public class Main {
     }
 
     static void banner() {
-        if (! BANNER.get() ) return;
+        if (!BANNER.get() ) return;
 
         title();
-        String notice;
-        if (!LICENSE.get())
-            notice =
-                    "This simulator and analysis tool is provided with absolutely no " +
-                    "warranty, either expressed or implied. It is provided to you with the hope " +
-                    "that it be useful for evaluation of and experimentation with microcontroller " +
-                    "and sensor network programs. For more information about the license " +
-                    "that this software is provided to you under, specify the \"license\" " +
-                    "option.\n\n";
-        else
-            notice =
-                    "Copyright (c) 2003-2006, Regents of the University of California \n" +
+
+        if (LICENSE.get()) {
+            String notice =
+                    "Copyright (c) 2003-2007, Regents of the University of California \n" +
                     "All rights reserved.\n\n" +
 
                     "Redistribution and use in source and binary forms, with or without " +
@@ -305,8 +297,9 @@ public class Main {
                     "THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT " +
                     "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE " +
                     "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\n";
+            Terminal.print(StringUtil.formatParagraphs(notice, 0, 0, Terminal.MAXLINE));
+        }
 
-        Terminal.print(StringUtil.formatParagraphs(notice, 0, 0, Terminal.MAXLINE));
     }
 
     static void title() {

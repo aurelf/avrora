@@ -304,4 +304,8 @@ public class Arithmetic {
         if ( b7 ) val |= (0x1 << 7);
         return (byte)val;
     }
+
+    public static int roundup(int val, int den) {
+        return (val + den - 1) / 8;
+    }
 }
