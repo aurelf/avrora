@@ -170,3 +170,4 @@ checkSuccess 'Commit completed successfully.' 'There were errors committing to C
 cat /tmp/commit.log
 
 removeOldVersions
+mv $JARFILE /project/www/html/avrora/jars

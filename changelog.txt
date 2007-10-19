@@ -89,6 +89,7 @@
     2    probe  Event profiler that collects min, max, mean statistics
 
 ----------------------------------- Completed -----------------------------------------
+    1     devs  Debugged and fixed Medium transmission and reception         1.7.096
     2     devs  Added Medium implementation                                  1.7.093
     1      sim  [Sascha Silbe] Allow loading of EEPROM image from a file     1.7.086
     1   probes  Added SPIForwarder and SPIMonitor                            1.7.078
@@ -152,6 +153,7 @@
     2     devs  Introduce Channel class to simplify SPI and USART implem.
 
 ----------------------------------- Completed -----------------------------------------
+    1     main  Removed short banner text                                    1.7.096
     3      sim  Refactored AtmelInterpreter to use VolatileBehavior          1.7.094
     1      sim  VolatileBehavior to eventually replace ActiveRegister        1.7.094
     1      sim  sensor-network nodecount option now smarter                  1.7.093
@@ -249,6 +251,7 @@
     3     dbbc  Superblock construction
     2     dbbc  Intrablock probes and watches
     1      sim  Growable / multi-level flash memory implementation
+    1    radio  Use a smarter buffer in Medium.Transmission
 
 ----------------------------------- Completed -----------------------------------------
     1      sim  Disabling interrupts does not terminate fast loop             1.5.065
