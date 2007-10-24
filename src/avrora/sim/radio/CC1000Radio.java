@@ -34,11 +34,11 @@ package avrora.sim.radio;
 
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
+import avrora.sim.output.SimPrinter;
 import avrora.sim.clock.Clock;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
-import avrora.sim.util.SimUtil;
-import avrora.sim.util.TransactionalList;
+import avrora.sim.util.*;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
 import cck.util.Util;
@@ -110,7 +110,7 @@ public class CC1000Radio implements Radio {
     protected final FSCTRLRegister FSCTRL_reg;
     protected final PrescalerRegister PRESCALER_reg;
 
-    protected final SimUtil.SimPrinter radioPrinter;
+    protected final SimPrinter radioPrinter;
 
 
     protected final ProbeList probes;
@@ -987,7 +987,7 @@ public class CC1000Radio implements Radio {
 
         private SPIDevice spiDevice;
         private final TransferTicker ticker;
-        private final SimUtil.SimPrinter printer;
+        private final SimPrinter printer;
 
         ATMegaController() {
             ticker = new TransferTicker();
@@ -1111,7 +1111,7 @@ public class CC1000Radio implements Radio {
             spiDevice = d;
         }
 
-        public int getVoltage() {
+        public float getVoltage() {
             // ask the air for the current RSSI value
             if ( air != null )
                 return air.sampleRSSI(CC1000Radio.this);
@@ -1161,7 +1161,7 @@ public class CC1000Radio implements Radio {
 
         int bitsRead;
 
-        SimUtil.SimPrinter readerPrinter;
+        SimPrinter readerPrinter;
 
         Microcontroller.Pin.Input paleInput;
 

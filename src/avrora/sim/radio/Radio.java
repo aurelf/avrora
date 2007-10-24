@@ -67,7 +67,7 @@ public interface Radio {
         public final long originTime;
         public final long deliveryTime;
 
-        public int strength = ADC.VBG_LEVEL;
+        public float strength = ADC.VBG_LEVEL;
 
         public Transmission(byte data, long frequency, long originTime) {
             this.data = data;

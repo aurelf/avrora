@@ -55,8 +55,8 @@ public class MSP430DataSegment extends Segment {
     public static final int _1kb = 1024;
     public static final int DATA_SIZE = 64 * _1kb;
 
-    public MSP430DataSegment(int se, int fs, ActiveRegister[] ior, MSP430State st, ErrorReporter reporter) {
-        super("data", DATA_SIZE, (byte)0, st, reporter);
+    public MSP430DataSegment(int se, int fs, ActiveRegister[] ior, MSP430State st) {
+        super("data", DATA_SIZE, (byte)0, st);
         sram_end = se;
         flash_start = fs;
         ioregs = ior;
@@ -78,8 +78,8 @@ public class MSP430DataSegment extends Segment {
             return ioregs[address].read();
         if (address < sram_end)
             return segment_data[address];
-        if (address < flash_start)
-            return errorReporter.readError(address);
+        if (address < flash_start) // reading from RAM hole
+            error_watch.fireBeforeRead(state, address);
         return segment_data[address];
     }
 
@@ -98,7 +98,7 @@ public class MSP430DataSegment extends Segment {
         else if (address < sram_end)
             segment_data[address] = val;
         else // attempt to write beyond RAM
-            errorReporter.writeError(address, val);
+            error_watch.fireBeforeWrite(state, address, val);
     }
 
     /**

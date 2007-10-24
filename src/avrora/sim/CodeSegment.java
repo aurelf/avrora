@@ -68,7 +68,7 @@ public class CodeSegment extends Segment {
      * The <code>CodeSegment.Factory</code> class is used to create a new code segment for a new interpreter.
      */
     public interface Factory {
-        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, ErrorReporter er, Program p);
+        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, Program p);
     }
 
     /**
@@ -82,8 +82,8 @@ public class CodeSegment extends Segment {
             size = s;
         }
 
-        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, ErrorReporter er, Program p) {
-            return new CodeSegment(name, size, bi, er);
+        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, Program p) {
+            return new CodeSegment(name, size, bi);
         }
     }
 
@@ -119,10 +119,9 @@ public class CodeSegment extends Segment {
      * @param name the name of the segment as a string
      * @param size the size of the segment in bytes
      * @param bi the interpreter that will use this segment
-     * @param er the error reporter consulted on accesses out of bounds
      */
-    public CodeSegment(String name, int size, AtmelInterpreter bi, ErrorReporter er) {
-        super(name, size, DEFAULT_VALUE, bi.state, er);
+    public CodeSegment(String name, int size, AtmelInterpreter bi) {
+        super(name, size, DEFAULT_VALUE, bi.state);
         interpreter = bi;
         segment_instr = new LegacyInstr[size];
     }

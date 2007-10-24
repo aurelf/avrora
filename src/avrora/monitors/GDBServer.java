@@ -36,6 +36,7 @@ import avrora.arch.legacy.LegacyRegister;
 import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.output.SimPrinter;
 import avrora.sim.util.SimUtil;
 import cck.text.StringUtil;
 import cck.text.Terminal;
@@ -88,7 +89,7 @@ public class GDBServer extends MonitorFactory {
         final int port;
         BreakpointProbe BREAKPROBE = new BreakpointProbe();
         StepProbe STEPPROBE = new StepProbe();
-        SimUtil.SimPrinter printer;
+        SimPrinter printer;
 
 
         GDBMonitor(Simulator s, int p) {
@@ -104,7 +105,7 @@ public class GDBServer extends MonitorFactory {
             simulator.insertProbe(new StartupProbe(), 0);
 
             // install the ExceptionWatch
-            simulator.insertExceptionWatch(new ExceptionWatch());
+            simulator.insertErrorWatch(new ExceptionWatch("sram"));
         }
 
         public void report() {
@@ -488,8 +489,14 @@ public class GDBServer extends MonitorFactory {
          *
          * @author Jey Kottalam (kottalam@cs.ucdavis.edu)
          */
-        protected class ExceptionWatch implements Simulator.ExceptionWatch {
-            public void invalidRead(String segment, int address) {
+        protected class ExceptionWatch extends Simulator.Watch.Empty {
+            protected final String segment;
+
+            protected ExceptionWatch(String s) {
+                segment = s;
+            }
+            
+            public void fireBeforeRead(State s, int address) {
                 if(printer.enabled) {
                     printer.println("GDB caught invalid read of " + segment + " at " + address);
                 }
@@ -498,9 +505,9 @@ public class GDBServer extends MonitorFactory {
                 commandLoop("T11");
             }
 
-            public void invalidWrite(String segment, int address, byte value) {
+            public void fireBeforeWrite(State s, int address, byte val) {
                 if(printer.enabled) {
-                    printer.println("GDB caught invalid write of " + segment + " at " + address + " value " + value);
+                    printer.println("GDB caught invalid write of " + segment + " at " + address);
                 }
 
                 // send a SIGSEGV and halt execution

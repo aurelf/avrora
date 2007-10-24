@@ -37,6 +37,7 @@ import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.MainClock;
 import avrora.sim.util.SimUtil;
+import avrora.sim.output.SimPrinter;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
 import cck.util.Util;
@@ -69,7 +70,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
 
     private static final byte DEFAULT_VALUE = (byte)0xff;
 
-    final SimUtil.SimPrinter flashPrinter;
+    final SimPrinter flashPrinter;
 
     /**
      * The <code>ReprogrammableCodeSegment.Factory</code> class represents a class capable of creating a new
@@ -84,13 +85,13 @@ public class ReprogrammableCodeSegment extends CodeSegment {
             this.pagesize = pagesize;
         }
 
-        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, ErrorReporter er, Program p) {
+        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, Program p) {
             CodeSegment cs;
             if ( p != null ) {
-                cs = new ReprogrammableCodeSegment(name, p.program_end, bi, er, pagesize);
+                cs = new ReprogrammableCodeSegment(name, p.program_end, bi, pagesize);
                 cs.load(p);
             } else {
-                cs = new ReprogrammableCodeSegment(name, size, bi, er, pagesize);
+                cs = new ReprogrammableCodeSegment(name, size, bi, pagesize);
             }
             return cs;
         }
@@ -124,11 +125,6 @@ public class ReprogrammableCodeSegment extends CodeSegment {
 
             interpreter.setEnabled(SPM_READY, Arithmetic.getBit(value, 7));
             interpreter.setPosted(SPM_READY, !Arithmetic.getBit(value, 0));
-        }
-
-        public void writeBit(int bit, boolean val) {
-            int nvalue = Arithmetic.setBit(value, bit, val);
-            write((byte)nvalue);
         }
 
         class ResetEvent implements Simulator.Event {
@@ -211,11 +207,10 @@ public class ReprogrammableCodeSegment extends CodeSegment {
      * @param name the name of the segment as a string
      * @param size the size of the segment in bytes
      * @param bi the the interpreter the code segment is attached to
-     * @param er the error reporter consulted for out of bounds accesses
      * @param pagesize the size of the page offset field of an address into the flash
      */
-    public ReprogrammableCodeSegment(String name, int size, AtmelInterpreter bi, ErrorReporter er, int pagesize) {
-        super(name, size, bi, er);
+    public ReprogrammableCodeSegment(String name, int size, AtmelInterpreter bi, int pagesize) {
+        super(name, size, bi);
         SPMCSR = new SPMCSR_reg();
         mainClock = bi.getMainClock();
         this.pagesize = pagesize;

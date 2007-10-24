@@ -46,6 +46,7 @@ import cck.util.Arithmetic;
  */
 public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
 
+    // TODO: merge shared classes with ATMegaFamily
     public static class FlagBit implements InterruptTable.Notification {
         final AtmelInterpreter interpreter;
         final boolean autoclear;
@@ -79,14 +80,14 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
         }
 
         public void invoke(int inum) {
-            if ( autoclear ) {
+            if (autoclear) {
                 val = false;
                 interpreter.setPosted(inum, false);
             }
         }
     }
 
-    // TODO: migrate flag register to use FlagBit
+    // TODO: migrate flag register to use InterruptFlag
     public static class FlagRegister extends RWRegister {
 
         class Notification implements InterruptTable.Notification {
@@ -117,23 +118,22 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
             mapping = map;
             interpreter = interp;
             InterruptTable it = interpreter.getInterruptTable();
-            for ( int cntr = 0; cntr < 8; cntr++ ) {
-                if ( mapping[cntr] > 0 )
-                    it.registerInternalNotification(new Notification(cntr), mapping[cntr]);
+            for (int cntr = 0; cntr < 8; cntr++) {
+                if (mapping[cntr] > 0) it.registerInternalNotification(new Notification(cntr), mapping[cntr]);
             }
         }
 
         public void write(byte val) {
-            value = (byte)(value & ~val);
-            for ( int cntr = 0; cntr < 8; cntr++ ) {
+            value = (byte) (value & ~val);
+            for (int cntr = 0; cntr < 8; cntr++) {
                 // do nothing for zero bits
-                if ( !Arithmetic.getBit(val, cntr) ) continue;
+                if (!Arithmetic.getBit(val, cntr)) continue;
                 setPosted(cntr, false);
             }
         }
 
         private void setPosted(int inum, boolean p) {
-            if ( mapping[inum] > 0 ) interpreter.setPosted(mapping[inum], p);
+            if (mapping[inum] > 0) interpreter.setPosted(mapping[inum], p);
         }
 
         public void flagBit(int bit) {
@@ -146,12 +146,6 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
             setPosted(bit, false);
         }
 
-        public void writeBit(int bit, boolean val) {
-            if (val) {
-                value = Arithmetic.clearBit(value, bit);
-                setPosted(bit, false);
-            }
-        }
     }
 
     public static class MaskRegister extends RWRegister {
@@ -170,18 +164,13 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
 
         public void write(byte val) {
             value = val;
-            for ( int cntr = 0; cntr < 8; cntr++ ) {
+            for (int cntr = 0; cntr < 8; cntr++) {
                 setEnabled(cntr, Arithmetic.getBit(val, cntr));
             }
         }
 
         void setEnabled(int cntr, boolean e) {
-            if ( mapping[cntr] > 0 ) interpreter.setEnabled(mapping[cntr], e);
-        }
-
-        public void writeBit(int bit, boolean val) {
-            value = Arithmetic.setBit(value, bit, val);
-            setEnabled(bit, val);
+            if (mapping[cntr] > 0) interpreter.setEnabled(mapping[cntr], e);
         }
 
     }
@@ -200,16 +189,10 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
 
         public void write(byte val) {
             for (int bit = 0; bit < pins.length; bit++)
-		if (pins[bit] != null)
-		    pins[bit].setOutputDir(Arithmetic.getBit(val, bit));
+                if (pins[bit] != null) pins[bit].setOutputDir(Arithmetic.getBit(val, bit));
             value = val;
         }
 
-        public void writeBit(int bit, boolean val) {
-	    if (pins[bit] != null)
-		pins[bit].setOutputDir(val);
-            value = Arithmetic.setBit(value, bit, val);
-        }
     }
 
     /**
@@ -225,16 +208,10 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
 
         public void write(byte val) {
             for (int bit = 0; bit < pins.length; bit++)
-		if (pins[bit] != null)
-		    pins[bit].write(Arithmetic.getBit(val, bit));
+                if (pins[bit] != null) pins[bit].write(Arithmetic.getBit(val, bit));
             value = val;
         }
 
-        public void writeBit(int bit, boolean val) {
-	    if (pins[bit] != null)
-		pins[bit].write(val);
-            value = Arithmetic.setBit(value, bit, val);
-        }
     }
 
     /**
@@ -275,29 +252,31 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
      * and a direction register for setting whether each pin in the port is input or output. This method
      * is a utility to build these registers for each port given the last character of the name (e.g. 'A' in
      * PORTA).
+     *
      * @param p the last character of the port name
      */
     protected void buildPort(char p) {
-	buildPort(p, 8);
+        buildPort(p, 8);
     }
 
     protected void buildPort(char p, int pins) {
         Pin[] portPins = new Pin[8];
         for (int bit = 0; bit < pins; bit++)
-            portPins[bit] = (Pin)getPin("P" + p + bit);
-        installIOReg("PORT"+p, new PortRegister(portPins));
-        installIOReg("DDR"+p, new DirectionRegister(portPins));
-        installIOReg("PIN"+p, new PinRegister(portPins));
+            portPins[bit] = (Pin) getPin("P" + p + bit);
+        installIOReg("PORT" + p, new PortRegister(portPins));
+        installIOReg("DDR" + p, new DirectionRegister(portPins));
+        installIOReg("PIN" + p, new PinRegister(portPins));
     }
 
     /**
      * The <code>buildInterruptRange()</code> method creates the IO registers and <code>MaskableInterrupt</code>
      * instances corresponding to a complete range of interrupts.
+     *
      * @param increasing a flag indicating that the vector numbers increase with bit number of the IO register
      * @param maskRegNum the IO register number of the mask register
      * @param flagRegNum the IO register number of the flag register
-     * @param baseVect the beginning vector of this range of interrupts
-     * @param numVects the number of vectors in this range
+     * @param baseVect   the beginning vector of this range of interrupts
+     * @param numVects   the number of vectors in this range
      * @return a flag register that corresponds to the interrupt range
      */
     protected FlagRegister buildInterruptRange(boolean increasing, String maskRegNum, String flagRegNum, int baseVect, int numVects) {
@@ -307,9 +286,9 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
         } else {
             for (int bit = 0; bit < numVects; bit++) mapping[bit] = baseVect - bit;
         }
-	for (int i = numVects; i < mapping.length; i++) {
-	    mapping[i] = -1;
-	}
+        for (int i = numVects; i < mapping.length; i++) {
+            mapping[i] = -1;
+        }
         FlagRegister fr = new FlagRegister(interpreter, mapping);
         MaskRegister mr = new MaskRegister(interpreter, mapping);
         installIOReg(maskRegNum, mr);
@@ -322,6 +301,7 @@ public abstract class ATMegaFamilyNew extends AtmelMicrocontroller {
 
     /**
      * The getEIFR_reg() method is used to access the external interrupt flag register.
+     *
      * @return the <code>ActiveRegister</code> object corresponding to the EIFR IO register
      */
     public FlagRegister getEIFR_reg() {

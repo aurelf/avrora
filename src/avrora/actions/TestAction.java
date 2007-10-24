@@ -63,6 +63,8 @@ public class TestAction extends Action {
     public void run(String[] args) throws Exception {
         TestEngine.LONG_REPORT = DETAIL.get();
         Status.ENABLED = false;
-        new TestEngine(Defaults.getTestHarnessMap()).runTests(args);
+        TestEngine engine = new TestEngine(Defaults.getTestHarnessMap());
+        boolean r = engine.runTests(args);
+        if (!r) System.exit(1);
     }
 }

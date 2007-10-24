@@ -35,8 +35,8 @@
 package avrora.sim.state;
 
 import avrora.sim.clock.Clock;
-import avrora.sim.Simulator;
-import avrora.sim.util.SimUtil;
+import avrora.sim.*;
+import avrora.sim.output.SimPrinter;
 import cck.util.Arithmetic;
 import cck.text.StringUtil;
 
@@ -63,11 +63,11 @@ public class RegisterUtil {
         }
     }
 
-    public static class BooleanView {
+    public static class BoolView implements BooleanView {
         protected final RegisterView reg;
         protected final byte low;
 
-        public BooleanView(RegisterView r, byte l) {
+        public BoolView(RegisterView r, byte l) {
             reg = r;
             low = l;
         }
@@ -243,7 +243,7 @@ public class RegisterUtil {
             clock.insertEvent(this, delay);
         }
 
-        public void fireAfterRead(Register r, int oldv) {
+        public void fireAfterRead(Register r, int oldv, int newv) {
             // do nothing.
         }
 
@@ -256,12 +256,20 @@ public class RegisterUtil {
         }
     }
 
-    public static BooleanView booleanView(RegisterView sup, int low) {
-        return new BooleanView(sup, (byte)low);
+    public static avrora.sim.state.BooleanView booleanView(RegisterView sup, int low) {
+        return new BoolView(sup, (byte)low);
+    }
+
+    public static RegisterView bitView(RegisterView sup, int low) {
+        return new BitRangeView(sup, (byte)low, (byte)low);
     }
 
     public static RegisterView bitRangeView(RegisterView sup, int low, int high) {
         return new BitRangeView(sup, (byte)low, (byte)high);
+    }
+
+    public static RegisterView permutedView(RegisterView sup, byte[] perm) {
+        return new PermutedView(sup, perm);
     }
 
     public static RegisterView stackedView(RegisterView a, RegisterView b) {
@@ -273,10 +281,10 @@ public class RegisterUtil {
     }
 
     public static class RegisterPrinter implements Register.Watch {
-        protected final SimUtil.SimPrinter printer;
+        protected final SimPrinter printer;
         protected final String name;
 
-        public RegisterPrinter(SimUtil.SimPrinter p, String n) {
+        public RegisterPrinter(SimPrinter p, String n) {
             printer = p;
             name = n;
         }
@@ -284,12 +292,12 @@ public class RegisterUtil {
             printer.println(name+"    <=   "+ StringUtil.toMultirepString(newv, r.width));
         }
 
-        public void fireAfterRead(Register r, int oldv) {
+        public void fireAfterRead(Register r, int oldv, int newv) {
             printer.println(name+"    ->   "+ StringUtil.toMultirepString(oldv, r.width));
         }
     }
 
-    public static void instrumentRegister(SimUtil.SimPrinter sp, Register reg, String name) {
+    public static void instrumentRegister(SimPrinter sp, Register reg, String name) {
         if ( sp.enabled ) reg.addWatch(new RegisterPrinter(sp, name));
     }
 

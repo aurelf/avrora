@@ -104,7 +104,7 @@ public class FreeSpaceAir implements RadioAir {
             while (it.hasNext()) {
                 Radio r = (Radio)it.next();
                 LocalAirImpl pr = getLocalAir(r);
-                pr.advanceChannel();
+                pr.radioChannel.advance();
             }
         }
     }
@@ -190,7 +190,7 @@ public class FreeSpaceAir implements RadioAir {
      *
      * @see RadioAir#sampleRSSI(Radio)
      */
-    public int sampleRSSI(Radio r) {
+    public float sampleRSSI(Radio r) {
         Simulator s = r.getSimulator();
         long t = s.getState().getCycles();
         synchronizer.waitForNeighbors(t);

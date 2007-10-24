@@ -374,10 +374,6 @@ public class ATMega128 extends ATMegaFamily {
         installPins();
         installDevices();
         new Energy("CPU", modeAmpere, sleepState);
-        
-        // Jacob's temporary addition for bootloader
-        //interpreter.setBootPC(0x1E000);
-        
     }
 
     protected void installPins() {

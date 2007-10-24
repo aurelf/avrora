@@ -43,6 +43,7 @@ import avrora.sim.*;
 public interface LegacyState extends State {
 
     int NUM_REGS = 32; // number of general purpose registers
+    int IOREG_BASE = 32; // base address of IO registers
     int SREG_I = 7;
     int SREG_T = 6;
     int SREG_H = 5;

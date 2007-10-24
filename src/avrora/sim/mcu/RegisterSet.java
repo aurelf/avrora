@@ -239,15 +239,6 @@ public class RegisterSet {
         return new MultiFieldRegister(srw);
     }
 
-    private FieldWriter getFieldWriter(RegisterLayout.SubField sf) {
-        if ( sf.field == RegisterLayout.RESERVED || sf.field == RegisterLayout.UNUSED ) {
-            FieldWriter fw = new FieldWriter();
-            fw.fobject = new Field();
-            return fw;
-        }
-        return (FieldWriter)fields.get(sf.field.name);
-    }
-
     private void createSubRegWriter(RegisterLayout.RegisterInfo ri, int cntr, SubRegWriter[] srw) {
         RegisterLayout.SubField sf = ri.subfields[cntr];
         RegisterLayout.Field field = sf.field;

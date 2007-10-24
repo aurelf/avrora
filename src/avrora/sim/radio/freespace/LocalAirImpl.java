@@ -56,7 +56,7 @@ public class LocalAirImpl {
     //the radio sending and receiving from this air
     private final Radio radio;
 
-    private final Channel radioChannel;
+    protected final Channel radioChannel;
 
     //some radio const
     public static final int sampleTime = 13 * 64;
@@ -167,13 +167,9 @@ public class LocalAirImpl {
      * @param gtime the global time at which to sample the RSSI value
      * @return an estimate of the RSSI value for the sample time period
      */
-    public int sampleRSSI(long gtime) {
+    public float sampleRSSI(long gtime) {
         synchronizer.waitForNeighbors(gtime);
-        return radioChannel.occupied(gtime - sampleTime, gtime) ? 0x0 : ADC.VBG_LEVEL;
-    }
-
-    public void advanceChannel() {
-        radioChannel.advance();
+        return radioChannel.occupied(gtime - sampleTime, gtime) ? 0.00f : ADC.VBG_LEVEL;
     }
 
     public byte readChannel() {

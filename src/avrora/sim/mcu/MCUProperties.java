@@ -42,6 +42,8 @@ import java.util.*;
  */
 public class MCUProperties {
 
+    protected static final int BASE_ADDRESS = 32;
+
     protected final HashMap pinAssignments;
     protected final RegisterLayout layout;
     protected final HashMap interruptAssignments;
@@ -120,6 +122,17 @@ public class MCUProperties {
      */
     public int getIOReg(String n) {
         return layout.getIOReg(n);
+    }
+
+    /**
+     * The <code>getIORegAddr()</code> method retrieves the IO register address (in SRAM) for the
+     * given IO Register name for this microcontroller.
+     * @param n the name of the IO register such as "TCNT0"
+     * @return an integer representing the IO register address if it exists
+     * @throws NoSuchElementException if the specified IO register name does not have an assignment
+     */
+    public int getIORegAddr(String n) {
+        return getIOReg(n) + BASE_ADDRESS;
     }
 
     /**

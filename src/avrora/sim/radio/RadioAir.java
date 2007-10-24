@@ -32,60 +32,30 @@
 
 package avrora.sim.radio;
 
-import avrora.sim.Simulator;
-import avrora.sim.clock.IntervalSynchronizer;
 import avrora.sim.clock.Synchronizer;
-import avrora.sim.mcu.ADC;
-import java.util.HashSet;
+
 
 /**
- * Very simple implementation of radio air. It assumes a lossless environment where all radios are able to
- * communicate with each other. This simple air is blind to the frequencies used in transmission (i.e. it
- * assumes that all frequencies are really the same).
- * <p/>
- * This class should provide the proper scheduling policy with respect to threads that more complicated radio
- * implementations can use the time scheduling policy and only overload the delivery policy.
+ * Interface for the <code>RadioAir</code>. An implementation of this interface should provide the policies
+ * through which radio transmission is handled. Radios should transmit via the transmit method. The air should
+ * deliver packets to the radio through the receive() method in the <code>Radio</code> interface.
  *
  * @author Daniel Lee
  * @author Ben L. Titzer
  */
-public class SimpleAir implements RadioAir {
-
-    protected final HashSet radios;
-
-    protected final Channel radioChannel;
-
-    protected final IntervalSynchronizer synchronizer;
-
-    private static final int INTERVALS = 1;
-    private static final int sampleTime = 13 * 64;
-    private static final int TRANSFER_TIME = Radio.TRANSFER_TIME;
-    private static final int INTERVAL_TIME = TRANSFER_TIME;
-
-    public SimpleAir() {
-        radios = new HashSet();
-        radioChannel = new Channel(8, INTERVAL_TIME, true);
-        synchronizer = new IntervalSynchronizer(INTERVAL_TIME, new MeetEvent());
-    }
+public interface RadioAir {
 
     /**
      * The <code>addRadio()</code> method adds a new radio to this radio model.
      * @param r the radio to add to this air implementation
      */
-    public synchronized void addRadio(Radio r) {
-        radios.add(r);
-        r.setAir(this);
-//        synchronizer.addNode(r.getSimulatorThread().getNode());
-    }
+    public void addRadio(Radio r);
 
     /**
      * The <code>removeRadio()</code> method removes a radio from this radio model.
      * @param r the radio to remove from this air implementation
      */
-    public synchronized void removeRadio(Radio r) {
-        radios.remove(r);
-//        synchronizer.removeNode(r.getSimulatorThread().getNode());
-    }
+    public void removeRadio(Radio r);
 
     /**
      * The <code>transmit()</code> method is called by a radio when it begins to transmit
@@ -94,17 +64,7 @@ public class SimpleAir implements RadioAir {
      * @param r the radio transmitting this packet
      * @param f the radio packet transmitted into the air
      */
-    public synchronized void transmit(Radio r, Radio.Transmission f) {
-        radioChannel.write(f.data, 8, r.getSimulator().getClock().getCount());
-    }
-
-    protected class MeetEvent implements Simulator.Event {
-        long meets;
-
-        public void fire() {
-            radioChannel.advance();
-        }
-    }
+    public void transmit(Radio r, Radio.Transmission f);
 
     /**
      * The <code>sampleRSSI()</code> method is called by a radio when it wants to
@@ -115,11 +75,7 @@ public class SimpleAir implements RadioAir {
      * @param r the radio sampling the RSSI value
      * @return an integer value representing the received signal strength indicator
      */
-    public float sampleRSSI(Radio r) {
-        long t = r.getSimulator().getClock().getCount();
-        synchronizer.waitForNeighbors(t);
-        return radioChannel.occupied(t - sampleTime, t) ? 0.000f : ADC.VBG_LEVEL;
-    }
+    public float sampleRSSI(Radio r);
 
     /**
      * The <code>readChannel()</code> method reads the value of the channel at the current
@@ -128,20 +84,12 @@ public class SimpleAir implements RadioAir {
      * @param r the radio sampling the channel
      * @return the last 8 bits transmitted in the channel
      */
-    public byte readChannel(Radio r) {
-        Simulator sim = r.getSimulator();
-        long time = sim.getClock().getCount();
-        synchronizer.waitForNeighbors(time);
-        return (byte)radioChannel.read(time, 8);
-    }
+    public byte readChannel(Radio r);
 
     /**
      * The <code>getSynchronizer()</code> method gets the synchronizer for this air
      * implementation.
      * @return a reference to the synchronizer for this radio model.
      */
-    public Synchronizer getSynchronizer() {
-        return synchronizer;
-    }
-
+    public Synchronizer getSynchronizer();
 }

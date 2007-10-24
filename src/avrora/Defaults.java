@@ -163,7 +163,7 @@ public class Defaults {
             actions = new ClassMap("Action", Action.class);
             //-- DEFAULT ACTIONS
             actions.addClass("disassemble", DisassembleAction.class);
-            actions.addClass("simulate", SimulateAction.class);
+            actions.addClass("simulate", SimAction.class);
             actions.addClass("analyze-stack", AnalyzeStackAction.class);
             actions.addClass("test", TestAction.class);
             actions.addClass("cfg", CFGAction.class);

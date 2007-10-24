@@ -81,7 +81,7 @@ public class MemoryMonitor extends MonitorFactory {
             if ( LOWER_ADDRESS.get() ) {
                 memstart = 0;
             } else {
-                memstart = LegacyState.NUM_REGS + p.ioreg_size;
+                memstart = LegacyState.IOREG_BASE + p.ioreg_size;
             }
             memprofile = new MemoryProfiler(ramsize);
 

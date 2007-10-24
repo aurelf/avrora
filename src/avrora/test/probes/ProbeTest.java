@@ -35,6 +35,7 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.clock.DeltaQueue;
 import avrora.sim.util.SimUtil;
+import avrora.sim.output.SimPrinter;
 import cck.text.StringUtil;
 import java.util.*;
 
@@ -46,7 +47,7 @@ public class ProbeTest {
     final HashMap entities;
 
     Simulator simulator;
-    SimUtil.SimPrinter printer;
+    SimPrinter printer;
     DeltaQueue eventqueue;
 
     List mainCode;

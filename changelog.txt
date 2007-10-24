@@ -89,6 +89,7 @@
     2    probe  Event profiler that collects min, max, mean statistics
 
 ----------------------------------- Completed -----------------------------------------
+    1      sim  Added EventBuffer, EventGen, eventually subsume SimPrinter   1.7.097
     1     devs  Debugged and fixed Medium transmission and reception         1.7.096
     2     devs  Added Medium implementation                                  1.7.093
     1      sim  [Sascha Silbe] Allow loading of EEPROM image from a file     1.7.086
@@ -153,6 +154,8 @@
     2     devs  Introduce Channel class to simplify SPI and USART implem.
 
 ----------------------------------- Completed -----------------------------------------
+    3      devs Introduced RegisterView and BooleanView for many subfields   1.7.097
+    3      sim  Removed writeBit() from RWRegister                           1.7.097
     1     main  Removed short banner text                                    1.7.096
     3      sim  Refactored AtmelInterpreter to use VolatileBehavior          1.7.094
     1      sim  VolatileBehavior to eventually replace ActiveRegister        1.7.094

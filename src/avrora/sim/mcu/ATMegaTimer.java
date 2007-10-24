@@ -34,7 +34,6 @@ package avrora.sim.mcu;
 
 import avrora.sim.*;
 import avrora.sim.clock.Clock;
-import cck.util.Arithmetic;
 import cck.util.Util;
 import java.util.*;
 
@@ -89,12 +88,14 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
         timerNumber = n;
         periods = p;
 
-        TOIEn = m.getField("TOIE" + n);
+        RegisterSet rset = m.getRegisterSet();
+
+        TOIEn = rset.getField("TOIE" + n);
         int overflowInterrupt = m.properties.getInterrupt(ovfName);
         TOVn = new FlagField(interpreter.getInterruptTable(), true, overflowInterrupt);
-        m.installField("TOV" + n, TOVn);
-        WGMn = m.installField("WGM" + n, newWGMField());
-        CSn = m.installField("CS" + n, newPeriodField());
+        rset.installField("TOV" + n, TOVn);
+        WGMn = rset.installField("WGM" + n, newWGMField());
+        CSn = rset.installField("CS" + n, newPeriodField());
 
 
         externalClock = m.getClock("external");

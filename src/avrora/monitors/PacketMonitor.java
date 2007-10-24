@@ -41,6 +41,7 @@ import avrora.sim.Simulator;
 import avrora.sim.platform.Platform;
 import avrora.sim.radio.Radio;
 import avrora.sim.util.SimUtil;
+import avrora.sim.output.SimPrinter;
 import cck.text.*;
 import cck.util.Option;
 import java.util.Iterator;
@@ -70,7 +71,7 @@ public class PacketMonitor extends MonitorFactory {
         int bytesTransmitted;
         int packetsTransmitted;
         PacketEndEvent packetEnd;
-        SimUtil.SimPrinter printer;
+        SimPrinter printer;
         boolean showPackets;
         boolean discardFirst;
         boolean showPreamble;
