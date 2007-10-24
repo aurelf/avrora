@@ -40,7 +40,7 @@ import java.util.Arrays;
 /**
  * The <code>Segment</code> class represents a segment of byte-addressable memory that
  * supports probing. It is used to represent the SRAM, the flash, and the EEPROM. For
- * efficiency, it sharing of the underlying byte array representing the memory.
+ * efficiency, it allows sharing of the underlying byte array representing the memory.
  *
  * @author Ben L. Titzer
  */
@@ -52,8 +52,8 @@ public class Segment {
     public final String name;
     public final byte value;
     protected byte[] segment_data;
-    protected final ErrorReporter errorReporter;
     protected MulticastWatch[] segment_watches;
+    protected MulticastWatch error_watch;
 
     protected Sharer sharer;
 
@@ -64,13 +64,11 @@ public class Segment {
      * @param size the size of the segment in bytes
      * @param defvalue the default value of bytes in this segment
      * @param st the state object to pass to watches when fired
-     * @param er an object that is notified when an attempt is made to read or write outside of the bounds
      */
-    public Segment(String name, int size, byte defvalue, State st, ErrorReporter er) {
+    public Segment(String name, int size, byte defvalue, State st) {
         this.name = name;
         this.length = size;
         this.value = defvalue;
-        this.errorReporter = er;
         this.segment_data = new byte[size];
         this.state = st;
 
@@ -86,19 +84,6 @@ public class Segment {
      */
     public interface Sharer {
         public void update(byte[] segment);
-    }
-
-    /**
-     * The <code>ErrorReporter</code> class is used to intercept errors caused by trying to
-     * either read or write outside the bounds of this segment. Since this could be done by
-     * the program being simulated, the interpreter would like the ability to detect this
-     * case and continue simulation rather than an exception being thrown. In other situations,
-     * it might be better to throw an exception. Therefore, this object allows the policy
-     * to be set separately by an outside object.
-     */
-    public interface ErrorReporter {
-        public byte readError(int address);
-        public void writeError(int address, byte value);
     }
 
     /**
@@ -172,7 +157,8 @@ public class Segment {
         try {
             return direct_read(address);
         } catch ( ArrayIndexOutOfBoundsException e ) {
-            return errorReporter.readError(address);
+            if ( error_watch != null ) error_watch.fireBeforeRead(state, address);
+            return this.value;
         }
     }
 
@@ -247,7 +233,7 @@ public class Segment {
         try {
             direct_write(address, val);
         } catch (ArrayIndexOutOfBoundsException e) {
-            errorReporter.writeError(address, val);
+            if ( error_watch != null ) error_watch.fireBeforeWrite(state, address, val);
         }
     }
 
@@ -295,6 +281,11 @@ public class Segment {
         MulticastWatch mcw = segment_watches[data_addr];
         if (mcw == null) mcw = segment_watches[data_addr] = new MulticastWatch();
         mcw.add(p);
+    }
+
+    public void insertErrorWatch(Simulator.Watch p) {
+        if (error_watch == null) error_watch = new MulticastWatch();
+        error_watch.add(p);
     }
 
     /**

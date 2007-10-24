@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2007, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,43 +28,18 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Created Oct 20, 2007
  */
-
-package avrora.actions;
-
-import avrora.Defaults;
-import cck.test.TestEngine;
-import cck.text.Status;
-import cck.util.Option;
+package avrora.sim.state;
 
 /**
- * The <code>TestAction</code> class represents an action to invoke the built-in automated testing framework
- * that is used for regression testing in Avrora.
+ * The <code>BooleanView</code> definition.
  *
  * @author Ben L. Titzer
  */
-public class TestAction extends Action {
-    public static final String HELP = "The \"test\" action invokes the internal automated testing framework " +
-            "that runs test cases supplied at the command line. The test cases are " +
-            "used in regressions for diagnosing bugs.";
+public interface BooleanView {
+    boolean getValue();
 
-    public final Option.Bool DETAIL = newOption("detail", false, "This option selects whether " +
-            "the automated testing framework will report detailed information for failed test cases.");
-
-    public TestAction() {
-        super(HELP);
-    }
-
-    /**
-     * The <code>run()</code> method starts the test harness and begins processing test cases.
-     * @param args the command line arguments; files containing tests to be run
-     * @throws Exception
-     */
-    public void run(String[] args) throws Exception {
-        TestEngine.LONG_REPORT = DETAIL.get();
-        Status.ENABLED = false;
-        TestEngine engine = new TestEngine(Defaults.getTestHarnessMap());
-        boolean r = engine.runTests(args);
-        if (!r) System.exit(1);
-    }
+    void setValue(boolean v);
 }

@@ -33,8 +33,11 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
+import avrora.sim.state.BooleanView;
+import avrora.sim.state.RegisterUtil;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
+import cck.util.Util;
 
 /**
  * Serial Peripheral Interface. Used on the <code>Mica2</code> platform for radio communication.
@@ -216,13 +219,6 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
 
             }
 
-            public void writeBit(int bit, boolean val) {
-                if (devicePrinter.enabled)
-                    devicePrinter.println("SPI: wrote " + val + " to SPDR, bit " + bit);
-                super.writeBit(bit, val);
-                transferEvent.enableTransfer();
-            }
-
         }
 
         SPDReg() {
@@ -275,13 +271,6 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
 
         }
 
-        public void writeBit(int bit, boolean val) {
-            if (devicePrinter.enabled)
-                devicePrinter.println("SPI: wrote " + val + " to SPCR, bit " + bit);
-            super.writeBit(bit, val);
-            decode(value);
-        }
-
         protected void decode(byte val) {
 
             SPIenabled = Arithmetic.getBit(val, SPE);
@@ -294,7 +283,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
             interpreter.setEnabled(interruptNum, spie);
             if (spie && !SPIEnable) {
                 SPIEnable = true;
-                SPSR_reg.writeBit(SPSReg.SPIF, false);
+                SPSR_reg.clearSPIF();
             }
             if (!spie && SPIEnable)
                 SPIEnable = false;
@@ -322,6 +311,9 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         static final int SPIF = 7;
         static final int WCOL = 6;
 
+        final BooleanView _spif = RegisterUtil.booleanView(this, SPIF);
+        final BooleanView _spi2x = RegisterUtil.booleanView(this, 0);
+
         public void write(byte val) {
             if (devicePrinter.enabled)
                 devicePrinter.println("SPI: wrote " + val + " to SPSR");
@@ -329,20 +321,8 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
             decode(val);
         }
 
-        public void writeBit(int bit, boolean val) {
-            if (devicePrinter.enabled)
-                devicePrinter.println("SPI: wrote " + val + " to SPSR " + bit);
-            super.writeBit(bit, val);
-            decode(value);
-        }
-
-        public boolean readBit(int num) {
-            if ( getSPIF() ) spifAccessed = true;
-            return super.readBit(num);
-        }
-
         public byte read() {
-            if ( getSPIF() ) spifAccessed = true;
+            if (_spif.getValue()) spifAccessed = true;
             return super.read();
         }
 
@@ -360,17 +340,14 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         }
 
         public void setSPIF() {
-            value = Arithmetic.setBit(value, SPIF);
+            _spif.setValue(true);
             spifAccessed = false;
         }
 
         public void clearSPIF() {
-            value = Arithmetic.clearBit(value, SPIF);
+            _spif.setValue(false);
             spifAccessed = false;
         }
 
-        public boolean getSPIF() {
-            return Arithmetic.getBit(value, SPIF);
-        }
     }
 }

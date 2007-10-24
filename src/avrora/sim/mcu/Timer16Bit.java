@@ -285,20 +285,11 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
             high.write(highTempReg.read());
         }
 
-        public void writeBit(int bit, boolean val) {
-            low.writeBit(bit, val);
-            high.write(highTempReg.read());
-        }
-
         public byte read() {
             highTempReg.write(high.read());
             return low.read();
         }
 
-        public boolean readBit(int bit) {
-            byte val = read();
-            return Arithmetic.getBit(val, bit);
-        }
     }
 
     /**
@@ -312,10 +303,6 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         public byte read() {
             return low.read();
-        }
-
-        public boolean readBit(int bit) {
-            return low.readBit(bit);
         }
     }
 
@@ -333,16 +320,8 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
             highTempReg.write(val);
         }
 
-        public void writeBit(int bit, boolean val) {
-            highTempReg.writeBit(bit, val);
-        }
-
         public byte read() {
             return register.read();
-        }
-
-        public boolean readBit(int bit) {
-            return register.readBit(bit);
         }
     }
 
@@ -358,10 +337,6 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
             blockCompareMatch = true;
         }
 
-        public void writeBit(int bit, boolean val) {
-            value = Arithmetic.setBit(value, bit, val);
-            blockCompareMatch = true;
-        }
     }
 
     private void resetPeriod(int nPeriod) {
@@ -406,25 +381,12 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
             }
         }
 
-        public void writeBit(int bit, boolean val) {
-            super.writeBit(bit, val);
-            int mode = WGMn.value;
-            if (mode == MODE_NORMAL || mode == MODE_CTC_OCRnA
-                    || mode == MODE_CTC_ICRn) {
-                flush();
-            }
-        }
-
         public byte readBuffer() {
             return super.read();
         }
 
         public byte read() {
             return register.read();
-        }
-
-        public boolean readBit(int bit) {
-            return register.readBit(bit);
         }
 
         protected void flush() {

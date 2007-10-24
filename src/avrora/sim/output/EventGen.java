@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2007, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,63 +28,83 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Created Oct 20, 2007
  */
-
-package avrora.sim;
+package avrora.sim.output;
 
 import cck.util.Arithmetic;
-import cck.util.Util;
-import avrora.sim.state.RegisterView;
 
 /**
- * The <code>RWRegister</code> class is an implementation of an IO register that has the simple, default
- * behavior of being able to read and write just as a general purpose register or byte in SRAM.
+ * The <code>EventGen</code> definition.
  *
  * @author Ben L. Titzer
  */
-public class RWRegister implements ActiveRegister, RegisterView {
+public class EventGen {
 
-    public byte value;
+    private boolean enabled;
+    private final EventBuffer buffer;
 
-    /**
-     * The <code>read()</code> method reads the 8-bit value of the IO register as a byte. For simple
-     * <code>RWRegister</code> instances, this simply returns the internally stored value.
-     *
-     * @return the value of the register as a byte
-     */
-    public byte read() {
-        return value;
+    public EventGen(EventBuffer buf) {
+        buffer = buf;
     }
 
-    /**
-     * The <code>write()</code> method writes an 8-bit value to the IO register as a byte. For simple
-     * <code>RWRegister</code> instances, this simply writes the internally stored value.
-     *
-     * @param val the value to write
-     */
-    public void write(byte val) {
-        value = val;
+    public void enable() {
+        enabled = true;
     }
 
-    /**
-     * The <code>readBit()</code> method reads a single bit from the IO register.
-     *
-     * @param num the number of the bit to read
-     * @return the value of the bit as a boolean
-     */
-    public boolean readBit(int num) {
-        return Arithmetic.getBit(read(), num);
+    public void disable() {
+        enabled = false;
     }
 
-    public int getWidth() {
-        return 8;
+    public void gen(Object o) {
+        if (enabled) {
+            buffer.recordEvent(o, 0);
+        }
     }
 
-    public int getValue() {
-        return value;
+    public void gen(Object o, int param) {
+        if (enabled) {
+            buffer.recordEvent(o, (long) param);
+        }
     }
 
-    public void setValue(int val) {
-        value = (byte)val;
+    public void gen(Object o, float param) {
+        if (enabled) {
+            buffer.recordEvent(o, Float.floatToIntBits(param));
+        }
     }
+
+    public void gen(Object o, double param) {
+        if (enabled) {
+            buffer.recordEvent(o, Double.doubleToLongBits(param));
+        }
+    }
+
+    public void gen(Object o, int p1, int p2) {
+        if (enabled) {
+            long param = ((long)p1) << 32 | (0xffffffffL & p2);
+            buffer.recordEvent(o, param);
+        }
+    }
+
+    public void gen(Object o, byte param) {
+        if (enabled) {
+            buffer.recordEvent(o, (long) param);
+        }
+    }
+
+    public void gen(Object o, byte p1, byte p2) {
+        if (enabled) {
+            long param = Arithmetic.word(p1, p2);
+            buffer.recordEvent(o, param);
+        }
+    }
+
+    public void gen(Object o, char param) {
+        if (enabled) {
+            buffer.recordEvent(o, (long) param);
+        }
+    }
+
 }

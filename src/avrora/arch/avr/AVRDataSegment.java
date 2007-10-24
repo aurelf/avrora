@@ -58,7 +58,7 @@ public class AVRDataSegment extends Segment {
      * @param st
      */
     public AVRDataSegment(int sz, ActiveRegister[] ior, State st) {
-        super("sram", sz, (byte)0, st, null);
+        super("sram", sz, (byte)0, st);
         sram_start = AVRState.NUM_REGS + ior.length;
         ioregs = ior;
     }

@@ -36,6 +36,7 @@ import avrora.arch.legacy.LegacyInstr;
 import avrora.core.Program;
 import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.Microcontroller;
+import avrora.sim.output.EventBuffer;
 
 /**
  * The <code>Simulator</code> class implements a full processor simulator for the AVR instruction set. It is
@@ -77,6 +78,11 @@ public class Simulator {
     protected final int id;
 
     /**
+     * The <code>events</code> fields stores the event buffer for this simulator.
+     */
+    protected EventBuffer events;
+
+    /**
      * The constructor creates the internal data structures and initial state of the processor. It constructs
      * an instance of the simulator that is ready to have devices attached, IO registers probed, and probes
      * and events inserted. Users should not create <code>Simulator</code> instances directly, but instead
@@ -92,34 +98,7 @@ public class Simulator {
         // reset the state of the simulation
         clock = mcu.getClockDomain().getMainClock();
         interpreter = f.newInterpreter(this, program, microcontroller.getProperties());
-    }
-
-    /**
-     * The <code>Simulator.ExceptionWatch</code> interface allows for monitoring of exceptional conditions
-     * in the machine state. Events such as memory access violations, (insert other exception types here), may
-     * be caught and handled.
-     *
-     * @author Jey Kottalam (kottalam@cs.ucdavis.edu)
-     */
-    public interface ExceptionWatch {
-        /**
-         * The <code>invalidRead()</code> method is invoked when an instruction attempts to read from
-         * an out-of-bounds memory location.
-         *
-         * @param segment The segment the instruction attempted to read from.
-         * @param address The address within the segment of the attempted read.
-         */
-        public void invalidRead(String segment, int address);
-
-        /**
-         * The <code>invalidWrite()</code> method is invoked when an instruction attempts to write to
-         * a read-only or out-of-bounds memory location.
-         *
-         * @param segment The segment the instruction attempted to write into.
-         * @param address The address within the segment of the disallowed write.
-         * @param value   The value the instruction attempted to write.
-         */
-        public void invalidWrite(String segment, int address, byte value);
+        events = new EventBuffer(this, 16, EventBuffer.WRAPAROUND);
     }
 
     /**
@@ -433,112 +412,6 @@ public class Simulator {
     }
 
     /**
-     * The <code>IORWatch</code> interface represents a user probe that is fired when a watchpoint detects
-     * an access to an IO register where the watch has been inserted. Direct as well as indirect accesses
-     * (through pointers) are monitored. Implicit accesses for special registers such as SPL, SPH, and SREG
-     * in push, pop, call, sei, etc instructions are NOT MONITORED. These instructions are syntactically
-     * apparent in the program and can be probed with <code>Simulator.Probe</code> instructions.
-     *
-     * This interface extends the <code>Simulator.Watch</code> interface with methods to trap reads and writes to
-     * individual bits within a register.
-     */
-    public interface IORWatch extends Watch {
-
-        /**
-         * The <code>fireBeforeBitRead()</code> method is called before the data address is read by the program.
-         *
-         * @param state     the state of the simulation
-         * @param ioreg_num the number of the IO register being read
-         */
-        public void fireBeforeBitRead(State state, int ioreg_num, int bit);
-
-        /**
-         * The <code>fireBeforeBitWrite()</code> method is called before the data address is written by the
-         * program.
-         *
-         * @param state     the state of the simulation
-         * @param ioreg_num the number of the IO register being read
-         * @param value     the value being written to the memory location
-         */
-        public void fireBeforeBitWrite(State state, int ioreg_num, int bit, boolean value);
-
-        /**
-         * The <code>fireAfterBitRead()</code> method is called after the data address is read by the program.
-         *
-         * @param state     the state of the simulation
-         * @param ioreg_num the number of the IO register being read
-         * @param value     the value of the memory location being read
-         */
-        public void fireAfterBitRead(State state, int ioreg_num, int bit, boolean value);
-
-        /**
-         * The <code>fireAfterBitWrite()</code> method is called after the data address is written by the
-         * program.
-         *
-         * @param state     the state of the simulation
-         * @param ioreg_num the number of the IO register being read
-         * @param value     the value being written to the memory location
-         */
-        public void fireAfterBitWrite(State state, int ioreg_num, int bit, boolean value);
-
-        /**
-         * The <code>Simulator.IORWatch.Empty</code> class acts as a base class with empty methods for
-         * each fireXXX() method. This makes it easier to write much shorter simple watches because
-         * empty methods are simply inherited.
-         */
-        public class Empty extends Watch.Empty implements IORWatch {
-            /**
-             * The <code>fireBeforeBitRead()</code> method is called before the data address is read by the program.
-             * In the implementation of the Empty watch, this method does nothing.
-             *
-             * @param state     the state of the simulation
-             * @param ioreg_num the number of the IO register being read
-             */
-            public void fireBeforeBitRead(State state, int ioreg_num, int bit) {
-                // do nothing.
-            }
-
-            /**
-             * The <code>fireBeforeBitWrite()</code> method is called before the data address is written by the
-             * program.
-             * In the implementation of the Empty watch, this method does nothing.
-             *
-             * @param state     the state of the simulation
-             * @param ioreg_num the number of the IO register being read
-             * @param value     the value being written to the memory location
-             */
-            public void fireBeforeBitWrite(State state, int ioreg_num, int bit, boolean value) {
-                // do nothing.
-            }
-
-            /**
-             * The <code>fireAfterBitRead()</code> method is called after the data address is read by the program.
-             * In the implementation of the Empty watch, this method does nothing.
-             *
-             * @param state     the state of the simulation
-             * @param ioreg_num the number of the IO register being read
-             * @param value     the value of the memory location being read
-             */
-            public void fireAfterBitRead(State state, int ioreg_num, int bit, boolean value) {
-                // do nothing.
-            }
-
-            /**
-             * The <code>fireAfterBitWrite()</code> method is called after the data address is written by the
-             * program.
-             * In the implementation of the Empty watch, this method does nothing.
-             *
-             * @param state     the state of the simulation
-             * @param ioreg_num the number of the IO register being read
-             * @param value     the value being written to the memory location
-             */
-            public void fireAfterBitWrite(State state, int ioreg_num, int bit, boolean value) {
-                // do nothing.
-            }
-        }
-    }
-
-    /**
      * The <code>getMicrocontroller()</code> method gets a reference to the microcontroller being simulated.
      *
      * @return a reference to the microcontroller being simulated
@@ -565,6 +438,15 @@ public class Simulator {
      */
     public MainClock getClock() {
         return clock;
+    }
+
+    /**
+     * The <code>getEventBuffer()</code> method retrieves the event buffer associated with
+     * this simulator.
+     * @return a reference to the event buffer
+     */
+    public EventBuffer getEventBuffer() {
+        return events;
     }
 
     /**
@@ -692,28 +574,6 @@ public class Simulator {
     }
 
     /**
-     * The <code>insertIORWatch()</code> method allows an IO register watch to be inserted on an IO register.
-     * The watch will be executed before every read or write to that IO register by the program.
-     *
-     * @param p         the probe to insert
-     * @param ioreg_num the number of the IO register to insert the watch for
-     */
-    public void insertIORWatch(IORWatch p, int ioreg_num) {
-        interpreter.insertIORWatch(p, ioreg_num);
-    }
-
-    /**
-     * The <code>removeIORWatch()</code> removes an IO register watch from the given register.
-     * Reference equality is used to check for equality when removing probes, not <code>.equals()</code>.
-     *
-     * @param p         the probe to insert
-     * @param ioreg_num the number of the IO register to insert the watch for
-     */
-    public void removeIORWatch(IORWatch p, int ioreg_num) {
-        interpreter.removeIORWatch(p, ioreg_num);
-    }
-
-    /**
      * The <code>forceInterrupt()</code> method forces the simulator to post the specified interrupt
      * regardless of the normal source of the interrupt. If there is a flag register associated with the
      * specified interrupt, then the flag register's value will be set as if the original source of the
@@ -755,8 +615,8 @@ public class Simulator {
      *
      * @param watch The <code>ExceptionWatch</code> instance.
      */
-    public void insertExceptionWatch(ExceptionWatch watch) {
-        interpreter.insertExceptionWatch(watch);
+    public void insertErrorWatch(Watch watch) {
+        interpreter.insertErrorWatch(watch);
     }
 
     /**

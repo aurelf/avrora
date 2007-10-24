@@ -142,10 +142,6 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
             blockCompareMatch = true;
         }
 
-        public void writeBit(int bit, boolean val) {
-            value = Arithmetic.setBit(value, bit, val);
-            blockCompareMatch = true;
-        }
     }
 
     /**
@@ -167,23 +163,12 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
             }
         }
 
-        public void writeBit(int bit, boolean val) {
-            super.writeBit(bit, val);
-            if (timerMode == MODE_NORMAL || timerMode == MODE_CTC) {
-                flush();
-            }
-        }
-
         public byte readBuffer() {
             return super.read();
         }
 
         public byte read() {
             return register.read();
-        }
-
-        public boolean readBit(int bit) {
-            return register.readBit(bit);
         }
 
         protected void flush() {
@@ -211,16 +196,6 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
 
             // decode modes and update internal state
             decode(val);
-        }
-
-        public void writeBit(int bit, boolean val) {
-            if (bit == 7 && val) {
-
-                forcedOutputCompare(value);
-            } else {
-                value = Arithmetic.setBit(value, bit, val);
-                decode(value);
-            }
         }
 
         private void forcedOutputCompare(byte val) {

@@ -75,7 +75,7 @@ public interface RadioAir {
      * @param r the radio sampling the RSSI value
      * @return an integer value representing the received signal strength indicator
      */
-    public int sampleRSSI(Radio r);
+    public float sampleRSSI(Radio r);
 
     /**
      * The <code>readChannel()</code> method reads the value of the channel at the current

@@ -36,6 +36,7 @@ import avrora.arch.avr.AVRProperties;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
 import cck.util.Arithmetic;
+import cck.util.Util;
 
 /**
  * The <code>ATMegaFamily</code> class encapsulates much of the common functionality among the
@@ -66,7 +67,13 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
             int interrupt = m.properties.getInterrupt(acfName);
             addComparator(Comparator._, new OutputCompareUnit(n, m, Comparator._, interrupt, pin));
 
-            modes = new Mode[]{new Mode(Mode.NORMAL.class, null, FixedTop.FF), new Mode(Mode.FC_PWM.class, null, FixedTop.FF), new Mode(Mode.CTC.class, m.getField("OCF" + n), m.getIOReg("OCR" + n)), new Mode(Mode.FAST_PWM.class, null, FixedTop.FF)};
+            String ocfn = "OCF" + n;
+            String ocrn = "OCR" + n;
+            modes = new Mode[]{
+                    new Mode(Mode.NORMAL.class, null, FixedTop.FF),
+                    new Mode(Mode.FC_PWM.class, null, FixedTop.FF),
+                    new Mode(Mode.CTC.class, m.getRegisterSet().getField(ocfn), m.getIOReg(ocrn)),
+                    new Mode(Mode.FAST_PWM.class, null, FixedTop.FF)};
 
             resetMode(0);// XXX: is this always the default mode?
         }
@@ -127,30 +134,35 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
             m.installIOReg("TCNT" + n + "L", TCNTnL_reg);
 
 
-            {
-                AtmelMicrocontroller.Pin pin = (AtmelMicrocontroller.Pin) m.getPin("IC" + timerNumber);
-                int interrupt = m.properties.getInterrupt(cfn[0]);
-                addComparator(Comparator.I, new InputCompareUnit(n, m, Comparator._, interrupt, pin));
-            }
-            {
-                AtmelMicrocontroller.Pin pin = (AtmelMicrocontroller.Pin) m.getPin("OC" + timerNumber + "A");
-                int interrupt = m.properties.getInterrupt(cfn[1]);
-                addComparator(Comparator.A, new OutputCompareUnit(n, m, Comparator.A, interrupt, pin));
-            }
-            {
-                AtmelMicrocontroller.Pin pin = (AtmelMicrocontroller.Pin) m.getPin("OC" + timerNumber + "B");
-                int interrupt = m.properties.getInterrupt(cfn[2]);
-                addComparator(Comparator.B, new OutputCompareUnit(n, m, Comparator.B, interrupt, pin));
-            }
-            {
-                AtmelMicrocontroller.Pin pin = (AtmelMicrocontroller.Pin) m.getPin("OC" + timerNumber + "C");
-                int interrupt = m.properties.getInterrupt(cfn[3]);
-                addComparator(Comparator.C, new OutputCompareUnit(n, m, Comparator.C, interrupt, pin));
-            }
+            addComparator(Comparator.I, new InputCompareUnit(n, m, Comparator._, m.properties.getInterrupt(cfn[0]), (Pin) m.getPin("IC" + timerNumber)));
+            addComparator(Comparator.A, new OutputCompareUnit(n, m, Comparator.A, m.properties.getInterrupt(cfn[1]), (Pin) m.getPin("OC" + timerNumber + "A")));
+            addComparator(Comparator.B, new OutputCompareUnit(n, m, Comparator.B, m.properties.getInterrupt(cfn[2]), (Pin) m.getPin("OC" + timerNumber + "B")));
+            addComparator(Comparator.C, new OutputCompareUnit(n, m, Comparator.C, m.properties.getInterrupt(cfn[3]), (Pin) m.getPin("OC" + timerNumber + "C")));
 
-            modes = new Mode[]{new Mode(Mode.NORMAL.class, null, FixedTop.FFFF), new Mode(Mode.PWM.class, null, FixedTop.FF), new Mode(Mode.PWM.class, null, FixedTop._1FF), new Mode(Mode.PWM.class, null, FixedTop._3FF), new Mode(Mode.CTC.class, m.getField("OCF" + n + "A"), gro(Comparator.A)), new Mode(Mode.FAST_PWM.class, null, FixedTop.FF), new Mode(Mode.FAST_PWM.class, null, FixedTop._1FF), new Mode(Mode.FAST_PWM.class, null, FixedTop._3FF), new Mode(Mode.FC_PWM.class, m.getField("ICF" + n), gri(Comparator.I)), new Mode(Mode.FC_PWM.class, m.getField("OCF" + n + "A"), gro(Comparator.A)), new Mode(Mode.PWM.class, m.getField("ICF" + n), gri(Comparator.I)), new Mode(Mode.PWM.class, m.getField("OCF" + n + "A"), gro(Comparator.A)), new Mode(Mode.CTC.class, m.getField("ICF" + n), gri(Comparator.I)), null, new Mode(Mode.FAST_PWM.class, m.getField("ICF" + n), gri(Comparator.I)), new Mode(Mode.FAST_PWM.class, m.getField("OCF" + n + "A"), gro(Comparator.A))};
+            String ocfn = "OCF" + n + "A";
+            String icfn = "ICF" + n;
+            modes = new Mode[] {
+                    new Mode(Mode.NORMAL.class, null, FixedTop.FFFF),
+                    new Mode(Mode.PWM.class, null, FixedTop.FF),
+                    new Mode(Mode.PWM.class, null, FixedTop._1FF),
+                    new Mode(Mode.PWM.class, null, FixedTop._3FF),
+                    new Mode(Mode.CTC.class, getField(m, ocfn), gro(Comparator.A)),
+                    new Mode(Mode.FAST_PWM.class, null, FixedTop.FF),
+                    new Mode(Mode.FAST_PWM.class, null, FixedTop._1FF),
+                    new Mode(Mode.FAST_PWM.class, null, FixedTop._3FF),
+                    new Mode(Mode.FC_PWM.class, getField(m, icfn), gri(Comparator.I)),
+                    new Mode(Mode.FC_PWM.class, getField(m, ocfn), gro(Comparator.A)),
+                    new Mode(Mode.PWM.class, getField(m, icfn), gri(Comparator.I)),
+                    new Mode(Mode.PWM.class, getField(m, ocfn), gro(Comparator.A)),
+                    new Mode(Mode.CTC.class, getField(m, icfn), gri(Comparator.I)), null,
+                    new Mode(Mode.FAST_PWM.class, getField(m, icfn), gri(Comparator.I)),
+                    new Mode(Mode.FAST_PWM.class, getField(m, ocfn), gro(Comparator.A))};
 
             resetMode(0);// XXX: is this always the default mode?
+        }
+
+        private RegisterSet.Field getField(AtmelMicrocontroller m, String name) {
+            return m.getRegisterSet().getField(name);
         }
 
         private TopValue gro(String n) {
@@ -254,12 +266,6 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
             public void write(byte val) {
                 super.write((byte) (0xf & val));
                 decode(val);
-            }
-
-            public void writeBit(int bit, boolean val) {
-                if (bit > AS0) return;
-                super.writeBit(bit, val);
-                decode(value);
             }
 
             protected void decode(byte val) {

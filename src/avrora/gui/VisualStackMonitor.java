@@ -50,21 +50,21 @@ public class VisualStackMonitor extends SingleNodeMonitor implements Simulation.
         public GraphNumbers graph;
         boolean spinit;
         int stacktop;
-        int SPL_REG;
-        int SPH_REG;
+        int splAddress;
+        int sphAddress;
 
         InitWatch spl;
         InitWatch sph;
 
-        class InitWatch extends Simulator.IORWatch.Empty {
+        class InitWatch extends Simulator.Watch.Empty {
             boolean init;
             public void fireAfterWrite(State s, int addr, byte val) {
                 init = true;
                 if ( spl.init && sph.init ) {
                     spinit = true;
                     stacktop = s.getSP();
-                    simulator.removeIORWatch(spl, SPL_REG);
-                    simulator.removeIORWatch(sph, SPH_REG);
+                    simulator.removeWatch(spl, splAddress);
+                    simulator.removeWatch(sph, sphAddress);
                 }
             }
         }
@@ -104,11 +104,11 @@ public class VisualStackMonitor extends SingleNodeMonitor implements Simulation.
             sph = new InitWatch();
 
             MCUProperties mp = simulator.getMicrocontroller().getProperties();
-            SPL_REG = mp.getIOReg("SPL");
-            SPH_REG = mp.getIOReg("SPH");
+            splAddress = mp.getIOReg("SPL") + 32; // TODO: replace with getAddress()
+            sphAddress = mp.getIOReg("SPH") + 32;
 
-            simulator.insertIORWatch(spl, SPL_REG);
-            simulator.insertIORWatch(sph, SPH_REG);
+            simulator.insertWatch(spl, splAddress);
+            simulator.insertWatch(sph, sphAddress);
         }
 
         public void destruct() {

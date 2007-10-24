@@ -160,7 +160,7 @@ public abstract class Interpreter {
      *
      * @param watch The <code>ExceptionWatch</code> instance to add.
      */
-    protected abstract void insertExceptionWatch(Simulator.ExceptionWatch watch);
+    protected abstract void insertErrorWatch(Simulator.Watch watch);
 
     /**
      * The <code>insertProbe()</code> method allows a probe to be inserted that is executed before and after
@@ -199,20 +199,6 @@ public abstract class Interpreter {
      * @param data_addr the address of the memory location from which to remove the watch
      */
     protected abstract void removeWatch(Simulator.Watch p, int data_addr);
-
-    /**
-     * The <code>insertIORWatch()</code> method is used internally to insert a watch on an IO register.
-     * @param p the watch to add to the IO register
-     * @param ioreg_num the number of the IO register for which to insert the watch
-     */
-    protected abstract void insertIORWatch(Simulator.IORWatch p, int ioreg_num);
-
-    /**
-     * The <code>removeIORWatch()</code> method is used internally to remove a watch on an IO register.
-     * @param p the watch to remove from the IO register
-     * @param ioreg_num the number of the IO register for which to remove the watch
-     */
-    protected abstract void removeIORWatch(Simulator.IORWatch p, int ioreg_num);
 
     /**
      * The <code>delay()</code> method is used to add some delay cycles before the next instruction is executed.

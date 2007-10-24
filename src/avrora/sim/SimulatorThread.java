@@ -102,7 +102,6 @@ public class SimulatorThread extends Thread {
             Terminal.printYellow("Simulation terminated");
             Terminal.println(": breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
         } catch (Util.Error e) {
-
             e.report();
         } finally {
             if ( synchronizer != null )

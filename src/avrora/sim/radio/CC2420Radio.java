@@ -35,7 +35,6 @@ package avrora.sim.radio;
 
 import avrora.sim.mcu.*;
 import avrora.sim.Simulator;
-import avrora.sim.clock.Clock;
 import avrora.sim.state.ByteFIFO;
 import cck.util.Arithmetic;
 import cck.util.Util;
@@ -441,7 +440,7 @@ public class CC2420Radio {
 
     public class ADCInterface implements ADC.ADCInput {
 
-        public int getVoltage() {
+        public float getVoltage() {
             throw Util.unimplemented();
         }
     }

@@ -115,10 +115,10 @@ public class SimpleAir implements RadioAir {
      * @param r the radio sampling the RSSI value
      * @return an integer value representing the received signal strength indicator
      */
-    public int sampleRSSI(Radio r) {
+    public float sampleRSSI(Radio r) {
         long t = r.getSimulator().getClock().getCount();
         synchronizer.waitForNeighbors(t);
-        return radioChannel.occupied(t - sampleTime, t) ? 0x0 : ADC.VBG_LEVEL;
+        return radioChannel.occupied(t - sampleTime, t) ? 0.000f : ADC.VBG_LEVEL;
     }
 
     /**

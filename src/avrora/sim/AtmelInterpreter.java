@@ -54,24 +54,12 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
     public static final boolean UNINSTRUMENTED = false;
     public static final int NUM_REGS = 32;
 
-    public final int RAMPZ; // location of the RAMPZ IO register
-    public final int SREG; // location of the SREG IO register
+    // fields (ordered roughly by their frequency of use)
+    protected LegacyInstr[] shared_instr; // shared for performance reasons only
 
-    protected final RegisterSet registers;
-    protected final StateImpl state;
-    protected final ActiveRegister[] ioregs;
-    protected final VolatileBehavior[] sram_volatile;
-    protected final CodeSegment flash;
-    protected final RWRegister SPL_reg;
-    protected final RWRegister SPH_reg;
-    protected final int sram_start;
-    protected final int sram_max;
-
-    protected int pc; // the program counter
-    protected int bootPC; // start up address
-    protected int interruptBase; // base of interrupt vector table
-    protected byte[] sram;
-
+    protected int pc;
+    protected int nextPC;
+    protected int cyclesConsumed;
     protected boolean I;
     protected boolean T;
     protected boolean H;
@@ -81,62 +69,38 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
     protected boolean Z;
     protected boolean C;
 
-    protected LegacyInstr[] shared_instr; // shared for performance reasons only
+    protected byte[] sram;
+    protected final int sram_start;
+    protected final int sram_max;
     protected MulticastWatch[] sram_watches;
+    protected final VolatileBehavior[] sram_volatile;
 
-    protected Simulator.Watch error_watch;
+    protected final ActiveRegister[] ioregs;
 
-    /**
-     * The <code>globalProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains
-     * all of the probes to be fired before and after the main execution runLoop--i.e. before and after every
-     * instruction.
-     */
+    protected final CodeSegment flash;
+    protected final RWRegister SPL_reg;
+    protected final RWRegister SPH_reg;
+
+    public final int RAMPZ; // location of the RAMPZ IO register
+    public final int SREG; // location of the SREG IO register
+
+    protected final RegisterSet registers;
+    protected final StateImpl state;
+
+    protected int bootPC; // start up address
+    protected int interruptBase; // base of interrupt vector table
+
+    protected MulticastWatch error_watch;
+
     protected final MulticastProbe globalProbe;
 
-    /**
-     * The <code>exceptionWatch</code> stores a reference to a <code>MulticastExceptionWatch</code>
-     * that contains all of the exception watches currently registered.
-     */
-    protected MulticastExceptionWatch exceptionWatch;
-
-    /**
-     * The <code>nextPC</code> field is used internally in maintaining the correct execution order of the
-     * instructions.
-     */
-    public int nextPC;
-
-    /**
-     * The <code>cyclesConsumed</code> field stores the number of cycles consumed in doing a part of the
-     * simulation (e.g. executing an instruction or processing an interrupt).
-     */
-    public int cyclesConsumed;
-
-    /**
-     * The <code>delayCycles</code> field tracks the number of cycles that the microcontroller is delayed.
-     * Delay is needed because some devices pause execution of the program for some number of cycles, and also
-     * to implement random delay at the beginning of startup in multiple node scenarios to prevent artificial
-     * cycle-level synchronization.
-     */
     protected long delayCycles;
 
-    /**
-     * The <code>shouldRun</code> flag is used internally in the main execution runLoop to implement the
-     * correct semantics of <code>start()</code> and <code>stop()</code> to the clients.
-     */
     protected boolean shouldRun;
 
-    /**
-     * The <code>sleeping</code> flag is used internally in the simulator when the microcontroller enters the
-     * sleep mode.
-     */
     protected boolean sleeping;
 
-    /**
-     * The <code>justReturnedFromInterrupt</code> field is used internally in maintaining the invariant stated
-     * in the hardware manual that at least one instruction following a return from an interrupt is executed
-     * before another interrupt can be processed.
-     */
-    public boolean justReturnedFromInterrupt;
+    protected boolean justReturnedFromInterrupt;
 
     public class StateImpl implements LegacyState {
 
@@ -362,7 +326,6 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         state = new StateImpl();
 
         globalProbe = new MulticastProbe();
-        exceptionWatch = new MulticastExceptionWatch();
 
         SREG = pr.getIOReg("SREG");
 
@@ -402,9 +365,7 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         sram_volatile[toSRAM(SREG)] = new SREGBehavior();
 
         // allocate FLASH
-        ErrorReporter reporter = new ErrorReporter();
-        flash = pr.codeSegmentFactory.newCodeSegment("flash", this, reporter, p);
-        reporter.segment = flash;
+        flash = pr.codeSegmentFactory.newCodeSegment("flash", this, p);
         // for performance, we share a reference to the LegacyInstr[] array representing flash
         // TODO: implement share() method
         shared_instr = flash.shareCode(null);
@@ -484,8 +445,9 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      *
      * @param watch The <code>ExceptionWatch</code> instance to add.
      */
-    protected void insertExceptionWatch(Simulator.ExceptionWatch watch) {
-        exceptionWatch.add(watch);
+    protected void insertErrorWatch(Simulator.Watch watch) {
+        if ( error_watch == null ) error_watch = new MulticastWatch();
+        error_watch.add(watch);
     }
 
     /**
@@ -548,24 +510,6 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         MulticastWatch w = sram_watches[data_addr];
         if (w == null) return;
         w.remove(p);
-    }
-
-    /**
-     * The <code>insertIORWatch()</code> method is used internally to insert a watch on an IO register.
-     * @param p the watch to add to the IO register
-     * @param ioreg_num the number of the IO register for which to insert the watch
-     */
-    protected void insertIORWatch(Simulator.IORWatch p, int ioreg_num) {
-        insertWatch(p, toSRAM(ioreg_num));
-    }
-
-    /**
-     * The <code>removeIORWatch()</code> method is used internally to remove a watch on an IO register.
-     * @param p the watch to remove from the IO register
-     * @param ioreg_num the number of the IO register for which to remove the watch
-     */
-    protected void removeIORWatch(Simulator.IORWatch p, int ioreg_num) {
-        removeWatch(p, toSRAM(ioreg_num));
     }
 
     /**
@@ -714,25 +658,6 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         return readSRAM(INSTRUMENTED, address);
     }
 
-    /**
-     * The <code>ErrorReporter</code> class is used to report errors accessing segments.
-     * @see Segment.ErrorReporter
-     */
-    protected class ErrorReporter implements Segment.ErrorReporter {
-        Segment segment;
-
-        public byte readError(int address) {
-            SimUtil.readError(simulator, segment.name, address);
-            exceptionWatch.invalidRead(segment.name, address);
-            return segment.value;
-        }
-
-        public void writeError(int address, byte value) {
-            SimUtil.writeError(simulator, segment.name, address, value);
-            exceptionWatch.invalidWrite(segment.name, address, value);
-        }
-    }
-
     private byte readSRAM(boolean w, int addr) {
         if ( addr < 0 ) {
             // an error.
@@ -771,12 +696,10 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
 
     private void fireWriteError(boolean w, int addr, byte val) {
         if ( w && error_watch != null ) error_watch.fireBeforeWrite(state, addr, val);
-        if ( exceptionWatch != null ) exceptionWatch.invalidWrite("sram", addr, val);
     }
 
     private byte fireReadError(boolean w, int addr) {
         if ( w && error_watch != null ) error_watch.fireBeforeRead(state, addr);
-        if ( exceptionWatch != null ) exceptionWatch.invalidRead("sram", addr); 
         return 0;
     }
 

@@ -94,10 +94,8 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         // initialize IO registers to default values
         registers = simulator.getMicrocontroller().getRegisterSet();
 
-        // instantiate error reporter
-        ErrorReporter reporter = new ErrorReporter();
         // allocate SRAM
-        data = new MSP430DataSegment(pr.sram_size, pr.code_start, registers.share(), this, reporter);
+        data = new MSP430DataSegment(pr.sram_size, pr.code_start, registers.share(), this);
 
         // initialize the interrupt table
         interrupts = new InterruptTable(this, pr.num_interrupts);
@@ -114,22 +112,6 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         globalProbe = new MulticastProbe();
 
         STOP = new STOP_instr();
-    }
-
-    /**
-     * The <code>ErrorReporter</code> class is used to report errors accessing segments.
-     * @see Segment.ErrorReporter
-     */
-    protected class ErrorReporter implements Segment.ErrorReporter {
-
-        public byte readError(int address) {
-            SimUtil.readError(simulator, data.name, address);
-            return data.value;
-        }
-
-        public void writeError(int address, byte value) {
-            SimUtil.writeError(simulator, data.name, address, value);
-        }
     }
 
 
@@ -252,7 +234,7 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
      *
      * @param watch The <code>ExceptionWatch</code> instance to add.
      */
-    protected void insertExceptionWatch(Simulator.ExceptionWatch watch) {
+    protected void insertErrorWatch(Simulator.Watch watch) {
         throw Util.unimplemented();
     }
 
@@ -302,24 +284,6 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
      * @param data_addr the address of the memory location from which to remove the watch
      */
     protected void removeWatch(Simulator.Watch p, int data_addr) {
-        throw Util.unimplemented();
-    }
-
-    /**
-     * The <code>insertIORWatch()</code> method is used internally to insert a watch on an IO register.
-     * @param p the watch to add to the IO register
-     * @param ioreg_num the number of the IO register for which to insert the watch
-     */
-    protected void insertIORWatch(Simulator.IORWatch p, int ioreg_num) {
-        throw Util.unimplemented();
-    }
-
-    /**
-     * The <code>removeIORWatch()</code> method is used internally to remove a watch on an IO register.
-     * @param p the watch to remove from the IO register
-     * @param ioreg_num the number of the IO register for which to remove the watch
-     */
-    protected void removeIORWatch(Simulator.IORWatch p, int ioreg_num) {
         throw Util.unimplemented();
     }
 

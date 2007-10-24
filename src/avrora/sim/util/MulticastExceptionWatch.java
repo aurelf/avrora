@@ -32,23 +32,13 @@
 
 package avrora.sim.util;
 
-import avrora.sim.Simulator;
-
 /**
  * An <code>ExceptionWatch</code> implementation which rebroadcasts the events to multiple
  * <code>ExceptionWatch</code> instances.
  *
  * @author Jey Kottalam (kottalam@cs.ucdavis.edu)
  */
-public class MulticastExceptionWatch extends TransactionalList implements Simulator.ExceptionWatch {
-    public void invalidRead(String segment, int address) {
-        for(Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.ExceptionWatch)pos.object).invalidRead(segment, address);
-    }
+public class MulticastExceptionWatch extends TransactionalList {
 
-    public void invalidWrite(String segment, int address, byte value) {
-        for(Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.ExceptionWatch)pos.object).invalidWrite(segment, address, value);
-    }
 }
 

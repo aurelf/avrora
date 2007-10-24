@@ -77,13 +77,13 @@ public class Register implements RegisterView {
      */
     public interface Watch {
         public void fireAfterWrite(Register r, int oldv, int newv);
-        public void fireAfterRead(Register r, int oldv);
+        public void fireAfterRead(Register r, int oldv, int newv);
 
         public static class Empty implements Watch {
             public void fireAfterWrite(Register r, int oldv, int newv) {
                 // do nothing.
             }
-            public void fireAfterRead(Register r, int oldv) {
+            public void fireAfterRead(Register r, int oldv, int newv) {
                 // do nothing.
             }
         }
@@ -102,17 +102,17 @@ public class Register implements RegisterView {
      * The <code>write()</code> method writes a value to the register. This method
      * will notify any objects that have been added to the watch list.
      *
-     * @param val the value to write to this register
+     * @param newv the value to write to this register
      */
-    public void write(int val) {
-        val = val & mask;
+    public void write(int newv) {
         int oldv = value;
-        value = (behavior != null ? mask & behavior.write(value, val) : val);
+        newv = newv & mask;
+        value = (behavior != null ? mask & behavior.write(value, newv) : newv);
         if ( watches != null ) {
             // call instrumentation code.
             watches.beginTransaction();
             for ( TransactionalList.Link n = watches.getHead(); n != null; n = n.next ) {
-                ((Watch)n.object).fireAfterWrite(this, oldv, val);
+                ((Watch)n.object).fireAfterWrite(this, oldv, newv);
             }
             watches.endTransaction();
         }
@@ -124,12 +124,13 @@ public class Register implements RegisterView {
      */
     public int read() {
         int oldv = value;
-        if ( behavior != null ) value = mask & behavior.read(value);
+        int newv = value;
+        if ( behavior != null ) value = newv = mask & behavior.read(value);
         if ( watches != null ) {
             // call instrumentation code.
             watches.beginTransaction();
             for ( TransactionalList.Link n = watches.getHead(); n != null; n = n.next ) {
-                ((Watch)n.object).fireAfterRead(this, oldv);
+                ((Watch)n.object).fireAfterRead(this, oldv, newv);
             }
             watches.endTransaction();
         }

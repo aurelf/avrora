@@ -118,30 +118,6 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
     }
 
     /**
-     * The <code>getField()</code> gets an object that represents an entire field which
-     * may be stored across multiple registers in multiple bit fields. This object allows
-     * access to the field's value without consideration for its underlying representation
-     * in the IO register(s).
-     * @param fname the name of the field
-     * @return a reference to the <code>Field</code> object that represents the field
-     */
-    public RegisterSet.Field getField(String fname) {
-	    return registers.getField(fname);
-    }
-
-    /**
-     * The <code>installField()</code> method allows device implementations to substitute a new field
-     * implementation for the named field. The field implementation can then override the appropriate
-     * methods of the <code>RegisterSet.Field</code> class to be notified upon writes.
-     * @param fname the name of the field
-     * @param fo the field object to install for this field
-     * @return the new field installed
-     */
-    public RegisterSet.Field installField(String fname, RegisterSet.Field fo) {
-	    return registers.installField(fname, fo);
-    }
-
-    /**
      * The <code>addDevice()</code> method adds a new internal device to this microcontroller so that it can
      * be retrieved later with <code>getDevice()</code>
      * @param d the device to add to this microcontroller
