@@ -111,7 +111,7 @@ public class ATMega16 extends ATMegaFamily {
         addPin(pinAssignments, 4, "AIN1", "OC0", "PB3");
         addPin(pinAssignments, 5, "SS", "PB4");
         addPin(pinAssignments, 6, "MOSI", "PB5");
-        addPin(pinAssignments, 7, "MSIO", "PB6");
+        addPin(pinAssignments, 7, "MISO", "PB6");
         addPin(pinAssignments, 8, "SCK", "PB7");
         addPin(pinAssignments, 9, "RESET");
         addPin(pinAssignments, 10, "VCC.1");
