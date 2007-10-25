@@ -102,7 +102,7 @@ public class ATMega32 extends ATMegaFamily {
         HashMap interruptAssignments = new HashMap(30);
 
         addPin(pinAssignments, 1, "MOSI", "PB5");
-        addPin(pinAssignments, 2, "MSIO", "PB6");
+        addPin(pinAssignments, 2, "MISO", "PB6");
         addPin(pinAssignments, 3, "SCK", "PB7");
         addPin(pinAssignments, 4, "RESET");
         addPin(pinAssignments, 5, "VCC.1");
