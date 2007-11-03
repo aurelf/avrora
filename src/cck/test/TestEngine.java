@@ -62,6 +62,7 @@ public class TestEngine {
     public static boolean PROGRESS_REPORT;
     public static boolean STATISTICS;
     public static int THREADS = 1;
+    public static int VERBOSE = 1;
 
     /**
      * The <code>TestHarness</code> interface encapsulates the notion of a testing harness that is capable of
@@ -141,19 +142,23 @@ public class TestEngine {
     }
 
     private void reportFailures() {
-        report("Internal errors", results, TestResult.INTERNAL, numTests);
-        report("Unexpected exceptions", results, TestResult.EXCEPTION, numTests);
-        report("Failed", results, TestResult.FAILURE, numTests);
-        report("Malformed test cases", results, TestResult.MALFORMED, numTests);
-        report("Nonterminating cases", results, TestResult.NONTERM, numTests);
+        if (VERBOSE > 0) {
+            report("Internal errors", results, TestResult.INTERNAL, numTests);
+            report("Unexpected exceptions", results, TestResult.EXCEPTION, numTests);
+            report("Failed", results, TestResult.FAILURE, numTests);
+            report("Malformed test cases", results, TestResult.MALFORMED, numTests);
+            report("Nonterminating cases", results, TestResult.NONTERM, numTests);
+        }
     }
 
     private void reportSuccesses(long time) {
-        Terminal.printBrightGreen("Passed");
-        Terminal.print(": " + successes.size());
-        Terminal.print(" of " + numTests);
-        Terminal.print(" in " + TimeUtil.milliToSecs(time) +" seconds");
-        Terminal.nextln();
+        if (VERBOSE > 0) {
+            Terminal.printBrightGreen("Passed");
+            Terminal.print(": " + successes.size());
+            Terminal.print(" of " + numTests);
+            Terminal.print(" in " + TimeUtil.milliToSecs(time) +" seconds");
+            Terminal.nextln();
+        }
     }
 
     private void initTests(String[] fnames) {
@@ -216,10 +221,13 @@ public class TestEngine {
         }
     }
 
-    private void finishTest() {
+    private void finishTest(TestCase tc) {
         synchronized(this) {
             finishedTests++;
-            if ( finishedTests >= numTests ) this.notifyAll();
+            reportVerbose(tc);
+            if ( finishedTests >= numTests ) {
+                this.notifyAll();
+            }
         }
     }
     private void reportStatistics(List[] tests) {
@@ -267,10 +275,7 @@ public class TestEngine {
         Throwable exception = null;
 
         try {
-            if ( PROGRESS_REPORT ) {
-                Terminal.print("Running "+fname+"...");
-                Terminal.flush();
-            }
+            beginVerbose(fname);
             tc.run();
         } catch (Throwable t) {
             exception = t;
@@ -281,13 +286,36 @@ public class TestEngine {
         } catch (Throwable t) {
             tc.result = new TestResult.UnexpectedException("exception in match routine: ", t);
         }
-        if ( PROGRESS_REPORT ) {
+        finishTest(tc);
+        return tc;
+    }
+
+    private void beginVerbose(String fname) {
+        if ( VERBOSE == 3 ) {
+            Terminal.print("Running "+fname+"...");
+            Terminal.flush();
+        }
+    }
+
+    private void reportVerbose(TestCase tc) {
+        if ( VERBOSE == 3 ) {
             if ( tc.result.isSuccess() ) Terminal.printGreen("passed");
             else Terminal.printRed("failed");
             Terminal.nextln();
+        } else if (VERBOSE == 2) {
+            if ( tc.result.isSuccess() ) {
+                Terminal.printGreen("t");
+            } else {
+                Terminal.printRed("X");
+            }
+            if (finishedTests % 50 == 0 || finishedTests >= numTests) {
+                Terminal.print(" "+ finishedTests + " of " + numTests);
+                Terminal.nextln();
+            } else if (finishedTests % 10 == 0) {
+                Terminal.print(" ");
+            }
+            Terminal.flush();
         }
-
-        return tc;
     }
 
     private TestCase readTestCase(String fname) throws IOException {
@@ -344,7 +372,6 @@ public class TestEngine {
                 test_began = System.currentTimeMillis();
                 intest = true;
                 runTest(num);
-                finishTest();
                 intest = false;
             }
         }
