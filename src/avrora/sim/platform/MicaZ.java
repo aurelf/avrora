@@ -77,6 +77,7 @@ public class MicaZ extends Platform {
     protected SensorBoard sensorboard;
     protected ExternalFlash externalFlash;
     protected LightSensor lightSensor;
+    protected LED.LEDGroup ledGroup;
 
     private MicaZ(Microcontroller m) {
         super(m);
@@ -93,9 +94,13 @@ public class MicaZ extends Platform {
         LED green = new LED(sim, Terminal.COLOR_GREEN, "Green");
         LED red = new LED(sim, Terminal.COLOR_RED, "Red");
 
-        yellow.enablePrinting();
-        green.enablePrinting();
-        red.enablePrinting();
+        ledGroup = new LED.LEDGroup(sim, new LED[] { yellow, green, red });
+
+        // yellow.enablePrinting();
+        // green.enablePrinting();
+        // red.enablePrinting();
+
+        AtmelMicrocontroller amcu = (AtmelMicrocontroller)mcu;
 
         mcu.getPin("PA0").connectOutput(yellow);
         mcu.getPin("PA1").connectOutput(green);
@@ -111,17 +116,22 @@ public class MicaZ extends Platform {
         mcu.getPin(31).connectInput(radio.CCA_pin);
         mcu.getPin(29).connectInput(radio.SFD_pin);
         mcu.getPin(10).connectOutput(radio.CS_pin);
-        ADC adc = (ADC)getDevice("adc");
+        ADC adc = (ADC)amcu.getDevice("adc");
         adc.connectADCInput(radio.adcInterface, 0);
-        SPI spi = (SPI)getDevice("spi");
+        SPI spi = (SPI)amcu.getDevice("spi");
         spi.connect(radio.spiInterface);
         addDevice("radio", radio);
+        // TODO: install FIFOP pin.
+        radio.FIFOP_interrupt = mcu.getProperties().getInterrupt("INT6");
+        // install the input capture pin.
+        Timer16Bit timer1 = (Timer16Bit)amcu.getDevice("timer1");
+        radio.setSFDView(timer1.getInputCapturePin());
+
         // sensor board
         sensorboard = new SensorBoard(sim);
         // external flash
         externalFlash = new ExternalFlash(mcu);
         // light sensor
-        AtmelMicrocontroller amcu = (AtmelMicrocontroller)mcu;
         lightSensor = new LightSensor(amcu, 1, "PC2", "PE5");
         addDevice("light-sensor", lightSensor);
     }

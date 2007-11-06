@@ -90,6 +90,8 @@
     2    probe  Event profiler that collects min, max, mean statistics
 
 ----------------------------------- Completed -----------------------------------------
+    3     devs  First (seemingly) working CC2420 implementation              1.7.099
+    2     devs  InputCapture for 16 bit timers                               1.7.099
     1      sim  Added EventBuffer, EventGen, eventually subsume SimPrinter   1.7.097
     1     devs  Debugged and fixed Medium transmission and reception         1.7.096
     2     devs  Added Medium implementation                                  1.7.093

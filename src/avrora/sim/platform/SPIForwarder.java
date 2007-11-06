@@ -92,7 +92,7 @@ public class SPIForwarder implements SPIDevice {
     }
 
 
-    public SPI.Frame transmitFrame() {
+    public SPI.Frame nextFrame() {
         try {
             // called when we are expected to supply data to the SPI.
             byte data = 0;
@@ -107,12 +107,17 @@ public class SPIForwarder implements SPIDevice {
     }
 
 
-    public void receiveFrame(SPI.Frame frame) {
+    public SPI.Frame exchange(SPI.Frame frame) {
         try {
-            out.write(frame.data);
+            receive(frame);
+            return nextFrame();
         } catch (IOException e) {
             throw Util.unexpected(e);
         }
+    }
+
+    private void receive(SPI.Frame frame) throws IOException {
+        out.write(frame.data);
     }
 
     public void connect(SPIDevice d) {
@@ -132,12 +137,8 @@ public class SPIForwarder implements SPIDevice {
         public void fire() {
             try {
                 if (in.available() >= 1) {
-                    // ask the SPI to send us a frame
-                    SPI.Frame frame = spi.transmitFrame();
-                    // receive the frame ourselves
-                    receiveFrame(frame);
                     // send our frame to the SPI
-                    spi.receiveFrame(transmitFrame());
+                    receive(spi.exchange(nextFrame()));
                 }
             } catch (IOException e) {
                 throw Util.unexpected(e);

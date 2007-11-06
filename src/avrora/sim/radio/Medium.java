@@ -36,6 +36,8 @@ package avrora.sim.radio;
 import avrora.sim.clock.Clock;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.Simulator;
+import avrora.sim.state.BooleanView;
+import avrora.sim.state.BooleanRegister;
 
 import java.util.*;
 
@@ -93,21 +95,26 @@ public class Medium {
     public static abstract class Transmitter extends TXRX {
 
         protected Transmission transmission;
+        protected final Transmitter.Ticker ticker;
 
         protected Transmitter(Medium m, Clock c) {
             super(m, c);
+            ticker = new Ticker();
         }
 
         public void endTransmit() {
             activated = false;
-            transmission.end();
+            if (transmission != null) {
+                transmission.end();
+                clock.removeEvent(ticker);
+            }
         }
 
         public void beginTransmit(double pow) {
             if ( !activated) {
                 transmission = medium.newTransmission(this, pow);
                 activated = true;
-                clock.insertEvent(new Ticker(), leadCycles);
+                clock.insertEvent(ticker, leadCycles);
             }
         }
 
@@ -132,29 +139,33 @@ public class Medium {
      * result of multiple interfering transmissions.
      */
     public static abstract class Receiver extends TXRX {
+        private static final int BIT_DELAY = 1;
         protected boolean locked;
+        public Receiver.Ticker ticker;
 
         protected Receiver(Medium m, Clock c) {
             super(m, c);
+            ticker = new Ticker();
         }
 
         public void beginReceive() {
             activated = true;
-            clock.insertEvent(new Ticker(), leadCycles + cyclesPerByte);
+            clock.insertEvent(ticker, leadCycles + cyclesPerByte);
         }
 
         public void endReceive() {
             activated = false;
+            locked = false;
+            clock.removeEvent(ticker);
         }
 
         public int sample() {
             return 0;
         }
 
-        public abstract void nextByte(byte b);
+        public abstract void nextByte(boolean lock, byte b);
 
         protected class Ticker implements Simulator.Event {
-            private static final int BIT_DELAY = 1;
 
             public void fire() {
                 if (activated) {
@@ -192,63 +203,77 @@ public class Medium {
                 List it = getIntersection(bit - BYTE_SIZE);
                 if ( it != null ) {
                     // merge transmissions into a single byte and send it to receiver
-                    nextByte(mergeTransmissions(it, bit - BYTE_SIZE));
+                    nextByte(true, mergeTransmissions(it, bit - BYTE_SIZE));
                     clock.insertEvent(this, cyclesPerByte);
                 } else {
                     // all transmissions are over.
                     locked = false;
+                    nextByte(false, (byte)0);
                     clock.insertEvent(this, leadCycles + cyclesPerByte);
                 }
             }
 
-            private byte mergeTransmissions(List it, long bit) {
-                byte value = 0;
-                Iterator i = it.iterator();
+        }
+        
+        public boolean isChannelClear() {
+            if (!activated) {
+                long time = clock.getCount();
+                long bit = getBitNum(time) - BIT_DELAY; // there is a one bit delay
+                waitForNeighbors(time - cyclesPerByte);
+                List it = getIntersection(bit - BYTE_SIZE);
+                return it != null;
+            } else {
+                return !locked;
+            }
+        }
+
+        private byte mergeTransmissions(List it, long bit) {
+            byte value = 0;
+            Iterator i = it.iterator();
+            while ( i.hasNext() ) {
+                Transmission t = (Transmission)i.next();
+                int offset = (int)(bit - t.firstBit);
+                value |= t.getByteAtOffset(offset);
+            }
+            return value;
+        }
+
+        private Transmission earliestTransmission(long bit) {
+            Transmission tx = null;
+            synchronized(medium) {
+                Iterator i = medium.transmissions.iterator();
                 while ( i.hasNext() ) {
                     Transmission t = (Transmission)i.next();
-                    int offset = (int)(bit - t.firstBit);
-                    value |= t.getByteAtOffset(offset);
-                }
-                return value;
-            }
-
-            private Transmission earliestTransmission(long bit) {
-                Transmission tx = null;
-                synchronized(medium) {
-                    Iterator i = medium.transmissions.iterator();
-                    while ( i.hasNext() ) {
-                        Transmission t = (Transmission)i.next();
-                        if (intersect(bit, t)) {
-                            if ( tx == null ) tx = t;
-                            else if ( t.start < tx.start ) tx = t;
-                        }
+                    if (intersect(bit, t)) {
+                        if ( tx == null ) tx = t;
+                        else if ( t.start < tx.start ) tx = t;
                     }
                 }
-                return tx;
             }
+            return tx;
+        }
 
-            private List getIntersection(long bit) {
-                List it = null;
-                synchronized(medium) {
-                    Iterator i = medium.transmissions.iterator();
-                    while ( i.hasNext() ) {
-                        Transmission t = (Transmission)i.next();
-                        if (intersect(bit, t)) {
-                            if ( it == null ) it = new LinkedList();
-                            it.add(t);
-                        }
+        private List getIntersection(long bit) {
+            List it = null;
+            synchronized(medium) {
+                Iterator i = medium.transmissions.iterator();
+                while ( i.hasNext() ) {
+                    Transmission t = (Transmission)i.next();
+                    if (intersect(bit, t)) {
+                        if ( it == null ) it = new LinkedList();
+                        it.add(t);
                     }
                 }
-                return it;
             }
+            return it;
+        }
 
-            private boolean intersect(long bit, Transmission t) {
-                return bit >= t.firstBit && bit < t.lastBit;
-            }
+        private boolean intersect(long bit, Transmission t) {
+            return bit >= t.firstBit && bit < t.lastBit;
+        }
 
-            private void waitForNeighbors(long gtime) {
-                if ( medium.synch != null ) medium.synch.waitForNeighbors(gtime);
-            }
+        private void waitForNeighbors(long gtime) {
+            if ( medium.synch != null ) medium.synch.waitForNeighbors(gtime);
         }
     }
 
