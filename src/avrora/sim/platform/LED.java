@@ -111,9 +111,8 @@ public class LED implements Microcontroller.Pin.Output {
                 // synchronize on the terminal to prevent interleaved output
                 Terminal.print(SimUtil.getIDTimeString(sim));
                 for ( int cntr = 0; cntr < leds.length; cntr++ ) {
-                    Terminal.print(" ");
-                    if ( leds[cntr].state.getCurrentState() == 0 ) Terminal.print("off");
-                    else Terminal.print(leds[cntr].colornum, "on ");
+                    if ( leds[cntr].state.getCurrentState() == 0 ) Terminal.print("off ");
+                    else Terminal.print(leds[cntr].colornum, "on  ");
                 }
                 Terminal.nextln();
             }

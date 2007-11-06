@@ -211,6 +211,7 @@ public class Defaults {
             platforms = new ClassMap("Platform", PlatformFactory.class);
             //-- DEFAULT PLATFORMS
             platforms.addClass("mica2", Mica2.Factory.class);
+            platforms.addClass("micaz", MicaZ.Factory.class);
             platforms.addClass("seres", Seres.Factory.class);
             platforms.addClass("superbot", Superbot.Factory.class);
             platforms.addClass("telos", Telos.Factory.class);

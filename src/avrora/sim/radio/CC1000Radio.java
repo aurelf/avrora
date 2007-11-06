@@ -1004,7 +1004,7 @@ public class CC1000Radio implements Radio {
 
         /**
          * The <code>TransferTicker</code> class is responsible for timing/facilitating transfer between the
-         * radio and the connected microcontroller. The receiveFrame(), transmitFrame() methods from the
+         * radio and the connected microcontroller. The exchange(), nextFrame() methods from the
          * SPIDevice interface are used.
          */
         private class TransferTicker implements Simulator.Event {
@@ -1032,13 +1032,11 @@ public class CC1000Radio implements Radio {
 
             public void fire() {
 
-                SPI.Frame frame = spiDevice.transmitFrame();
 
+                SPI.Frame frame = spiDevice.exchange(nextFrame());
                 if (MAIN_reg.rxtx && !MAIN_reg.txPd) {
-                    receiveFrame(frame);
+                    receive(frame);
                 }
-
-                spiDevice.receiveFrame(transmitFrame());
 
                 if (tickerOn) {
                     clock.insertEvent(this, Radio.TRANSFER_TIME);
@@ -1047,10 +1045,10 @@ public class CC1000Radio implements Radio {
         }
 
         /**
-         * <code>receiveFrame</code> receives an <code>SPIFrame</code> from a connected device. If the radio
+         * <code>exchange</code> receives an <code>SPIFrame</code> from a connected device. If the radio
          * is in a transmission state, this should be the next frame sent into the air.
          */
-        public void receiveFrame(SPI.Frame frame) {
+        public void receive(SPI.Frame frame) {
 
             // data, frequency, origination
             if (!MAIN_reg.txPd && MAIN_reg.rxtx) {
@@ -1061,7 +1059,12 @@ public class CC1000Radio implements Radio {
                     printer.println("CC1000: discarding "+StringUtil.toMultirepString(frame.data, 8)+" from SPI");
                 }
             }
+        }
 
+        public SPI.Frame exchange(SPI.Frame frame) {
+            SPI.Frame next = nextFrame();
+            receive(frame);
+            return next;
         }
 
         /**
@@ -1090,7 +1093,7 @@ public class CC1000Radio implements Radio {
          * Transmits an <code>SPIFrame</code> to be received by the connected device. This frame is either the
          * last byte of data received or a zero byte.
          */
-        public SPI.Frame transmitFrame() {
+        public SPI.Frame nextFrame() {
             SPI.Frame frame;
 
             if (MAIN_reg.rxtx && MAIN_reg.txPd) {

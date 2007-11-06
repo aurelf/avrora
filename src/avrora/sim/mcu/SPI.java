@@ -88,13 +88,15 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         connectedDevice = d;
     }
 
-    public void receiveFrame(Frame frame) {
-        SPDR_reg.receiveReg.write(frame.data);
-        if (!SPCR_reg._master.getValue() && !transferEvent.transmitting) postSPIInterrupt();
+    public Frame exchange(Frame frame) {
+        Frame result = newFrame(SPDR_reg.transmitReg.read());
+        receive(frame);
+        return result;
     }
 
-    public Frame transmitFrame() {
-        return newFrame(SPDR_reg.transmitReg.read());
+    public void receive(Frame frame) {
+        SPDR_reg.receiveReg.write(frame.data);
+        if (!SPCR_reg._master.getValue() && !transferEvent.transmitting) postSPIInterrupt();
     }
 
     public SPI(AtmelMicrocontroller m) {
@@ -131,8 +133,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
      */
     protected class TransferEvent implements Simulator.Event {
 
-        Frame myFrame;
-        Frame connectedFrame;
+        Frame frame;
         boolean transmitting;
 
         protected void enableTransfer() {
@@ -142,23 +143,14 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
                     devicePrinter.println("SPI: Master mode. Enabling transfer. ");
                 }
                 transmitting = true;
-                myFrame = transmitFrame();
-                connectedFrame = connectedDevice.transmitFrame();
+                frame = newFrame(SPDR_reg.transmitReg.read());
                 mainClock.insertEvent(this, period);
             }
         }
 
-
-        /**
-         * Notes. The way this delay is setup right now, when the ATMega128 is in master mode and
-         * transmits, the connected device has a delayed receive. For the radio, this is not a
-         * problem, as the radio is the master and is responsible for ensuring correct delivery time
-         * for the SPI.
-         */
         public void fire() {
             if (SPCR_reg._enabled.getValue()) {
-                connectedDevice.receiveFrame(myFrame);
-                receiveFrame(connectedFrame);
+                receive(connectedDevice.exchange(frame));
                 transmitting = false;
                 postSPIInterrupt();
             }

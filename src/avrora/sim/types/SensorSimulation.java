@@ -161,8 +161,18 @@ public class SensorSimulation extends Simulation {
         private void createNode() {
             thread = new SimulatorThread(this);
             super.instantiate();
-            radio = (Radio)platform.getDevice("radio");
-            air.addRadio(radio);
+            // get the radio device, if it exists.
+            Object dev = platform.getDevice("radio");
+            if (dev instanceof Radio) {
+                radio = (Radio) dev;
+                air.addRadio(radio);
+            } else if (dev instanceof CC2420Radio) {
+                if (medium == null) {
+                    medium = CC2420Radio.createMedium(synchronizer);
+                }
+                CC2420Radio radio = (CC2420Radio)dev;
+                radio.connectTo(medium);
+            }
             simulator.delay(startup);
         }
 
@@ -192,6 +202,7 @@ public class SensorSimulation extends Simulation {
     }
 
     RadioAir air;
+    Medium medium;
     long stagger;
 
     public SensorSimulation() {

@@ -35,9 +35,13 @@ package avrora.sim.radio;
 
 import avrora.sim.mcu.*;
 import avrora.sim.Simulator;
-import avrora.sim.state.ByteFIFO;
+import avrora.sim.clock.Synchronizer;
+import avrora.sim.util.SimUtil;
+import avrora.sim.output.SimPrinter;
+import avrora.sim.state.*;
 import cck.util.Arithmetic;
 import cck.util.Util;
+import cck.text.StringUtil;
 
 /**
  * The <code>CC2420Radio</code> implements a simulation of the CC2420 radio
@@ -92,7 +96,7 @@ public class CC2420Radio {
     public static final int STXONCCA = 0x05;
     public static final int SRFOFF   = 0x06;
     public static final int SXOSCOFF = 0x07;
-    public static final int SLFUSHRX = 0x08;
+    public static final int SFLUSHRX = 0x08;
     public static final int SFLUSHTX = 0x09;
     public static final int SACK     = 0x0a;
     public static final int SACKPEND = 0x0b;
@@ -103,6 +107,8 @@ public class CC2420Radio {
     //-- Other constants --------------------------------------------------
     private static final int NUM_REGISTERS = 0x40;
     private static final int FIFO_SIZE     = 128;
+
+    private static final int XOSC_START_TIME = 1000; // oscillator start time
 
     //-- Simulation objects -----------------------------------------------
     protected final Microcontroller mcu;
@@ -115,11 +121,11 @@ public class CC2420Radio {
     protected final ByteFIFO txFIFO = new ByteFIFO(FIFO_SIZE);
     protected final ByteFIFO rxFIFO = new ByteFIFO(FIFO_SIZE);
 
+    protected Medium medium;
     protected Transmitter transmitter;
     protected Receiver receiver;
 
-    //-- State needed for config protocol ---------------------------------
-    protected boolean configActive;
+    //-- state for managing configuration information
     protected int configCommand;
     protected int configByteCnt;
     protected int configRegAddr;
@@ -128,29 +134,46 @@ public class CC2420Radio {
     protected int configRAMBank;
 
     //-- Strobes and status ----------------------------------------------
-    protected byte status;
-    protected boolean SXOSCON_switched;
-    protected boolean SXOSCOFF_switched;
+    // note that there is no actual "status register" on the CC2420.
+    // The register here is used in the simulation implementation to
+    // simplify the handling of radio states and state transitions.
+    protected final Register statusRegister = new Register(8);
+    protected boolean startingOscillator;
     protected boolean SRXDEC_switched;
     protected boolean STXENC_switched;
-    protected boolean STXCAL_switched;
-    protected boolean SRXON_switched;
-    protected boolean STXON_switched;
-    protected boolean SRFOFF_switched;
-    protected boolean STXONCCA_switched;
+
+    //-- Views of bits in the status "register" ---------------------------
+    protected final BooleanView oscStable = RegisterUtil.booleanView(statusRegister, 6);
+    protected final BooleanView txUnderflow = RegisterUtil.booleanView(statusRegister, 5);
+    protected final BooleanView txActive = RegisterUtil.booleanView(statusRegister, 3);
+    protected final BooleanView signalLock = RegisterUtil.booleanView(statusRegister, 2);
+    protected final BooleanView rssiValid = RegisterUtil.booleanView(statusRegister, 1);
+
+    protected final BooleanView CCA_assessor = new ClearChannelAssessor();
+    protected BooleanView SFD_value = new BooleanRegister();
 
     //-- Pins ------------------------------------------------------------
-    public final CC2420Pin SCLK_pin  = new CC2420Pin();
-    public final CC2420Pin MISO_pin  = new CC2420Pin();
-    public final CC2420Pin MOSI_pin  = new CC2420Pin();
-    public final CC2420Pin CS_pin    = new CC2420Pin();
-    public final CC2420Pin FIFO_pin  = new CC2420Pin();
-    public final CC2420Pin FIFOP_pin = new CC2420Pin();
-    public final CC2420Pin CCA_pin   = new CC2420Pin();
-    public final CC2420Pin SFD_pin   = new CC2420Pin();
+    public final CC2420Pin SCLK_pin  = new CC2420Pin("SCLK");
+    public final CC2420Pin MISO_pin  = new CC2420Pin("MISO");
+    public final CC2420Pin MOSI_pin  = new CC2420Pin("MOSI");
+    public final CC2420Pin CS_pin    = new CC2420Pin("CS");
+    public final CC2420Output FIFO_pin  = new CC2420Output("FIFO", new BooleanRegister());
+    public final CC2420Output FIFOP_pin = new CC2420Output("FIFOP", new BooleanRegister());
+    public final CC2420Output CCA_pin   = new CC2420Output("CCA", CCA_assessor);
+    public final CC2420Output SFD_pin   = new CC2420Output("SFD", SFD_value);
 
     public final SPIInterface spiInterface = new SPIInterface();
     public final ADCInterface adcInterface = new ADCInterface();
+
+    public int FIFOP_interrupt = -1;
+
+    protected final SimPrinter printer;
+
+    // the CC2420 allows reversing the polarity of these outputs.
+    protected boolean FIFO_active = true; // selects active high (true) or active low.
+    protected boolean FIFOP_active = true;
+    protected boolean CCA_active = true;
+    protected boolean SFD_active = true;
 
     /**
      * The constructor for the CC2420 class creates a new instance connected
@@ -167,6 +190,19 @@ public class CC2420Radio {
         // reset all registers
         for ( int cntr = 0; cntr < NUM_REGISTERS; cntr++ ) resetRegister(cntr);
 
+        // create a private medium for this radio
+        // the simulation may replace this later with a new one.
+        medium = createMedium(null);
+
+        // get debugging channel.
+        printer = SimUtil.getPrinter(mcu.getSimulator(), "radio.cc2420");
+    }
+
+    public void setSFDView(BooleanView sfd) {
+        if (SFD_pin.level == SFD_value) {
+            SFD_pin.level = sfd;
+        }
+        SFD_value = sfd;
     }
 
     /**
@@ -176,7 +212,11 @@ public class CC2420Radio {
      * @return an integer value representing the result of reading the register
      */
     int readRegister(int addr) {
-        return (int) registers[addr];
+        int val = (int) registers[addr];
+        if ( printer.enabled ) {
+            printer.println("CC2420 "+ regName(addr)+" -> "+StringUtil.toMultirepString(val, 16));
+        }
+        return val;
     }
 
     /**
@@ -187,62 +227,76 @@ public class CC2420Radio {
      * @param val the value to write to the specified register
      */
     void writeRegister(int addr, int val) {
+        if ( printer.enabled ) {
+            printer.println("CC2420 "+ regName(addr) +" <= "+StringUtil.toMultirepString(val, 16));
+        }
         registers[addr] = (char)val;
         switch (addr) {
             case MAIN:
                 // TODO: main register write
                 break;
+            case IOCFG1:
+                int ccaMux = val & 0x1f;
+                int sfdMux = (val >> 5) & 0x1f;
+                setCCAMux(ccaMux);
+                setSFDMux(sfdMux);
+                break;
+            case IOCFG0:
+                // set the polarities for the output pins.
+                FIFO_active = !Arithmetic.getBit(val, 10);
+                FIFOP_active = !Arithmetic.getBit(val, 9);
+                SFD_active = !Arithmetic.getBit(val, 8);
+                CCA_active = !Arithmetic.getBit(val, 7);
+                break;
         }
         computeStatus();
     }
 
+    private void setSFDMux(int sfdMux) {
+        // TODO: SFD multiplexor
+    }
+
+    private void setCCAMux(int ccaMux) {
+        // TODO: handle all the possible CCA multiplexing sources
+        // and possibility of active low.
+        if (ccaMux == 24) CCA_pin.level = oscStable;
+        else CCA_pin.level = CCA_assessor;
+    }
+
     void strobe(int addr) {
+        if ( printer.enabled ) {
+            printer.println("CC2420 Strobe "+ strobeName(addr));
+        }
         switch (addr) {
             case SNOP:
                 break;
             case SXOSCON:
-                SXOSCON_switched = true;
-                SXOSCOFF_switched = false;
+                startOscillator();
                 break;
             case STXCAL:
-                STXCAL_switched = true;
-                SRXON_switched = false;
-                STXON_switched = false;
                 break;
             case SRXON:
-                endTransmit();
-                beginReceive();
-                SRXON_switched = true;
-                STXCAL_switched = false;
-                SRFOFF_switched = false;
-                SXOSCOFF_switched = false;
+                transmitter.shutdown();
+                receiver.startup();
                 break;
             case STXONCCA:
-                STXONCCA_switched = true;
-                // fall through!
+                if (CCA_assessor.getValue()) {
+                    receiver.shutdown();
+                    transmitter.startup();
+                }
+                break;
             case STXON:
-                endReceive();
-                beginTransmit();
-                STXON_switched = true;
-                STXCAL_switched = false;
-                SRFOFF_switched = false;
-                SXOSCOFF_switched = false;
+                receiver.shutdown();
+                transmitter.startup();
                 break;
             case SRFOFF:
-                SRFOFF_switched = true;
-                SRXON_switched = false;
-                STXON_switched = false;
-                STXONCCA_switched = false;
-                STXCAL_switched = false;
                 break;
             case SXOSCOFF:
-                SXOSCOFF_switched = true;
-                SXOSCON_switched = false;
                 break;
-            case SLFUSHRX:
+            case SFLUSHRX:
                 rxFIFO.clear();
-                FIFO_pin.level = false;
-                FIFOP_pin.level = false;
+                FIFO_pin.level.setValue(!FIFO_active);
+                FIFOP_pin.level.setValue(!FIFOP_active);
                 break;
             case SFLUSHTX:
                 txFIFO.clear();
@@ -265,20 +319,16 @@ public class CC2420Radio {
         }
     }
 
-    private void beginTransmit() {
-        if ( transmitter != null ) transmitter.beginTransmit(0.00);
-    }
-
-    private void endTransmit() {
-        if ( transmitter != null ) transmitter.endTransmit();
-    }
-
-    private void beginReceive() {
-        if ( receiver != null ) receiver.beginReceive();
-    }
-
-    private void endReceive() {
-        if ( receiver != null ) receiver.endReceive();
+    private void startOscillator() {
+        if (!oscStable.getValue() && !startingOscillator) {
+            startingOscillator = true;
+            sim.insertEvent(new Simulator.Event() {
+                public void fire() {
+                    oscStable.setValue(true);
+                    startingOscillator = false;
+                }
+            }, toCycles(XOSC_START_TIME));
+        }
     }
 
     /**
@@ -305,15 +355,7 @@ public class CC2420Radio {
      * The <code>computeStatus()</code> method computes the status byte of the radio.
      */
     void computeStatus() {
-        boolean XOSC16_M = SXOSCON_switched && !SXOSCOFF_switched;
-        boolean TX_UNDERFLOW = false; // TODO: compute underflow
-        /*something describing length field*/
-        boolean ENC_BUSY = SRXDEC_switched || STXENC_switched;
-        boolean TX_ACTIVE = SRXON_switched || STXON_switched;
-        boolean LOCK = false; // TODO: compute lock
-        boolean RSSI_VALID = (Arithmetic.low(readRegister(RSSI)) != -128);
-        //bits 7 and 0 are reserved bits in the Status Byte
-        status = Arithmetic.packBits(false, RSSI_VALID, LOCK, TX_ACTIVE, ENC_BUSY, TX_UNDERFLOW, XOSC16_M, false);
+        // do nothing.
     }
 
     protected static final int CMD_R_REG = 0;
@@ -329,6 +371,7 @@ public class CC2420Radio {
         configByteCnt++;
         if ( configByteCnt == 1 ) {
             // the first byte is the address byte
+            byte status = getStatus();
             boolean ramop = Arithmetic.getBit(val, 7);
             boolean readop = Arithmetic.getBit(val, 6);
             configRegAddr = val & 0x3f;
@@ -390,15 +433,43 @@ public class CC2420Radio {
         return 0;
     }
 
+    private byte getStatus() {
+        byte status = (byte) statusRegister.getValue();
+        if (printer.enabled) {
+            printer.println("CC2420 status: "+StringUtil.toBin(status, 8));
+        }
+        return status;
+    }
+
     protected byte readFIFO(ByteFIFO fifo) {
-        return fifo.remove();
+        byte val = fifo.remove();
+        if (printer.enabled) {
+            printer.println("CC2420 Read "+fifoName(fifo)+" -> "+StringUtil.toMultirepString(val, 8));
+        }
+        if (fifo == rxFIFO) {
+            if (fifo.empty()) {
+                // reset the FIFO pin when the read FIFO is empty.
+                FIFO_pin.level.setValue(!FIFO_active);
+            } else if (fifo.size() < getFIFOThreshold()) {
+                FIFOP_pin.level.setValue(!FIFOP_active);
+            }
+        }
+        return val;
     }
 
     protected byte writeFIFO(ByteFIFO fifo, byte val, boolean st) {
-        byte result = st ? status : 0;
+        if (printer.enabled) {
+            printer.println("CC2420 Write "+fifoName(fifo)+" <= "+StringUtil.toMultirepString(val, 8));
+        }
+        byte result = st ? getStatus() : 0;
         fifo.add(val);
         computeStatus();
         return result;
+    }
+
+    private int getFIFOThreshold() {
+        // get the FIFOP_THR value from the configuration register
+        return (int) registers[IOCFG0] & 0x3f;
     }
 
     public Simulator getSimulator() {
@@ -421,16 +492,24 @@ public class CC2420Radio {
         air = nair;
     }
 
+    public class ClearChannelAssessor implements BooleanView {
+        public void setValue(boolean val) {
+            // ignore writes.
+        }
+        public boolean getValue() {
+            return receiver.isChannelClear();
+        }
+    }
+
     public class SPIInterface implements SPIDevice {
 
-        byte result;
-
-        public SPI.Frame transmitFrame() {
-            return SPI.newFrame(result);
-        }
-
-        public void receiveFrame(SPI.Frame frame) {
-            if ( configActive ) result = receiveConfigByte(frame.data);
+        public SPI.Frame exchange(SPI.Frame frame) {
+            if ( !CS_pin.level ) {
+                // configuration requires CS pin to be held low
+                return SPI.newFrame(receiveConfigByte(frame.data));
+            } else {
+                return SPI.newFrame((byte)0);
+            }
         }
 
         public void connect(SPIDevice d) {
@@ -446,39 +525,205 @@ public class CC2420Radio {
     }
 
     private void pinChange_CS(boolean level) {
-        if ( level ) {
-            // end configuration transfer
-            configActive = false;
-            configByteCnt = 0;
-        } else {
-            // start configuration transfer
-            configActive = true;
-            configByteCnt = 0;
-        }
+        // a change in the CS level always restarts a config command.
+        configByteCnt = 0;
     }
 
+    private static final int TX_IN_PREAMBLE = 0;
+    private static final int TX_SFD_1 = 1;
+    private static final int TX_SFD_2 = 2;
+    private static final int TX_LENGTH = 3;
+    private static final int TX_IN_PACKET = 4;
+    private static final int TX_IN_CHKSUM_1 = 5;
+    private static final int TX_IN_CHKSUM_2 = 6;
+    private static final int TX_END = 7;
+
     public class Transmitter extends Medium.Transmitter {
+
+        protected int state;
+        protected int counter;
+        protected int length;
+        protected char crc;
 
         public Transmitter(Medium m) {
             super(m, sim.getClock());
         }
 
         public byte nextByte() {
-            // TODO: implement sending.
-            return 0;
+            byte val = 0;
+            switch (state) {
+                case TX_IN_PREAMBLE:
+                    counter++;
+                    if (counter >= getPreambleLength()) {
+                        state = TX_SFD_1;
+                    }
+                    break;
+                case TX_SFD_1:
+                    state = TX_SFD_2;
+                    val = Arithmetic.low(registers[SYNCWORD]);
+                    break;
+                case TX_SFD_2:
+                    state = TX_LENGTH;
+                    val = Arithmetic.high(registers[SYNCWORD]);
+                    break;
+                case TX_LENGTH:
+                    length = txFIFO.remove() & 0x3f;
+                    state = TX_IN_PACKET;
+                    counter = 0;
+                    crc = 0;
+                    val = (byte)length;
+                    SFD_value.setValue(SFD_active);
+                    break;
+                case TX_IN_PACKET:
+                    // TODO: handle TX underlow.
+                    val = txFIFO.remove();
+                    crcAccumulate(val);
+                    if (++counter >= length - 2) {
+                        state = TX_IN_CHKSUM_1;
+                    }
+                    break;
+                case TX_IN_CHKSUM_1:
+                    state = TX_IN_CHKSUM_2;
+                    //val = Arithmetic.low(crc);
+                    val = (byte)0xff;
+                    break;
+                case TX_IN_CHKSUM_2:
+                    //val = Arithmetic.high(crc);
+                    val = (byte)0xff;
+                    state = TX_END;
+                    counter = 0;
+                    SFD_value.setValue(!SFD_active);
+                    shutdown();
+                    receiver.startup(); // auto transition back to receive mode.
+                    break;
+                    // and fall through.
+                default:
+                    state = TX_IN_PREAMBLE;
+                    counter = 0;
+                    break;
+            }
+            if (printer.enabled) {
+                printer.println("CC2420 "+StringUtil.to0xHex(val, 2)+" --------> ");
+            }
+            return val;
+        }
+
+        private void crcAccumulate(byte val) {
+            int i = 8;
+            do {
+                if ((crc & 0x8000) != 0) crc = (char)(crc << 1 ^ 0x1021);
+                else crc = (char)(crc << 1);
+            } while (--i > 0);
+        }
+
+        private int getPreambleLength() {
+            int val = registers[MDMCTRL1] & 0xf;
+            return val + 7;
+        }
+
+        void startup() {
+            txActive.setValue(true);
+            state = TX_IN_PREAMBLE;
+            beginTransmit(0.00);
+        }
+
+        void shutdown() {
+            txActive.setValue(false);
+            endTransmit();
         }
     }
 
+
+    private static final int RECV_SFD_SCAN = 0;
+    private static final int RECV_SFD_MATCHED_1 = 1;
+    private static final int RECV_SFD_MATCHED_2 = 2;
+    private static final int RECV_IN_PACKET = 3;
+    private static final int RECV_END_STATE = 4;
+
     public class Receiver extends Medium.Receiver {
+        protected int state;
+        protected int counter;
+        protected int length;
+
         public Receiver(Medium m) {
             super(m, sim.getClock());
         }
-        public void nextByte(byte b) {
-            // TODO: implement byte reception
+        public void nextByte(boolean lock, byte b) {
+            if (!lock) {
+                // the transmission lock has been lost
+                if (state == RECV_END_STATE) ; // packet over.
+                if (state == RECV_IN_PACKET) ; // TODO: packet lost in middle.
+                state = RECV_SFD_SCAN;
+                SFD_value.setValue(!SFD_active);
+                return;
+            }
+            if (printer.enabled) {
+                printer.println("CC2420 <======== "+StringUtil.to0xHex(b, 2));
+            }
+            switch (state) {
+                case RECV_SFD_MATCHED_1:
+                    // check against the second byte of the SYNCWORD register.
+                    if (b == Arithmetic.high(registers[SYNCWORD])) {
+                        state = RECV_SFD_MATCHED_2;
+                        SFD_value.setValue(SFD_active);
+                        break;
+                    }
+                    // fallthrough if we failed to match the second byte
+                    // and try to match the first byte again.
+                case RECV_SFD_SCAN:
+                    // check against the first byte of the SYNCWORD register.
+                    if (b == Arithmetic.low(registers[SYNCWORD])) {
+                        state = RECV_SFD_MATCHED_1;
+                    } else {
+                        state = RECV_SFD_SCAN;
+                    }
+                    break;
+                case RECV_SFD_MATCHED_2:
+                    // SFD matched. read the length from the next byte.
+                    length = b & 0x1f;
+                    rxFIFO.add(b);
+                    counter = 0;
+                    state = RECV_IN_PACKET;
+                    break;
+                case RECV_IN_PACKET:
+                    // we are in the body of the packet.
+                    // TODO: handle RX overflow.
+                    rxFIFO.add(b);
+                    FIFO_pin.level.setValue(FIFO_active);
+                    if (rxFIFO.size() >= getFIFOThreshold()) {
+                        signalFIFOP();
+                    }
+                    counter++;
+                    if (counter == length) {
+                        // TODO: compute checksum and drop frame if failure.
+                        // signal FIFOP and unsignal SFD
+                        signalFIFOP();
+                        SFD_value.setValue(SFD_active);
+                        state = RECV_END_STATE;
+                    }
+                    break;
+            }
+        }
+
+        private void signalFIFOP() {
+            FIFOP_pin.level.setValue(FIFOP_active);
+            if (FIFOP_interrupt > 0) {
+                sim.getInterpreter().getInterruptTable().post(FIFOP_interrupt);
+            }
+        }
+
+        void startup() {
+            state = RECV_SFD_SCAN;
+            beginReceive();
+        }
+
+        void shutdown() {
+            endReceive();
         }
     }
 
     public void connectTo(Medium m) {
+        medium = m;
         transmitter = new Transmitter(m);
         receiver = new Receiver(m);
     }
@@ -487,20 +732,118 @@ public class CC2420Radio {
      * The <code>CC2420Pin</code>() class models pins that are inputs and outputs to the CC2420 chip.
      */
     public class CC2420Pin implements Microcontroller.Pin.Input, Microcontroller.Pin.Output {
-        protected boolean prev;
+        protected final String name;
         protected boolean level;
+
+        public CC2420Pin(String n) {
+            name = n;
+        }
 
         public void write(boolean level) {
             if ( this.level != level ) {
                 // level changed
-                this.prev = this.level;
                 this.level = level;
                 if ( this == CS_pin ) pinChange_CS(level);
             }
         }
 
         public boolean read() {
+            if (printer.enabled) {
+                printer.println("CC2420 Read pin "+name+" -> "+level);
+            }
             return level;
         }
+    }
+
+    public class CC2420Output implements Microcontroller.Pin.Input {
+
+        protected BooleanView level;
+        protected final String name;
+
+        public CC2420Output(String n, BooleanView lvl) {
+            name = n;
+            level = lvl;
+        }
+
+        public boolean read() {
+            boolean val = level.getValue();
+            if (printer.enabled) {
+                printer.println("CC2420 Read pin "+name+" -> "+val);
+            }
+            return val;
+        }
+    }
+
+    public static String regName(int reg) {
+        switch (reg) {
+        case MAIN    : return "MAIN    ";
+        case MDMCTRL0: return "MDMCTRL0";
+        case MDMCTRL1: return "MDMCTRL1";
+        case RSSI    : return "RSSI    ";
+        case SYNCWORD: return "SYNCWORD";
+        case TXCTRL  : return "TXCTRL  ";
+        case RXCTRL0 : return "RXCTRL0 ";
+        case RXCTRL1 : return "RXCTRL1 ";
+        case FSCTRL  : return "FSCTRL  ";
+        case SECCTRL0: return "SECCTRL0";
+        case SECCTRL1: return "SECCTRL1";
+        case BATTMON : return "BATTMON ";
+        case IOCFG0  : return "IOCFG0  ";
+        case IOCFG1  : return "IOCFG1  ";
+        case MANFIDL : return "MANFIDL ";
+        case MANFIDH : return "MANFIDH ";
+        case FSMTC   : return "FSMTC   ";
+        case MANAND  : return "MANAND  ";
+        case MANOR   : return "MANOR   ";
+        case AGCCTRL0: return "AGCCTRL0";
+        case AGCTST0 : return "AGCTST0 ";
+        case AGCTST1 : return "AGCTST1 ";
+        case AGCTST2 : return "AGCTST2 ";
+        case FSTST0  : return "FSTST0  ";
+        case FSTST1  : return "FSTST1  ";
+        case FSTST2  : return "FSTST2  ";
+        case FSTST3  : return "FSTST3  ";
+        case RXBPFTST: return "RXBPFTST";
+        case FSMSTATE: return "FSMSTATE";
+        case ADCTST  : return "ADCTST  ";
+        case DACTST  : return "DACTST  ";
+        case TOPTST  : return "TOPTST  ";
+        case TXFIFO  : return "TXFIFO  ";
+        case RXFIFO  : return "RXFIFO  ";
+            default: return StringUtil.to0xHex(reg,2) + "    ";
+        }
+    }
+    public static String strobeName(int strobe) {
+        switch (strobe) {
+            case SNOP    : return "SNOP    ";
+            case SXOSCON : return "SXOSCON ";
+            case STXCAL  : return "STXCAL  ";
+            case SRXON   : return "SRXON   ";
+            case STXON   : return "STXON   ";
+            case STXONCCA: return "STXONCCA";
+            case SRFOFF  : return "SRFOFF  ";
+            case SXOSCOFF: return "SXOSCOFF";
+            case SFLUSHRX: return "SFLUSHRX";
+            case SFLUSHTX: return "SFLUSHTX";
+            case SACK    : return "SACK    ";
+            case SACKPEND: return "SACKPEND";
+            case SRXDEC  : return "SRXDEC  ";
+            case STXENC  : return "STXENC  ";
+            case SAES    : return "SAES    ";
+            default: return StringUtil.to0xHex(strobe, 2) + "    ";
+        }
+    }
+    String fifoName(ByteFIFO fifo) {
+        if ( fifo == txFIFO ) return "TX FIFO";
+        if ( fifo == rxFIFO ) return "RX FIFO";
+        return "XX FIFO";
+    }
+
+    private long toCycles(long us) {
+        return us * sim.getClock().getHZ() / 1000000;
+    }
+
+    public static Medium createMedium(Synchronizer synch) {
+        return new Medium(synch, 250000, 48, 8, 8 * 128);
     }
 }

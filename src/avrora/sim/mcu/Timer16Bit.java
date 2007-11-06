@@ -34,6 +34,7 @@ package avrora.sim.mcu;
 
 import avrora.sim.RWRegister;
 import avrora.sim.Simulator;
+import avrora.sim.state.BooleanView;
 import avrora.sim.clock.Clock;
 import cck.util.Arithmetic;
 
@@ -69,6 +70,20 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     public static final int MAX = 0xffff;
     public static final int BOTTOM = 0x0000;
 
+    public class InputCapturePin implements BooleanView {
+        boolean level;
+
+        public boolean getValue() {
+            return level;
+        }
+
+        public void setValue(boolean v) {
+            if (v != level) {
+                level = v;
+                captureInput();
+            }
+        }
+    }
 
     /**
      * The <code>OutputCompareUnit</code> class represents an output compare unit that is
@@ -167,6 +182,8 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     final RegisterSet.Field WGMn;
     final RegisterSet.Field CSn;
 
+    final InputCapturePin inputCapturePin;
+
     boolean timerEnabled;
     boolean countUp;
     long period;
@@ -192,6 +209,8 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     int OCFnC;
     int ICFn;
 
+    int inputCaptureInterrupt;
+
     protected ATMegaFamily.FlagRegister xTIFR_reg;
     protected ATMegaFamily.MaskRegister xTIMSK_reg;
 
@@ -214,6 +233,9 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
                 resetPeriod(periods[value]);
             }
         });
+
+        inputCaptureInterrupt = m.getProperties().getInterrupt("TIMER"+n+" CAPT");
+        inputCapturePin = new InputCapturePin();
 
         ticker = new Ticker();
 
@@ -240,6 +262,17 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         installIOReg("ICR"+n+"H", highTempReg);
         installIOReg("ICR"+n+"L", ICRn_reg);
+    }
+
+    public BooleanView getInputCapturePin() {
+        return inputCapturePin;
+    }
+
+    void captureInput() {
+        ICRnL_reg.write(TCNTnL_reg.value);
+        ICRnH_reg.write(TCNTnH_reg.value);
+        xTIFR_reg.flagBit(ICFn);
+        interpreter.getInterruptTable().post(inputCaptureInterrupt);
     }
 
     void newOCU(int unit, int numUnits, Microcontroller m, RegisterSet rset, char uname, int fb) {

@@ -34,23 +34,17 @@ package avrora.sim.mcu;
 
 /**
  * Interface for devices that can connect to the SPI. Rather than communicating over the MISO, MOSI pins,
- * the process is expedited and simplified through the use of the transmitFrame() and receiveFrame()
+ * the process is expedited and simplified through the use of the nextFrame() and exchange()
  * methods in the intefact.
  */
 public interface SPIDevice {
     /**
-     * Transmit a frame from this device.
+     * Exchange frames. Called by the master to the slave.
      *
-     * @return the frame for transmission
+     * @param frame the frame sent from the master to the slave
+     * @return the frame sent from the slave to the master
      */
-    public SPI.Frame transmitFrame();
-
-    /**
-     * Receive a frame.
-     *
-     * @param frame the frame to be received
-     */
-    public void receiveFrame(SPI.Frame frame);
+    public SPI.Frame exchange(SPI.Frame frame);
 
     /**
      * The <code>connect()</code> method connects this SPI device to the specified SPIDevice.
