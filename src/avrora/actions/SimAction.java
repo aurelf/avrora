@@ -64,6 +64,10 @@ public class SimAction extends Action {
             "The \"simulation\" option selects from the available simulation types, including a single node " +
             "simulation, a sensor network simulation, or a robotics simulation.");
 
+    protected Simulation simulation;
+    protected long startms;
+    protected boolean reported;
+
     public SimAction() {
         super(HELP);
     }
@@ -79,20 +83,44 @@ public class SimAction extends Action {
         SimUtil.REPORT_SECONDS = REPORT_SECONDS.get();
         SimUtil.SECONDS_PRECISION = (int)SECONDS_PRECISION.get();
 
-        Simulation sim = Defaults.getSimulation(SIMULATION.get());
-        sim.process(options, args);
+        simulation = Defaults.getSimulation(SIMULATION.get());
+        simulation.process(options, args);
 
+        Runtime.getRuntime().addShutdownHook(new ShutdownThread());
         printSimHeader();
-        long startms = System.currentTimeMillis();
         try {
-            sim.start();
-            sim.join();
+            startms = System.currentTimeMillis();
+            simulation.start();
+            simulation.join();
+        } catch (Throwable t) {
+            exitSimulation(t);
+        } finally {
+            exitSimulation(null);
+        }
+    }
+
+    private void exitSimulation(Throwable thrown) {
+        synchronized (this) {
+            if (!reported) {
+                reported = true;
+                report(thrown);
+            }
+        }
+    }
+
+    private void report(Throwable thrown) {
+        long delta = System.currentTimeMillis() - startms;
+        try {
+            if (thrown != null) throw thrown;
         } catch (BreakPointException e) {
             Terminal.printYellow("Simulation terminated");
             Terminal.println(": breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
         } catch (TimeoutException e) {
             Terminal.printYellow("Simulation terminated");
             Terminal.println(": timeout reached at pc = " + StringUtil.addrToString(e.address) + ", time = " + e.state.getCycles());
+        } catch (AsynchronousExit e) {
+            Terminal.printYellow("Simulation terminated asynchronously");
+            Terminal.nextln();
         } catch (Util.Error e) {
             Terminal.printRed("Simulation terminated");
             Terminal.print(": ");
@@ -103,10 +131,8 @@ public class SimAction extends Action {
             t.printStackTrace();
         } finally {
             TermUtil.printSeparator();
-            long endms = System.currentTimeMillis();
-
-            reportTime(sim, endms - startms);
-            reportMonitors(sim);
+            reportTime(simulation, delta);
+            reportMonitors(simulation);
         }
     }
 
@@ -248,6 +274,15 @@ public class SimAction extends Action {
             address = a;
             state = s;
             timeout = t;
+        }
+    }
+
+    public static class AsynchronousExit extends RuntimeException {
+    }
+
+    public class ShutdownThread extends Thread {
+        public void run() {
+            exitSimulation(new AsynchronousExit());            
         }
     }
 }

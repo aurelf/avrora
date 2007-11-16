@@ -39,7 +39,6 @@ import avrora.sim.mcu.*;
 import avrora.sim.platform.sensors.LightSensor;
 import avrora.sim.platform.sensors.SensorBoard;
 import avrora.sim.radio.CC1000Radio;
-import avrora.sim.radio.Radio;
 import cck.text.Terminal;
 
 /**
@@ -75,7 +74,7 @@ public class Mica2 extends Platform {
 
     protected final Simulator sim;
 
-    protected Radio radio;
+    protected CC1000Radio radio;
     protected SensorBoard sensorboard;
     protected ExternalFlash externalFlash;
     protected LightSensor lightSensor;
@@ -96,11 +95,9 @@ public class Mica2 extends Platform {
         LED green = new LED(sim, Terminal.COLOR_GREEN, "Green");
         LED red = new LED(sim, Terminal.COLOR_RED, "Red");
 
-        ledGroup = new LED.LEDGroup(sim, new LED[] { yellow, green, red });
-
-        //yellow.enablePrinting();
-        //green.enablePrinting();
-        //red.enablePrinting();
+        if (true) {
+            ledGroup = new LED.LEDGroup(sim, new LED[] { yellow, green, red });
+        }
 
         mcu.getPin("PA0").connectOutput(yellow);
         mcu.getPin("PA1").connectOutput(green);
@@ -108,6 +105,10 @@ public class Mica2 extends Platform {
 
         // radio
         radio = new CC1000Radio(mcu, RADIO_HZ);
+        mcu.getPin(31).connectOutput(radio.config.PCLK_in);
+        mcu.getPin(32).connectOutput(radio.config.PDATA_in);
+        mcu.getPin(32).connectInput(radio.config.PDATA_out);
+        mcu.getPin(29).connectOutput(radio.config.PALE_in);
         addDevice("radio", radio);
         // sensor board
         sensorboard = new SensorBoard(sim);

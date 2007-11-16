@@ -36,8 +36,7 @@ package avrora.sim.radio;
 import avrora.sim.clock.Clock;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.Simulator;
-import avrora.sim.state.BooleanView;
-import avrora.sim.state.BooleanRegister;
+import avrora.sim.util.TransactionalList;
 
 import java.util.*;
 
@@ -52,12 +51,61 @@ public class Medium {
 
     private static final int BYTE_SIZE = 8;
 
+    public interface Arbitrator {
+        public boolean lockTransmission(Receiver receiver, Transmission tran);
+        public char mergeTransmissions(Receiver receiver, List trans, long bit);
+    }
+
+    public interface Probe {
+        public void fireBeforeTransmit(Transmitter t, byte val);
+        public void fireBeforeTransmitEnd(Transmitter t);
+
+        public void fireAfterReceive(Receiver r, char val);
+        public void fireAfterReceiveEnd(Receiver r);
+
+        public class Empty implements Probe {
+            public void fireBeforeTransmit(Transmitter t, byte val) {}
+            public void fireBeforeTransmitEnd(Transmitter t) {}
+
+            public void fireAfterReceive(Receiver r, char val) {}
+            public void fireAfterReceiveEnd(Receiver r) {}
+        }
+
+        public class List extends TransactionalList implements Probe {
+            public void fireBeforeTransmit(Transmitter t, byte val) {
+                beginTransaction();
+                for (Link pos = head; pos != null; pos = pos.next)
+                    ((Probe)pos.object).fireBeforeTransmit(t, val);
+                endTransaction();
+            }
+            public void fireBeforeTransmitEnd(Transmitter t) {
+                beginTransaction();
+                for (Link pos = head; pos != null; pos = pos.next)
+                    ((Probe)pos.object).fireBeforeTransmitEnd(t);
+                endTransaction();
+            }
+            public void fireAfterReceive(Receiver r, char val) {
+                beginTransaction();
+                for (Link pos = head; pos != null; pos = pos.next)
+                    ((Probe)pos.object).fireAfterReceive(r, val);
+                endTransaction();
+            }
+            public void fireAfterReceiveEnd(Receiver r) {
+                beginTransaction();
+                for (Link pos = head; pos != null; pos = pos.next)
+                    ((Probe)pos.object).fireAfterReceiveEnd(r);
+                endTransaction();
+            }
+        }
+     }
+
     protected static class TXRX {
         public final Medium medium;
         public final Clock clock;
         public final long cyclesPerByte;
         public final long leadCycles;
         public final long cyclesPerBit;
+        protected Probe.List probeList;
 
         public boolean activated;
 
@@ -67,10 +115,6 @@ public class Medium {
             long hz = c.getHZ();
             int bps = medium.bitsPerSecond;
             assert hz > bps;
-            // NOTE: the roundoff behavior here is important for correct synchronization
-            // because we must compute everything on the bit level, the actual throughput
-            // of the connection can be slightly off if there is a large roundoff error.
-            // TODO: should we round up for XX.5 by adding in bps / 2 ?
             cyclesPerBit = (hz / bps);
             cyclesPerByte = BYTE_SIZE * cyclesPerBit;
             leadCycles = (medium.leadBits * hz / bps);
@@ -82,6 +126,15 @@ public class Medium {
 
         protected long getCycleTime(long bit) {
             return bit * cyclesPerBit;
+        }
+
+        public void insertProbe(Medium.Probe probe) {
+            if (this.probeList == null) this.probeList = new Probe.List();
+            this.probeList.add(probe);
+        }
+
+        public void removeProbe(Medium.Probe probe) {
+            if (this.probeList != null) this.probeList.remove(probe);
         }
     }
 
@@ -96,21 +149,21 @@ public class Medium {
 
         protected Transmission transmission;
         protected final Transmitter.Ticker ticker;
+        protected boolean shutdown;
 
         protected Transmitter(Medium m, Clock c) {
             super(m, c);
             ticker = new Ticker();
         }
 
-        public void endTransmit() {
-            activated = false;
-            if (transmission != null) {
+        public final void endTransmit() {
+            if (activated) {
+                shutdown = true;
                 transmission.end();
-                clock.removeEvent(ticker);
             }
         }
 
-        public void beginTransmit(double pow) {
+        public final void beginTransmit(double pow) {
             if ( !activated) {
                 transmission = medium.newTransmission(this, pow);
                 activated = true;
@@ -122,10 +175,18 @@ public class Medium {
 
         protected class Ticker implements Simulator.Event {
             public void fire() {
-                if (activated) {
+                if (shutdown) {
+                    // shut down the transmitter
+                    if (probeList != null) probeList.fireBeforeTransmitEnd(Transmitter.this);
+                    transmission = null;
+                    shutdown = false;
+                    activated = false;
+                } else if (activated) {
                     // otherwise, transmit a single byte and add it to the buffer
                     int indx = transmission.counter++;
-                    transmission.data[indx] = nextByte();
+                    byte val = nextByte();
+                    transmission.data[indx] = val;
+                    if (probeList != null) probeList.fireBeforeTransmit(Transmitter.this, val);
                     clock.insertEvent(this, cyclesPerByte);
                 }
             }
@@ -148,19 +209,15 @@ public class Medium {
             ticker = new Ticker();
         }
 
-        public void beginReceive() {
+        public final void beginReceive() {
             activated = true;
             clock.insertEvent(ticker, leadCycles + cyclesPerByte);
         }
 
-        public void endReceive() {
+        public final void endReceive() {
             activated = false;
             locked = false;
             clock.removeEvent(ticker);
-        }
-
-        public int sample() {
-            return 0;
         }
 
         public abstract void nextByte(boolean lock, byte b);
@@ -180,42 +237,60 @@ public class Medium {
             }
 
             private void fireUnlocked(long time) {
-                long bit = getBitNum(time) - BIT_DELAY;
+                long oneBitBeforeNow = getBitNum(time) - BIT_DELAY;
                 waitForNeighbors(time - leadCycles - cyclesPerByte);
-                Transmission tx = earliestTransmission(bit);
+                Transmission tx = earliestNewTransmission(oneBitBeforeNow - BYTE_SIZE);
                 if ( tx != null ) {
-                    // lock on to the signal.
-                    locked = true;
-                    long offset = (bit - tx.firstBit) & 7; // offset from delivery of first byte
-                    long dbit = bit + BYTE_SIZE + BIT_DELAY - offset; // the delivery time (bit number)
-                    // insert even at delivery time of first bit.
-                    long ct = getCycleTime(dbit);
-                    clock.insertEvent(this, ct - time);
-                } else {
-                    // remain unlocked.
-                    clock.insertEvent(this, leadCycles + cyclesPerByte);
+                    // there is a new transmission; calculate delivery of first byte.
+                    long dcycle = getCycleTime(tx.firstBit + BYTE_SIZE + BIT_DELAY);
+                    long delta = dcycle - time;
+                    //assert dcycle >= time;
+                    if (delta <= 0) {
+                        // lock on and deliver the first byte right now.
+                        locked = true;
+                        deliverByte(oneBitBeforeNow);
+                        return;
+                    } else if (delta < leadCycles) {
+                        // lock on and insert even at delivery time of first bit.
+                        locked = true;
+                        clock.insertEvent(this, delta);
+                        return;
+                    } else if (delta < leadCycles + cyclesPerByte) {
+                        // don't lock on yet, but wait for delivery time
+                        clock.insertEvent(this, delta);
+                        return;
+                    }
                 }
+                // remain unlocked.
+                clock.insertEvent(this, leadCycles + cyclesPerByte);
             }
 
             private void fireLocked(long time) {
-                long bit = getBitNum(time) - BIT_DELAY; // there is a one bit delay
+                long oneBitBeforeNow = getBitNum(time) - BIT_DELAY; // there is a one bit delay
                 waitForNeighbors(time - cyclesPerByte);
-                List it = getIntersection(bit - BYTE_SIZE);
+                deliverByte(oneBitBeforeNow);
+            }
+
+            private void deliverByte(long oneBitBeforeNow) {
+                List it = getIntersection(oneBitBeforeNow - BYTE_SIZE);
                 if ( it != null ) {
                     // merge transmissions into a single byte and send it to receiver
-                    nextByte(true, mergeTransmissions(it, bit - BYTE_SIZE));
+                    char val = medium.arbitrator.mergeTransmissions(Receiver.this, it, oneBitBeforeNow - BYTE_SIZE);
+                    nextByte(true, (byte)val);
+                    if (probeList != null) probeList.fireAfterReceive(Receiver.this, val);
                     clock.insertEvent(this, cyclesPerByte);
                 } else {
                     // all transmissions are over.
                     locked = false;
                     nextByte(false, (byte)0);
+                    if (probeList != null) probeList.fireAfterReceiveEnd(Receiver.this);
                     clock.insertEvent(this, leadCycles + cyclesPerByte);
                 }
             }
 
         }
         
-        public boolean isChannelClear() {
+        public final boolean isChannelClear() {
             if (!activated) {
                 long time = clock.getCount();
                 long bit = getBitNum(time) - BIT_DELAY; // there is a one bit delay
@@ -227,26 +302,18 @@ public class Medium {
             }
         }
 
-        private byte mergeTransmissions(List it, long bit) {
-            byte value = 0;
-            Iterator i = it.iterator();
-            while ( i.hasNext() ) {
-                Transmission t = (Transmission)i.next();
-                int offset = (int)(bit - t.firstBit);
-                value |= t.getByteAtOffset(offset);
-            }
-            return value;
-        }
-
-        private Transmission earliestTransmission(long bit) {
+        private Transmission earliestNewTransmission(long bit) {
             Transmission tx = null;
             synchronized(medium) {
                 Iterator i = medium.transmissions.iterator();
                 while ( i.hasNext() ) {
                     Transmission t = (Transmission)i.next();
-                    if (intersect(bit, t)) {
+                    if (bit <= t.firstBit && medium.arbitrator.lockTransmission(Receiver.this, t)) {
                         if ( tx == null ) tx = t;
-                        else if ( t.start < tx.start ) tx = t;
+                        else if ( t.firstBit < tx.firstBit ) tx = t;
+                    } else if (bit - 8 - 2 * medium.leadBits > t.lastBit) {
+                        // remove older transmissions
+                        i.remove();
                     }
                 }
             }
@@ -277,6 +344,31 @@ public class Medium {
         }
     }
 
+    public static class BasicArbitrator implements Arbitrator {
+        public boolean lockTransmission(Receiver receiver, Transmission trans) {
+            return true;
+        }
+        public char mergeTransmissions(Receiver receiver, List it, long bit) {
+            assert it.size() > 0;
+            Iterator i = it.iterator();
+            Transmission first = (Transmission)i.next();
+            int value = 0xff & first.getByteAtTime(bit);
+            while ( i.hasNext() ) {
+                Transmission next = (Transmission)i.next();
+                int nval = 0xff & next.getByteAtTime(bit);
+                value |= (nval << 8) ^ (value << 8); // compute corrupted bits
+                value |= nval;
+            }
+            return (char)value;
+        }
+    }
+
+    /**
+     * The {@code Transmission} class represents a transmission originating from
+     * a particular {@code Transmitter} to this medium. A transmission consists
+     * of a sequences of bytes sent one after another into the medium. Each transmission
+     * has a start time and a power level.
+     */
     public class Transmission {
         public final Transmitter origin;
         public final long start;
@@ -304,7 +396,9 @@ public class Medium {
             lastBit = firstBit + counter * BYTE_SIZE;
         }
 
-        public byte getByteAtOffset(int offset) {
+        public byte getByteAtTime(long bit) {
+            assert bit >= firstBit;
+            int offset = (int) (bit - firstBit);
             int shift = offset & 0x7;
             int indx = offset / BYTE_SIZE;
             int hi = 0xff & data[indx] << shift;
@@ -317,6 +411,8 @@ public class Medium {
     }
 
     public final Synchronizer synch;
+    public final Arbitrator arbitrator;
+
     public final int bitsPerSecond;
     public final int leadBits;
     public final int minLength;
@@ -332,22 +428,39 @@ public class Medium {
      * performance.
      *
      * @param synch the synchronizer used to synchronize concurrent senders and receivers
+     * @param arb the arbitrator that determines how to merge received transmissions
      * @param bps the bits per second throughput of this medium
      * @param ltb the lead time in bits before beginning a transmission and the first bit
      * @param mintl the minimum transmission length
      * @param maxtl the maximum transmission length
      */
-    public Medium(Synchronizer synch, int bps, int ltb, int mintl, int maxtl) {
+    public Medium(Synchronizer synch, Arbitrator arb, int bps, int ltb, int mintl, int maxtl) {
         this.synch = synch;
         bitsPerSecond = bps;
         leadBits = ltb;
         minLength = mintl;
         maxLength = maxtl;
+        if (arb == null)
+            arbitrator = new BasicArbitrator();
+        else
+            arbitrator = arb;
     }
 
-    public synchronized Transmission newTransmission(Transmitter o, double p) {
+    protected synchronized Transmission newTransmission(Transmitter o, double p) {
         Transmission tx = new Transmission(o, p);
         transmissions.add(tx);
         return tx;
+    }
+
+    public static boolean isCorruptedByte(char c) {
+        return (c & 0xff00) != 0;
+    }
+
+    public static byte getCorruptedBits(char c) {
+        return (byte)(c >> 8);
+    }
+
+    public static byte getTransmittedBits(char c) {
+        return (byte)c;
     }
 }

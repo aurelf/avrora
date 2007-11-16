@@ -39,13 +39,14 @@ package avrora.monitors;
 
 import avrora.sim.Simulator;
 import avrora.sim.platform.Platform;
-import avrora.sim.radio.Radio;
+import avrora.sim.radio.*;
 import avrora.sim.util.SimUtil;
 import avrora.sim.output.SimPrinter;
 import cck.text.*;
 import cck.util.Option;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.text.StringCharacterIterator;
 
 
 /**
@@ -55,52 +56,59 @@ import java.util.LinkedList;
  */
 public class PacketMonitor extends MonitorFactory {
 
-    public static final int INTER_PACKET_TIME = 2 * Radio.TRANSFER_TIME;
-
-    protected Option.Bool PACKETS = newOption("show-packets", true,
+    protected Option.Bool BITS = newOption("show-bits", false,
             "This option enables the printing of packets as they are transmitted.");
-    protected Option.Bool PREAMBLE = newOption("show-preamble", false,
-            "This option will show the preamble of a packet when it is printed out.");
-    protected Option.Bool DISCARD = newOption("discard-first-byte", true,
-            "This option will discard the first byte of a packet, since it is often jibberish.");
+    protected Option.Bool PACKETS = newOption("show-packets", true,
+            "This option enables the printing of packet contents in bits rather than in bytes.");
+    protected Option.Str START_SYMBOL = newOption("start-symbol", "33",
+            "When this option is not blank, the packet monitor will attempt to match the " +
+            "start symbol of packet data in order to display both the preamble, start " +
+            "symbol, and packet contents.");
 
-    class Mon extends Radio.RadioProbe.Empty implements Monitor {
+    class Mon implements Monitor, Medium.Probe {
         LinkedList bytes;
         final Simulator simulator;
-        final Platform platform;
+        final SimPrinter printer;
+        final boolean showPackets;
+        final boolean bits;
+
         int bytesTransmitted;
         int packetsTransmitted;
-        PacketEndEvent packetEnd;
-        SimPrinter printer;
-        boolean showPackets;
-        boolean discardFirst;
-        boolean showPreamble;
+        int bytesReceived;
+        int packetsReceived;
+        int bytesCorrupted;
+        boolean matchStart;
+        byte startSymbol;
+        long startCycle;
 
         Mon(Simulator s) {
             simulator = s;
-            platform = simulator.getMicrocontroller().getPlatform();
+            Platform platform = simulator.getMicrocontroller().getPlatform();
             Radio radio = (Radio)platform.getDevice("radio");
-            radio.insertProbe(this);
-            packetEnd = new PacketEndEvent();
+            radio.getTransmitter().insertProbe(this);
+            radio.getReceiver().insertProbe(this);
             printer = SimUtil.getPrinter(simulator, "monitor.packet");
             printer.enabled = true;
             showPackets = PACKETS.get();
-            discardFirst = DISCARD.get();
-            showPreamble = PREAMBLE.get();
             bytes = new LinkedList();
+            bits = BITS.get();
+
+            if (!START_SYMBOL.isBlank()) {
+                matchStart = true;
+                startSymbol = (byte)StringUtil.readHexValue(new StringCharacterIterator(START_SYMBOL.get()), 2);
+            }
         }
 
-        public void fireAtTransmit(Radio r, Radio.Transmission t) {
-            simulator.removeEvent(packetEnd);
-            simulator.insertEvent(packetEnd, INTER_PACKET_TIME);
-            bytes.addLast(t);
+        public void fireBeforeTransmit(Medium.Transmitter t, byte val) {
+            if (bytes.size() == 0) startCycle = simulator.getClock().getCount();
+            bytes.addLast(new Character((char)(0xff & val)));
             bytesTransmitted++;
         }
 
-        void endPacket() {
+        public void fireBeforeTransmitEnd(Medium.Transmitter t) {
             packetsTransmitted++;
             if ( showPackets ) {
-                StringBuffer buf = buildPacket();
+                StringBuffer buf = renderPacket("----> ");
                 synchronized ( Terminal.class) {
                     Terminal.println(buf.toString());
                 }
@@ -108,36 +116,93 @@ public class PacketMonitor extends MonitorFactory {
             bytes = new LinkedList();
         }
 
-        private StringBuffer buildPacket() {
-            StringBuffer buf = new StringBuffer(2 * bytes.size() + 45);
+        public void fireAfterReceive(Medium.Receiver r, char val) {
+            if (bytes.size() == 0) startCycle = simulator.getClock().getCount();
+            if (Medium.isCorruptedByte(val)) bytesCorrupted++;
+            bytes.addLast(new Character(val));
+            bytesReceived++;
+        }
+
+        public void fireAfterReceiveEnd(Medium.Receiver r) {
+            packetsReceived++;
+            if ( showPackets ) {
+                StringBuffer buf = renderPacket("<==== ");
+                synchronized ( Terminal.class) {
+                    Terminal.println(buf.toString());
+                }
+            }
+            bytes = new LinkedList();
+        }
+
+        private StringBuffer renderPacket(String prefix) {
+            StringBuffer buf = new StringBuffer(3 * bytes.size() + 45);
             SimUtil.getIDTimeString(buf, simulator);
-            Terminal.append(Terminal.COLOR_BRIGHT_CYAN, buf, "Packet sent");
-            buf.append(": ");
+            Terminal.append(Terminal.COLOR_BRIGHT_CYAN, buf, prefix);
             Iterator i = bytes.iterator();
             int cntr = 0;
             boolean inPreamble = true;
             while ( i.hasNext() ) {
                 cntr++;
-                Radio.Transmission t = (Radio.Transmission)i.next();
-                if ( cntr == 1 && discardFirst ) continue;
-                if ( inPreamble && !showPreamble && t.data == (byte)0xAA ) continue;
-                inPreamble = false;
-                StringUtil.toHex(buf, t.data, 2);
-                buf.append(":");
+                char t = ((Character)i.next()).charValue();
+                inPreamble = renderByte(cntr, t, inPreamble, buf);
+                if (i.hasNext()) buf.append('.');
             }
+            appendTime(buf);
             return buf;
+        }
+
+        private void appendTime(StringBuffer buf) {
+            long cycles = simulator.getClock().getCount() - startCycle;
+            double ms = simulator.getClock().cyclesToMillis(cycles);
+            buf.append("  ");
+            buf.append(StringUtil.toFixedFloat((float)ms, 3));
+            buf.append(" ms");
+        }
+
+        private boolean renderByte(int cntr, char value, boolean inPreamble, StringBuffer buf) {
+            int color = Terminal.COLOR_DEFAULT;
+            byte bval = (byte)value;
+            if (!bits && Medium.isCorruptedByte(value)) {
+                // this byte was corrupted during transmission.
+                color = Terminal.COLOR_RED;
+            } else if (matchStart && cntr > 1) {
+                // should we match the start symbol?
+                if (inPreamble) {
+                    if (bval == startSymbol) {
+                        color = Terminal.COLOR_YELLOW;
+                        inPreamble = false;
+                    }
+                } else {
+                    color = Terminal.COLOR_GREEN;
+                }
+            }
+            renderByte(buf, color, value);
+            return inPreamble;
+        }
+
+        private void renderByte(StringBuffer buf, int color, char value) {
+            if (bits) {
+                byte corrupted = Medium.getCorruptedBits(value);
+                for (int i = 7; i >= 0; i--) {
+                    boolean bit = (value >> i & 1) != 0;
+                    if ( ((corrupted >> i) & 1) != 0 )
+                        Terminal.append(Terminal.COLOR_RED, buf, bit ? "1" : "0");
+                    else
+                        Terminal.append(color, buf, bit ? "1" : "0");
+                }
+            } else {
+                Terminal.append(color, buf, StringUtil.toHex((byte)value, 2));
+            }
         }
 
         public void report() {
             TermUtil.reportQuantity("Bytes sent", bytesTransmitted, "");
             TermUtil.reportQuantity("Packets sent", packetsTransmitted, "");
+            TermUtil.reportQuantity("Bytes received", bytesReceived, "");
+            TermUtil.reportQuantity("Bytes corrupted", bytesCorrupted, "");
+            TermUtil.reportQuantity("Packets received", packetsReceived, "");
         }
 
-        class PacketEndEvent implements Simulator.Event {
-            public void fire() {
-                endPacket();
-            }
-        }
     }
 
     /**

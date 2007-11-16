@@ -42,8 +42,6 @@ import avrora.sim.State;
 import avrora.sim.clock.Clock;
 import avrora.sim.energy.*;
 import avrora.sim.platform.Platform;
-import avrora.sim.radio.Radio;
-import avrora.sim.radio.RadioAir;
 import avrora.sim.util.SimUtil;
 import cck.text.Terminal;
 import cck.util.Option;
@@ -175,10 +173,13 @@ public class EnergyMonitor extends MonitorFactory {
                     Terminal.nextln();
 
                     //remove radio
+                    /*
                     Radio radio = (Radio)platform.getDevice("radio");
                     RadioAir air = radio.getAir();
                     if ( air != null )
                         air.removeRadio(radio);
+                    */
+                    // TODO: remove the node from simulation.
                     //stop loop
                     simulator.stop();
                 }

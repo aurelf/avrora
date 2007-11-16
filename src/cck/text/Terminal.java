@@ -127,8 +127,7 @@ public class Terminal {
     }
 
     public static void append(int color, StringBuffer buf, String s) {
-        if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
-        if (useColors) {
+        if (useColors && color < MAXCOLORS && color >= 0) {
             if (htmlColors) {
                 buf.append(HTML_STRINGS[color]);
                 buf.append(s);
