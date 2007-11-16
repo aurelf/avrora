@@ -60,7 +60,7 @@ public class MediumTestAction extends Action {
 
     public void run(String[] args) throws Exception {
         // create a medium and test it.
-        Medium m = new Medium(null, 300, 0, 8, 128);
+        Medium m = new Medium(null, null, 300, 102, 8, 128);
         MainClock c = new MainClock("main", 3000);
         final Medium.Transmitter t = new TestTransmitter(m, c);
         final Medium.Receiver r = new TestReceiver(m, c);
@@ -105,7 +105,10 @@ public class MediumTestAction extends Action {
             super(m, c);
         }
         public void nextByte(boolean lock, byte b) {
-            Terminal.println(clock.getCount()+" "+StringUtil.toMultirepString(b, 8));    
+            if (lock)
+                Terminal.println(clock.getCount()+" "+StringUtil.toMultirepString(b, 8));
+            else
+                Terminal.println(clock.getCount()+" lock end");
         }
     }
 }

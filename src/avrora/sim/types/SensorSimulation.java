@@ -35,14 +35,15 @@ package avrora.sim.types;
 import avrora.Main;
 import avrora.core.*;
 import avrora.sim.*;
+import avrora.sim.clock.RippleSynchronizer;
 import avrora.sim.platform.Platform;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.sensors.*;
 import avrora.sim.radio.*;
-import avrora.sim.radio.freespace.FreeSpaceAir;
-import avrora.sim.radio.freespace.Topology;
+import avrora.sim.radio.Topology;
 import cck.text.StringUtil;
 import cck.util.*;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -72,6 +73,11 @@ public class SensorSimulation extends Simulation {
             "a file that contains information about the topology of the network. " +
             "When this option is specified. the free space radio model will be used " +
             "to model radio propagation.");
+    public final Option.Double RANGE = newOption("radio-range", 15.0,
+            "This option, when used in conjunction with the -topology option, specifies " +
+            "the maximum range for radio communication between nodes. This simple " +
+            "idealized radius model will drop all communications between nodes whose " +
+            "distance is greater than this threshold value.");
     public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
             "This option inserts a random delay before starting " +
             "each node in order to prevent artificial cycle-level synchronization. The " +
@@ -163,17 +169,56 @@ public class SensorSimulation extends Simulation {
             super.instantiate();
             // get the radio device, if it exists.
             Object dev = platform.getDevice("radio");
-            if (dev instanceof Radio) {
-                radio = (Radio) dev;
-                air.addRadio(radio);
-            } else if (dev instanceof CC2420Radio) {
-                if (medium == null) {
-                    medium = CC2420Radio.createMedium(synchronizer);
-                }
+            if (dev instanceof CC2420Radio) {
+                // connect to the cc2420 medium
                 CC2420Radio radio = (CC2420Radio)dev;
-                radio.connectTo(medium);
+                this.radio = radio;
+                radio.setMedium(createCC2420Medium());
+            } else if (dev instanceof CC1000Radio) {
+                // connect to the cc1000 medium
+                CC1000Radio radio = (CC1000Radio)dev;
+                this.radio = radio;
+                radio.setMedium(createCC1000Medium());
             }
             simulator.delay(startup);
+            if (topology != null) {
+                setNodePosition();
+                return;
+            }
+        }
+
+        private Medium createCC2420Medium() {
+            if (cc2420_medium == null) {
+                createRadioModel();
+                return cc2420_medium = CC2420Radio.createMedium(synchronizer, radioModel);
+            }
+            return cc2420_medium;
+        }
+
+        private Medium createCC1000Medium() {
+            if (cc1000_medium == null) {
+                createRadioModel();
+                return cc1000_medium = CC1000Radio.createMedium(synchronizer, radioModel);
+            }
+            return cc1000_medium;
+        }
+
+        private void createRadioModel() {
+            if (topology == null && !TOPOLOGY.isBlank()) {
+                try {
+                    topology = new Topology(TOPOLOGY.get());
+                    radioModel = new RadiusModel(1.0, 15.0);
+                } catch (IOException e) {
+                    throw Util.unexpected(e);
+                }
+            }
+        }
+
+        private void setNodePosition() {
+            RadiusModel.Position p = topology.getPosition(id);
+            if (p != null && radio != null) {
+                radioModel.setPosition(radio, p);
+            }
         }
 
         private void updateNodeID() {
@@ -181,14 +226,21 @@ public class SensorSimulation extends Simulation {
                 Program p = path.getProgram();
                 SourceMapping smap = p.getSourceMapping();
                 if ( smap != null ) {
-                    SourceMapping.Location location = smap.getLocation("TOS_LOCAL_ADDRESS");
-                    if ( location == null ) location = smap.getLocation("node_address");
-                    if ( location != null ) {
-                        AtmelInterpreter bi = (AtmelInterpreter)simulator.getInterpreter();
-                        bi.writeFlashByte(location.lma_addr, Arithmetic.low(id));
-                        bi.writeFlashByte(location.lma_addr +1, Arithmetic.high(id));
-                    }
+                    updateVariable(smap, "TOS_LOCAL_ADDRESS", id);          // TinyOS 1.1
+                    updateVariable(smap, "node_address", id);               // SOS
+                    updateVariable(smap, "TOS_NODE_ID", id);                // Tinyos 2.0
+                    updateVariable(smap, "ActiveMessageAddressC$addr", id); // Tinyos 2.0
                 }
+            }
+        }
+
+        private void updateVariable(SourceMapping smap, String name, int value) {
+            SourceMapping.Location location = smap.getLocation(name);
+            if ( location == null ) location = smap.getLocation("node_address");
+            if ( location != null ) {
+                AtmelInterpreter bi = (AtmelInterpreter)simulator.getInterpreter();
+                bi.writeFlashByte(location.lma_addr, Arithmetic.low(value));
+                bi.writeFlashByte(location.lma_addr +1, Arithmetic.high(value));
             }
         }
 
@@ -197,12 +249,14 @@ public class SensorSimulation extends Simulation {
          * default simulation remove method by removing the node from the radio air implementation.
          */
         protected void remove() {
-            air.removeRadio(radio);
+            synchronizer.removeNode(this);
         }
     }
 
-    RadioAir air;
-    Medium medium;
+    Topology topology;
+    RadiusModel radioModel;
+    Medium cc2420_medium;
+    Medium cc1000_medium;
     long stagger;
 
     public SensorSimulation() {
@@ -249,30 +303,14 @@ public class SensorSimulation extends Simulation {
         Main.checkFilesExist(args);
         PlatformFactory pf = getPlatform();
 
-        // get the radio air model
-        air = getRadioAir();
-        synchronizer = air.getSynchronizer();
+        // build the synchronizer
+        synchronizer = new RippleSynchronizer(100000, null);
 
         // create the nodes based on arguments
         createNodes(args, pf);
 
         // process the sensor data input option
         processSensorInput();
-    }
-
-    public void setAir(RadioAir nair) {
-        air = nair;
-        synchronizer = air.getSynchronizer();
-    }
-
-    protected void instantiateNodes() {
-        try {
-            // we need to build a new air model
-            setAir(getRadioAir());
-        } catch ( IOException e ) {
-            throw Util.unexpected(e);
-        }
-        super.instantiateNodes();
     }
 
     private void createNodes(String[] args, PlatformFactory pf) throws Exception {
@@ -321,14 +359,6 @@ public class SensorSimulation extends Simulation {
             node.sensorInput.add(sdi);
             if (! ".".equals(file) )
                 Main.checkFileExists(file);
-        }
-    }
-
-    private RadioAir getRadioAir() throws IOException {
-        if ( TOPOLOGY.isBlank() ) {
-            return new SimpleAir();
-        } else {
-            return new FreeSpaceAir(new Topology(TOPOLOGY.get()));
         }
     }
 

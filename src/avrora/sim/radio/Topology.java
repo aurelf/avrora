@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim.radio.freespace;
+package avrora.sim.radio;
 
 import cck.util.Util;
 import java.io.*;
@@ -95,12 +95,12 @@ public class Topology {
             }
             if (count == 4) {
                 //parsing of this line went well -> found 4 tokens
-                nodes.add(new Position(nodeName, positions[0], positions[1], positions[2]));
+                nodes.add(new RadiusModel.Position(positions[0], positions[1], positions[2]));
             }
         }
     }
 
-    public Position getPosition(int id) {
-        return ((Position)nodes.get(id));
+    public RadiusModel.Position getPosition(int id) {
+        return ((RadiusModel.Position)nodes.get(id));
     }
 }

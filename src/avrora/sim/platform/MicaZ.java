@@ -94,11 +94,9 @@ public class MicaZ extends Platform {
         LED green = new LED(sim, Terminal.COLOR_GREEN, "Green");
         LED red = new LED(sim, Terminal.COLOR_RED, "Red");
 
-        ledGroup = new LED.LEDGroup(sim, new LED[] { yellow, green, red });
-
-        // yellow.enablePrinting();
-        // green.enablePrinting();
-        // red.enablePrinting();
+        if (true) {
+            ledGroup = new LED.LEDGroup(sim, new LED[] { yellow, green, red });
+        }
 
         AtmelMicrocontroller amcu = (AtmelMicrocontroller)mcu;
 

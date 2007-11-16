@@ -157,6 +157,9 @@ public abstract class Simulation extends HelpCategory {
             processInterruptSched();
             processEepromLoad();
             synchronizer.addNode(this);
+        }
+
+        protected void addMonitors() {
             // OLD MONITOR API SUPPORT:
             // for each of the monitors in the factory list, create a new monitor
             Iterator i = monitorFactoryList.iterator();
@@ -170,7 +173,7 @@ public abstract class Simulation extends HelpCategory {
             Iterator mi = monitors.iterator();
             while ( mi.hasNext() ) {
                 Object o = mi.next();
-                if ( o instanceof Monitor ) {
+                if ( o instanceof Monitor) {
                     Monitor mon = (Monitor)o;
                     mon.construct(Simulation.this, this, simulator);
                 }
@@ -433,6 +436,7 @@ public abstract class Simulation extends HelpCategory {
             if ( n == null ) continue;
 
             n.instantiate(); // create the simulator and simulator thread
+            n.addMonitors();
         }
     }
 

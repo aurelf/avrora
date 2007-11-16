@@ -9,15 +9,13 @@
     1    input  Catch recursive include errors
     1    input  Implement fill with value .db directive
     1     devs  EEPROM read/write delays
-    1    probe  Counters, branchcounters
-    1      sim  Out of bound accesses to SRAM, flash, EEPROM
+    1      sim  API for warning on out of bound accesses flash and EEPROM
     1     devs  USART baud rates
     1     devs  USART frame sizes
     1  jintgen  DisassemblerGenerator: split fields that span word boundaries
-    1   sensor  update-node-id with ELF must use flash, not RAM address
-    2    radio  Detect receives of radio bytes and notify radio probes
 
 ----------------------------------- Completed -----------------------------------------
+    2    radio  Detect receives of radio bytes and notify radio probes        1.7.100
     1     devs  SPI master transfer bug (should not transmit until SPDR set)  1.7.098
     1     arch  Architecture registry map not synchronized                    1.7.091
     1    synch  [Andreas Lachenmann] interval synchronizer patch              1.7.088
@@ -77,7 +75,6 @@
     2      sim  Unified warning system for program errors
     1    probe  Indirect call / jump monitor
     3    radio  Implement partial preamble loss
-    2      sim  Implement warning system for bad program behavior
     1     devs  WARN: SPI, serial write collisions
     1     devs  WARN: EEPROM delay timeouts
     1     devs  WARN: writing reserved bits of IO registers
@@ -85,11 +82,13 @@
     1     devs  WARN: pin direction mismatch in attempt to read / write pins
     1     devs  WARN: ADC input not connected
     1   sensor  ADC value / light intensity conversion tables
-    1   energy  Report energy counts in amp-hours
     2     core  Reverse mapping (instr -> addresses) to simplify monitors
     2    probe  Event profiler that collects min, max, mean statistics
+    3      sim  Global move to SimOutput and EventBuffer
 
 ----------------------------------- Completed -----------------------------------------
+    1    radio  Packet monitor prints bytes, bits, scans for start symbol    1.7.100
+    2    radio  CC2420 send / receive, checksumming                          1.7.100
     3     devs  First (seemingly) working CC2420 implementation              1.7.099
     2     devs  InputCapture for 16 bit timers                               1.7.099
     1      sim  Added EventBuffer, EventGen, eventually subsume SimPrinter   1.7.097
@@ -144,20 +143,13 @@
     2  jintgen  Declare state of processor explicitly
     2  jintgen  AlphaRenamer class for code processing
     2     test  Dependencies for test cases
-    2     devs  ADC interface improvements
-    1    radio  Radio transfer time calculation
-    2    radio  Neighbor lists
-    2    radio  RadioAir, distance calculations
-  2-3    radio  RadioPacket refactoring, optimization
     3      sim  Implement one thread per processor model
     1     util  migrate to StringUtil.*
-    2      sim  Move sram representation to use a Segment
-    2    probe  Collapse ExceptionWatch with Watch for all segments
-    1      sim  Inline SimulateAction into superclass
-    2     devs  Introduce Channel class to simplify SPI and USART implem.
 
 ----------------------------------- Completed -----------------------------------------
-    3      devs Introduced RegisterView and BooleanView for many subfields   1.7.097
+    2    radio  Moved CC1000 implementation to use Medium instead of Channel 1.7.100
+    1      sim  Inlined SimulateAction into SimAction                        1.7.099
+    3     devs  Introduced RegisterView and BooleanView for many subfields   1.7.097
     3      sim  Removed writeBit() from RWRegister                           1.7.097
     1     main  Removed short banner text                                    1.7.096
     3      sim  Refactored AtmelInterpreter to use VolatileBehavior          1.7.094
@@ -246,18 +238,14 @@
     1      sim  use signed arithmetic to avoid unnecessary &'s
     1      sim  move nextPC calculation (instr body to inner loop)
     1      sim  cache relative branch targets in instr instances
-    1      sim  SRAM access: subtract ioreg_end, catch AIOB exception
     1      sim  cycles = (min cycles) in main loop
     1      sim  nextPC = nextPC + 2 in main loop
-    2     dbbc  Register caching
-    2     dbbc  Constant propagation through registers and memory
-    2     dbbc  Idiom reductions
-    2     dbbc  Block splitting
-    3     dbbc  Register (temporary) allocation
-    3     dbbc  Superblock construction
-    2     dbbc  Intrablock probes and watches
     1      sim  Growable / multi-level flash memory implementation
     1    radio  Use a smarter buffer in Medium.Transmission
+    1    radio  Use a ripple-style list in Medium to manage transmissions
+    1     sync  RippleSynchronizer should notwake all threads
+    1      sim  Disable LED output for platforms with option
+    1     devs  Timer16Bit.fire() should be optimized
 
 ----------------------------------- Completed -----------------------------------------
     1      sim  Disabling interrupts does not terminate fast loop             1.5.065

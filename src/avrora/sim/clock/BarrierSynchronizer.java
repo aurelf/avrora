@@ -38,12 +38,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * The <code>IntervalSynchronizer</code> class implements a global timer among multiple simulators by inserting
+ * The <code>BarrierSynchronizer</code> class implements a global timer among multiple simulators by inserting
  * periodic events into the queue of each simulator.
  *
  * @author Ben L. Titzer, Daniel Lee
  */
-public class IntervalSynchronizer extends Synchronizer {
+public class BarrierSynchronizer extends Synchronizer {
 
     /**
      * <code>period</code> is the number of cycles on a member local clock per cycle on the global clock. Some
@@ -68,7 +68,7 @@ public class IntervalSynchronizer extends Synchronizer {
      * @param p the period in clock cycles which to synchronize the threads
      * @param a the event to fire each time all threads meet at a synchronization point
      */
-    public IntervalSynchronizer(long p, Simulator.Event a) {
+    public BarrierSynchronizer(long p, Simulator.Event a) {
         period = p;
         action = a;
         threadMap = new HashMap();
@@ -383,19 +383,4 @@ public class IntervalSynchronizer extends Synchronizer {
         return false;
     }
 
-    /**
-     * The <code>adjustPeriod()</code> method can be used to adjust the period of synchronization
-     * while the simulation is executing. This is useful for adaptive types of synchronization,
-     * for example when the latency between beginning the first transmission and reception is larger
-     * than subsequent transmissions (e.g. implementing partial preamble loss).
-     *
-     * Care should be taken when calling this method! It should only be called at times when the
-     * simulation is guaranteed to be stopped at the same global time; i.e. either at a meet
-     * point or while it has been pause()'d and synch()'d.
-     *
-     * @param nperiod the new period in cycles
-     */
-    public void adjustPeriod(long nperiod) {
-        period = nperiod;
-    }
 }

@@ -49,7 +49,7 @@ import cck.text.StringUtil;
  *
  * @author Ben L. Titzer
  */
-public class CC2420Radio {
+public class CC2420Radio implements Radio {
 
     //-- Register addresses ---------------------------------------------------
     public static final int MAIN     = 0x10;
@@ -113,7 +113,6 @@ public class CC2420Radio {
     //-- Simulation objects -----------------------------------------------
     protected final Microcontroller mcu;
     protected final Simulator sim;
-    protected RadioAir air;
 
     //-- Radio state ------------------------------------------------------
     protected final int xfreq;
@@ -192,7 +191,7 @@ public class CC2420Radio {
 
         // create a private medium for this radio
         // the simulation may replace this later with a new one.
-        medium = createMedium(null);
+        medium = createMedium(null, null);
 
         // get debugging channel.
         printer = SimUtil.getPrinter(mcu.getSimulator(), "radio.cc2420");
@@ -484,14 +483,6 @@ public class CC2420Radio {
         return (double)(2048 + readRegister(FSCTRL) & 0x03ff);
     }
 
-    public RadioAir getAir() {
-        return air;
-    }
-
-    public void setAir(RadioAir nair) {
-        air = nair;
-    }
-
     public class ClearChannelAssessor implements BooleanView {
         public void setValue(boolean val) {
             // ignore writes.
@@ -534,8 +525,8 @@ public class CC2420Radio {
     private static final int TX_SFD_2 = 2;
     private static final int TX_LENGTH = 3;
     private static final int TX_IN_PACKET = 4;
-    private static final int TX_IN_CHKSUM_1 = 5;
-    private static final int TX_IN_CHKSUM_2 = 6;
+    private static final int TX_CRC_1 = 5;
+    private static final int TX_CRC_2 = 6;
     private static final int TX_END = 7;
 
     public class Transmitter extends Medium.Transmitter {
@@ -577,19 +568,17 @@ public class CC2420Radio {
                 case TX_IN_PACKET:
                     // TODO: handle TX underlow.
                     val = txFIFO.remove();
-                    crcAccumulate(val);
+                    crc = crcAccumulate(crc, val);
                     if (++counter >= length - 2) {
-                        state = TX_IN_CHKSUM_1;
+                        state = TX_CRC_1;
                     }
                     break;
-                case TX_IN_CHKSUM_1:
-                    state = TX_IN_CHKSUM_2;
-                    //val = Arithmetic.low(crc);
-                    val = (byte)0xff;
+                case TX_CRC_1:
+                    state = TX_CRC_2;
+                    val = Arithmetic.low(crc);
                     break;
-                case TX_IN_CHKSUM_2:
-                    //val = Arithmetic.high(crc);
-                    val = (byte)0xff;
+                case TX_CRC_2:
+                    val = Arithmetic.high(crc);
                     state = TX_END;
                     counter = 0;
                     SFD_value.setValue(!SFD_active);
@@ -608,17 +597,9 @@ public class CC2420Radio {
             return val;
         }
 
-        private void crcAccumulate(byte val) {
-            int i = 8;
-            do {
-                if ((crc & 0x8000) != 0) crc = (char)(crc << 1 ^ 0x1021);
-                else crc = (char)(crc << 1);
-            } while (--i > 0);
-        }
-
         private int getPreambleLength() {
             int val = registers[MDMCTRL1] & 0xf;
-            return val + 7;
+            return val + 1;
         }
 
         void startup() {
@@ -633,17 +614,30 @@ public class CC2420Radio {
         }
     }
 
+    char crcAccumulate(char crc, byte val) {
+        int i = 8;
+        crc = (char)(crc ^ val << 8);
+        do {
+            if ((crc & 0x8000) != 0) crc = (char)(crc << 1 ^ 0x1021);
+            else crc = (char)(crc << 1);
+        } while (--i > 0);
+        return crc;
+    }
 
     private static final int RECV_SFD_SCAN = 0;
     private static final int RECV_SFD_MATCHED_1 = 1;
     private static final int RECV_SFD_MATCHED_2 = 2;
     private static final int RECV_IN_PACKET = 3;
-    private static final int RECV_END_STATE = 4;
+    private static final int RECV_CRC_1 = 4;
+    private static final int RECV_CRC_2 = 5;
+    private static final int RECV_END_STATE = 6;
 
     public class Receiver extends Medium.Receiver {
         protected int state;
         protected int counter;
         protected int length;
+        protected char crc;
+        protected byte crcLow;
 
         public Receiver(Medium m) {
             super(m, sim.getClock());
@@ -684,22 +678,47 @@ public class CC2420Radio {
                     rxFIFO.add(b);
                     counter = 0;
                     state = RECV_IN_PACKET;
+                    crc = 0;
                     break;
                 case RECV_IN_PACKET:
                     // we are in the body of the packet.
                     // TODO: handle RX overflow.
+                    crc = crcAccumulate(crc, b);
                     rxFIFO.add(b);
                     FIFO_pin.level.setValue(FIFO_active);
                     if (rxFIFO.size() >= getFIFOThreshold()) {
                         signalFIFOP();
                     }
                     counter++;
-                    if (counter == length) {
-                        // TODO: compute checksum and drop frame if failure.
+                    if (counter == length - 2) {
+                        // transition to receiving the CRC.
+                        state = RECV_CRC_1;
+                    }
+                    break;
+                case RECV_CRC_1:
+                    crcLow = b;
+                    state = RECV_CRC_2;
+                    rxFIFO.add((byte)0xff);
+                    break;
+                case RECV_CRC_2:
+                    state = RECV_END_STATE;
+                    char crcResult = (char)Arithmetic.word(crcLow, b);
+                    if (crcResult == crc) {
                         // signal FIFOP and unsignal SFD
+                        if (printer.enabled) {
+                            printer.println("CC2420 CRC passed");
+                        }
+                        rxFIFO.add((byte)0xff);
                         signalFIFOP();
-                        SFD_value.setValue(SFD_active);
-                        state = RECV_END_STATE;
+                        SFD_value.setValue(!SFD_active);
+                    } else {
+                        // CRC failure: flush the packet.
+                        if (printer.enabled) {
+                            printer.println("CC2420 CRC failed");
+                        }
+                        FIFO_pin.level.setValue(!FIFO_active);
+                        unsignalFIFOP();
+                        rxFIFO.clear();
                     }
                     break;
             }
@@ -712,6 +731,13 @@ public class CC2420Radio {
             }
         }
 
+        private void unsignalFIFOP() {
+            FIFOP_pin.level.setValue(!FIFOP_active);
+            if (FIFOP_interrupt > 0) {
+                sim.getInterpreter().getInterruptTable().unpost(FIFOP_interrupt);
+            }
+        }
+
         void startup() {
             state = RECV_SFD_SCAN;
             beginReceive();
@@ -720,12 +746,6 @@ public class CC2420Radio {
         void shutdown() {
             endReceive();
         }
-    }
-
-    public void connectTo(Medium m) {
-        medium = m;
-        transmitter = new Transmitter(m);
-        receiver = new Receiver(m);
     }
 
     /**
@@ -843,7 +863,25 @@ public class CC2420Radio {
         return us * sim.getClock().getHZ() / 1000000;
     }
 
-    public static Medium createMedium(Synchronizer synch) {
-        return new Medium(synch, 250000, 48, 8, 8 * 128);
+    public static Medium createMedium(Synchronizer synch, Medium.Arbitrator arbitrator) {
+        return new Medium(synch, arbitrator, 250000, 48, 8, 8 * 128);
+    }
+
+    public Medium.Transmitter getTransmitter() {
+        return transmitter;
+    }
+
+    public Medium.Receiver getReceiver() {
+        return receiver;
+    }
+
+    public void setMedium(Medium m) {
+        medium = m;
+        transmitter = new Transmitter(m);
+        receiver = new Receiver(m);
+    }
+
+    public Medium getMedium() {
+        return medium;
     }
 }

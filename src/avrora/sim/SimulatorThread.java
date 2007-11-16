@@ -66,6 +66,7 @@ public class SimulatorThread extends Thread {
      * @param n the node
      */
     public SimulatorThread(Simulation.Node n) {
+        super("node-"+n.id);
         node = n;
     }
 

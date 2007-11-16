@@ -36,21 +36,24 @@ import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
 import avrora.sim.output.SimPrinter;
 import avrora.sim.clock.Clock;
+import avrora.sim.clock.Synchronizer;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
 import avrora.sim.util.*;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
-import cck.util.Util;
 
 /**
  * The <code>CC1000Radio</code> class is a simulation of the CC1000 radio for use with avrora. The CC1000
  * radio is used with the Mica2 platform in the real world. Verbose printers for this class include
  * "sim.cc1000", "sim.cc1000.data", "sim.cc1000.pinconfig".
  *
+ * @author Ben L. Titzer
  * @author Daniel Lee
  */
 public class CC1000Radio implements Radio {
+
+    private static final double FXOSC_FREQUENCY = 14745600.0;
 
     /**
      * Register addresses.
@@ -87,7 +90,6 @@ public class CC1000Radio implements Radio {
     protected static final String[] allModeNames = RadioEnergy.allModeNames();
     protected static final int[][] ttm = FiniteStateMachine.buildSparseTTM(allModeNames.length, 0);
 
-
     protected RadioRegister[] registers  = new RadioRegister[0x47];
 
     /**
@@ -113,7 +115,6 @@ public class CC1000Radio implements Radio {
     protected final SimPrinter radioPrinter;
 
 
-    protected final ProbeList probes;
     protected final long xoscFrequency;
 
     protected FrequencyRegister currentFrequencyRegister;
@@ -125,58 +126,10 @@ public class CC1000Radio implements Radio {
     protected final Simulator sim;
     protected final Clock clock;
     protected final FiniteStateMachine stateMachine;
-
-    protected Radio.RadioController controller;
-
-    /**
-     * Radio environment into which this radio broadcasts.
-     */
-    protected RadioAir air;
-
-    /**
-     * The <code>ProbeList</code> class just keeps track of a list of probes.
-     */
-    public static class ProbeList extends TransactionalList implements Radio.RadioProbe {
-        public void fireAtPowerChange(Radio r, int newPower) {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next)
-                ((RadioProbe)pos.object).fireAtPowerChange(r, newPower);
-            endTransaction();
-        }
-
-        public void fireAtFrequencyChange(Radio r, double freq)  {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next)
-                ((RadioProbe)pos.object).fireAtFrequencyChange(r, freq);
-            endTransaction();
-        }
-
-        public void fireAtBitRateChange(Radio r, int newbitrate)  {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next)
-                ((RadioProbe)pos.object).fireAtBitRateChange(r, newbitrate);
-            endTransaction();
-        }
-
-        public void fireAtTransmit(Radio r, Radio.Transmission p)  {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next)
-                ((RadioProbe)pos.object).fireAtTransmit(r, p);
-            endTransaction();
-        }
-
-        public void fireAtReceive(Radio r, Radio.Transmission p) {
-            beginTransaction();
-            for (Link pos = head; pos != null; pos = pos.next)
-                ((RadioProbe)pos.object).fireAtReceive(r, p);
-            endTransaction();
-        }
-    }
+    public final CC1000Radio.SerialConfigurationInterface config;
 
     public CC1000Radio(Microcontroller mcu, long xfreq) {
         xoscFrequency = xfreq;
-
-        probes = new ProbeList();
 
         this.mcu = mcu;
         this.sim = mcu.getSimulator();
@@ -217,11 +170,6 @@ public class CC1000Radio implements Radio {
         registers[FSCTRL] = FSCTRL_reg = new FSCTRLRegister();
         registers[PRESCALER] = PRESCALER_reg = new PrescalerRegister();
 
-        // If there are other microcontroller implementations in the future,
-        // this code should be adjusted to account for that.
-        controller = new ATMegaController();
-        controller.install(mcu);
-
         //setup energy recording
         Simulator simulator = mcu.getSimulator();
 
@@ -229,6 +177,14 @@ public class CC1000Radio implements Radio {
 
         new Energy("Radio", RadioEnergy.modeAmpere, stateMachine);
 
+        ATMegaFamily amcu = (ATMegaFamily) mcu;
+        ticker = new SPITicker();
+        ticker.spiDevice = (SPIDevice)amcu.getDevice("spi");
+        setMedium(createMedium(null, null));
+        rssiOutput = new RSSIOutput();
+        ADC adc = ((ADC) amcu.getDevice("adc"));
+        adc.connectADCInput(rssiOutput, 0);
+        config = new SerialConfigurationInterface();
     }
 
     /**
@@ -241,24 +197,6 @@ public class CC1000Radio implements Radio {
      */
     public FiniteStateMachine getFiniteStateMachine() {
         return stateMachine;
-    }
-
-    /**
-     * The <code>insertProbe()</code> method inserts a probe into a radio. The probe is then
-     * notified when the radio changes power, frequency, baud rate, or transmits or receives
-     * a byte.
-     * @param p the probe to insert on this radio
-     */
-    public void insertProbe(RadioProbe p) {
-        probes.add(p);
-    }
-
-    /**
-     * The <code>removeProbe()</code> method removes a probe on this radio.
-     * @param p the probe to remove from this radio instance
-     */
-    public void removeProbe(RadioProbe p) {
-        probes.remove(p);
     }
 
     /**
@@ -345,11 +283,17 @@ public class CC1000Radio implements Radio {
             biasPd = Arithmetic.getBit(val, BIAS_PD);
             resetN = Arithmetic.getBit(val, RESET_N);
 
-            if (rxPd) deactivateReceive();
-            else activateReceive();
+            if (rxPd) receiver.endReceive();
+            else receiver.beginReceive();
 
-            if (txPd) deactivateTransmit();
-            else activateTransmit();
+            if (txPd) transmitter.endTransmit();
+            else transmitter.beginTransmit(getPower());
+
+            if (!rxPd || !txPd) {
+                ticker.activate();
+            } else {
+                ticker.deactivate();
+            }
 
             boolean oldrxtx = Arithmetic.getBit(oldVal, RXTX);
             if (rxtx && !oldrxtx) {
@@ -366,11 +310,9 @@ public class CC1000Radio implements Radio {
 
             currentFrequencyRegister = fReg ? FREQ_B_reg : FREQ_A_reg;
 
-            // TODO: Figure out how radio really resets..
-
             if (resetN && !Arithmetic.getBit(oldVal, RESET_N)) {
                 oldVal = val;
-                //resetRadio();
+                // TODO: reset the radio.
                 return;
             }
 
@@ -387,46 +329,6 @@ public class CC1000Radio implements Radio {
             }
 
             oldVal = val;
-        }
-
-        private void activateTransmit() {
-            if (!transmit_activated) {
-                transmit_activated = true;
-                if (radioPrinter.enabled) {
-                    radioPrinter.println("CC1000: TX activated");
-                }
-                controller.enable();
-            }
-        }
-
-        private void deactivateTransmit() {
-            if (transmit_activated) {
-                transmit_activated = false;
-                if (radioPrinter.enabled) {
-                    radioPrinter.println("CC1000: TX de-activated");
-                }
-                controller.disable();
-            }
-        }
-
-        private void activateReceive() {
-            if (!receive_activated) {
-                receive_activated = true;
-                if (radioPrinter.enabled) {
-                    radioPrinter.println("CC1000: RX activated");
-                }
-                controller.enable();
-            }
-        }
-
-        private void deactivateReceive() {
-            if (receive_activated) {
-                receive_activated = false;
-                if (radioPrinter.enabled) {
-                    radioPrinter.println("CC1000: RX de-activated");
-                }
-                controller.disable();
-            }
         }
 
         protected void printStatus() {
@@ -459,6 +361,7 @@ public class CC1000Radio implements Radio {
      * A frequency register on the CC1000. It is divided into three 8-bit registers.
      */
     protected class FrequencyRegister {
+        // TODO: use stacked register view.
         protected final FrequencySubRegister reg2;
         protected final FrequencySubRegister reg1;
         protected final FrequencySubRegister reg0;
@@ -507,6 +410,7 @@ public class CC1000Radio implements Radio {
      * The frequency separation register on the CC1000. It is divided into two 8-bit registers.
      */
     protected class FrequencySeparationRegister {
+        // TODO: use stacked register view.
         protected final SubRegister reg1 = new SubRegister("FSEP1");
         protected final SubRegister reg0 = new SubRegister("FSEP0");
 
@@ -618,7 +522,7 @@ public class CC1000Radio implements Radio {
             paHighPower = (value & 0xf0) >> 4;
             paLowPower = (value & 0x0f);
 
-            probes.fireAtPowerChange(CC1000Radio.this, getPower());
+            // TODO: probes.fireAtPowerChange(CC1000Radio.this, getPower());
 
             //start energy tracking
             //check for transmission mode enabled
@@ -778,7 +682,7 @@ public class CC1000Radio implements Radio {
                 //in the current TinyOS version (1.1.7) REFDIV seems to be 14
                 //resulting in a delay of a little more than 32ms 
                 //Reference: CC1000 datasheet (rev 2.1) pages 20 and 22
-                double calMs = (34.0 * 1000000.0 / 14745600.0) * PLL_reg.refDiv;
+                double calMs = (34.0 * 1000000.0 / FXOSC_FREQUENCY) * PLL_reg.refDiv;
                 clock.insertEvent(calibrate, clock.millisToCycles(calMs));
             }
 
@@ -899,7 +803,7 @@ public class CC1000Radio implements Radio {
             xoscFreqRange = XOSC_FREQ[xoscIndex];
             calculateBaudRate(baudIndex, xoscIndex);
             bitrate = baudrate / (dataFormat == DATA_FORMAT_MANCHESTER ? 2 : 1);
-            probes.fireAtBitRateChange(CC1000Radio.this, bitrate);
+            // TODO: probes.fireAtBitRateChange(CC1000Radio.this, bitrate);
         }
 
         private void calculateBaudRate(int baudIndex, int xoscIndex) {
@@ -947,9 +851,8 @@ public class CC1000Radio implements Radio {
         }
     }
 
-    // TODO: are there integer round off problems with these values?
-    static final double[] PRE_SWING = {1.0, 2 / 3, 7 / 3, 5 / 3};
-    static final double[] PRE_CURRENT = {1.0, 2 / 3, 1 / 2, 2 / 5};
+    static final double[] PRE_SWING = {1.0, 2.0 / 3, 7.0 / 3, 5.0 / 3};
+    static final double[] PRE_CURRENT = {1.0, 2.0 / 3, 1.0 / 2, 2.0 / 5};
 
     protected class PrescalerRegister extends RadioRegister {
 
@@ -973,186 +876,18 @@ public class CC1000Radio implements Radio {
 
     }
 
-    /**
-     * A CC1000 Controller class for the ATMega microcontroller family. Installing an ATMega128 into this
-     * class connects the microcontroller to this radio. Data is communicated over the SPI interface, on which
-     * the CC1000 is the master. RSSI data from the CC1000 is available to the ATMega128 though the ADC
-     * (analog to digital converter).
-     */
-    public class ATMegaController implements Radio.RadioController,
-            ADC.ADCInput,
-            SPIDevice {
-
-        SerialConfigurationInterface pinReader;
-
-        private SPIDevice spiDevice;
-        private final TransferTicker ticker;
-        private final SimPrinter printer;
-
-        ATMegaController() {
-            ticker = new TransferTicker();
-            printer = SimUtil.getPrinter(sim, "radio.cc1000.data");
-        }
-
-        public void enable() {
-            ticker.activateTicker();
-        }
-
-        public void disable() {
-            if (MAIN_reg.rxPd && MAIN_reg.txPd) ticker.deactivateTicker();
-        }
-
-        /**
-         * The <code>TransferTicker</code> class is responsible for timing/facilitating transfer between the
-         * radio and the connected microcontroller. The exchange(), nextFrame() methods from the
-         * SPIDevice interface are used.
-         */
-        private class TransferTicker implements Simulator.Event {
-            private boolean tickerOn;
-
-
-            public void activateTicker() {
-                if (!tickerOn) {
-                    tickerOn = true;
-                    //OL:
-                    //used to switch radio to transmit or receive mode
-                    //this takes 250us, e.g. 1843.2 cycles
-                    //however, a delay is not really needed for TinyOS
-                    //as TinyOS itself waits 250us via TOSH_uwait(250) before it
-                    //sends or reads data
-                    //Based on this, probably Radio.TRANSFER_TIME fits best
-                    clock.insertEvent(ticker, Radio.TRANSFER_TIME);
-                }
-            }
-
-            public void deactivateTicker() {
-                tickerOn = false;
-                clock.removeEvent(this);
-            }
-
-            public void fire() {
-
-
-                SPI.Frame frame = spiDevice.exchange(nextFrame());
-                if (MAIN_reg.rxtx && !MAIN_reg.txPd) {
-                    receive(frame);
-                }
-
-                if (tickerOn) {
-                    clock.insertEvent(this, Radio.TRANSFER_TIME);
-                }
-            }
-        }
-
-        /**
-         * <code>exchange</code> receives an <code>SPIFrame</code> from a connected device. If the radio
-         * is in a transmission state, this should be the next frame sent into the air.
-         */
-        public void receive(SPI.Frame frame) {
-
-            // data, frequency, origination
-            if (!MAIN_reg.txPd && MAIN_reg.rxtx) {
-                long currentTime = clock.getCount();
-                new Transmit(new Transmission(frame.data, 0, currentTime));
-            } else {
-                if (printer.enabled) {
-                    printer.println("CC1000: discarding "+StringUtil.toMultirepString(frame.data, 8)+" from SPI");
-                }
-            }
-        }
-
-        public SPI.Frame exchange(SPI.Frame frame) {
-            SPI.Frame next = nextFrame();
-            receive(frame);
-            return next;
-        }
-
-        /**
-         * <code>Transmit</code> is an event that transmits a packet of data after a one bit period delay.
-         */
-        protected class Transmit implements Simulator.Event {
-            final Radio.Transmission packet;
-
-            Transmit(Radio.Transmission packet) {
-                this.packet = packet;
-                clock.insertEvent(this, Radio.TRANSFER_TIME / 8);
-            }
-
-            public void fire() {
-                if (printer.enabled) {
-                    printer.println("CC1000: transmitting "+StringUtil.toMultirepString(packet.data, 8));
-                }
-                // send packet into air...
-                if ( air != null )
-                    air.transmit(CC1000Radio.this, packet);
-                probes.fireAtTransmit(CC1000Radio.this, packet);
-            }
-        }
-
-        /**
-         * Transmits an <code>SPIFrame</code> to be received by the connected device. This frame is either the
-         * last byte of data received or a zero byte.
-         */
-        public SPI.Frame nextFrame() {
-            SPI.Frame frame;
-
-            if (MAIN_reg.rxtx && MAIN_reg.txPd) {
-                frame = SPI.ZERO_FRAME;
-            } else {
-                byte data = air != null ? air.readChannel(CC1000Radio.this) : 0;
-                frame = SPI.newFrame(data);
-                if (printer.enabled) {
-                    printer.println("CC1000: received " + StringUtil.toMultirepString(frame.data, 8));
-                }
-            }
-
-            return frame;
-        }
-
-
-        public void connect(SPIDevice d) {
-            spiDevice = d;
-        }
-
-        public float getVoltage() {
-            // ask the air for the current RSSI value
-            if ( air != null )
-                return air.sampleRSSI(CC1000Radio.this);
-            else return ADC.VBG_LEVEL; // return a default value of some sort
-        }
-
-        //////////////////////////
-
-        public void install(Microcontroller mcu) {
-            pinReader = new SerialConfigurationInterface(mcu);
-
-            Util.enforce(mcu instanceof ATMegaFamily, "CC1000: only ATMegaFamily is supported");
-            ATMegaFamily atm = (ATMegaFamily)mcu;
-
-            // get ADC device and connect
-            ADC adc = (ADC)atm.getDevice("adc");
-            adc.connectADCInput(this, 0);
-
-            // get SPI device and connect
-            SPI spi = (SPI)atm.getDevice("spi");
-            spi.connect(this);
-            connect(spi); // don't forget to connect ourselves to this device
-        }
-
-
-    }
-
-
-    public boolean isListening() {
-        throw Util.unreachable();
-    }
 
     /**
      * Reads the three pins used in the three wire serial configuration interface. Microcontrollers can
      * program this radio by communication over this interfance. Debug output for communication over this
      * interface is available on "sim.cc1000.pinconfig"
      */
-    protected class SerialConfigurationInterface {
+    public class SerialConfigurationInterface {
+
+        public final PCLKOutput PCLK_in = new PCLKOutput();
+        public final PDATAOutput PDATA_in = new PDATAOutput();
+        public final PDATAInput PDATA_out = new PDATAInput();
+        public final PALEOutput PALE_in = new PALEOutput();
 
         byte address;
         boolean writeCommand;
@@ -1160,24 +895,14 @@ public class CC1000Radio implements Radio {
         boolean inputPin;
 
         byte readData;
-        boolean outputPin;
 
         int bitsRead;
 
         SimPrinter readerPrinter;
 
-        Microcontroller.Pin.Input paleInput;
-
-        SerialConfigurationInterface(Microcontroller mcu) {
+        SerialConfigurationInterface() {
 
             readerPrinter = SimUtil.getPrinter(sim, "radio.cc1000.pinconfig");
-
-            //install outputs
-            mcu.getPin(31).connectOutput(new PCLKOutput());
-            mcu.getPin(32).connectOutput(new PDATAOutput());
-            mcu.getPin(32).connectInput(new PDATAInput());
-            mcu.getPin(29).connectOutput(new PALEOutput());
-
         }
 
         /**
@@ -1189,13 +914,14 @@ public class CC1000Radio implements Radio {
             public void write(boolean level) {
                 // only trigger on level changes
                 if (level != last) {
-                    if (!level) action(); // perform action on falling edge.
+                    if (!level) clockInBit(); // perform action on falling edge.
                     last = level;
                 }
             }
         }
 
         protected class PDATAInput implements Microcontroller.Pin.Input {
+            boolean outputPin;
             public boolean read() {
                 return outputPin;
             }
@@ -1221,7 +947,7 @@ public class CC1000Radio implements Radio {
             }
         }
 
-        public void action() {
+        private void clockInBit() {
             if (bitsRead < 7) {
                 // the first 7 bits are the address
                 address <<= 1;
@@ -1252,7 +978,7 @@ public class CC1000Radio implements Radio {
                         readerPrinter.println("CC1000.Reg[" + StringUtil.toHex(address, 2) + "] <= " + StringUtil.toMultirepString(writeValue, 8));
                 } else {
                     if ( readerPrinter.enabled )
-                        readerPrinter.println("CC1000.REg[" + StringUtil.toHex(address, 2) + "] -> " + StringUtil.toMultirepString(readData, 8));
+                        readerPrinter.println("CC1000.Reg[" + StringUtil.toHex(address, 2) + "] -> " + StringUtil.toMultirepString(readData, 8));
                 }
                 // reset the state
                 bitsRead = 0;
@@ -1265,23 +991,14 @@ public class CC1000Radio implements Radio {
         }
 
         private void outputReadBit() {
-            outputPin = Arithmetic.getBit(readData, 14 - bitsRead);
+            PDATA_out.outputPin = Arithmetic.getBit(readData, 14 - bitsRead);
         }
 
     }
 
 
     /**
-     * Get the <code>Simulator</code> on which this radio is running.
-     */
-    public Simulator getSimulator() {
-        return sim;
-    }
-
-    /**
      * get the transmission power
-     *
-     * @see Radio#getPower()
      */
     public int getPower() {
         return PA_POW_reg.getPower();
@@ -1289,24 +1006,115 @@ public class CC1000Radio implements Radio {
 
     /**
      * get transmission frequency
-     *
-     * @see Radio#getFrequency()
      */
     public double getFrequency() {
-        // according to CC1000 handbook
-        // fRef = fXosc / REFDIV
-        // frequency = fRef * ( ( FREQ + 8192 ) / 16384 )
-        double fref = 14745600.0 / PLL_reg.refDiv;
+        double fref = FXOSC_FREQUENCY / PLL_reg.refDiv;
         int freq = !MAIN_reg.fReg ? FREQ_A_reg.frequency : FREQ_B_reg.frequency;
         return fref * (freq + 8192) / 16384;
     }
 
-    public RadioAir getAir() {
-        return air;
+    private class SPITicker implements Simulator.Event {
+        protected SPIDevice spiDevice;
+        protected boolean activated;
+        public void fire() {
+            // exchange a byte with the SPI device.
+            spiTick = clock.getCount();
+            SPI.Frame frame = spiDevice.exchange(SPI.newFrame((byte)(rxBuffer >> 8)));
+            txBuffer = frame.data;
+            clock.insertEvent(this, receiver.cyclesPerByte);
+        }
+        protected void activate() {
+            if (!activated) {
+                activated = true;
+                clock.insertEvent(this, receiver.cyclesPerByte);
+            }
+        }
+        protected void deactivate() {
+            if (activated) {
+                activated = false;
+                clock.removeEvent(this);
+            }
+        }
     }
 
-    public void setAir(RadioAir nair) {
-        air = nair;
+    private class Transmitter extends Medium.Transmitter {
+        Transmitter(Medium m) {
+            super(m, sim.getClock());
+        }
+        public byte nextByte() {
+            if (radioPrinter.enabled) {
+                radioPrinter.println("CC1000 "+StringUtil.to0xHex(txBuffer, 2)+" --------> ");
+            }
+            return txBuffer;
+        }
     }
 
+    private class Receiver extends Medium.Receiver {
+        Receiver(Medium m) {
+            super(m, sim.getClock());
+        }
+        public void nextByte(boolean lock, byte val) {
+            if (lock) {
+                int delta = (int)(clock.getCount() - spiTick);
+
+                int offset = (int)(8 * (delta % cyclesPerByte) / cyclesPerByte);
+                // shift in the new bits
+                rxBuffer = (rxBuffer << 8) | (~val & 0xff) << offset;
+                if (radioPrinter.enabled) {
+                    radioPrinter.println("CC1000 <======== "+StringUtil.to0xHex(val, 2));
+                }
+            } else {
+                rxBuffer = 0;
+                if (radioPrinter.enabled) {
+                    radioPrinter.println("CC1000 lock lost");
+                }
+            }
+        }
+    }
+
+    private class RSSIOutput implements ADC.ADCInput {
+        public float getVoltage() {
+            if (receiver.isChannelClear()) {
+                return ADC.VBG_LEVEL;
+            }
+            else return 0.000f;
+        }
+    }
+
+    protected Medium medium;
+    protected Transmitter transmitter;
+    protected Receiver receiver;
+    protected SPITicker ticker;
+    protected RSSIOutput rssiOutput;
+
+    long spiTick;
+    byte txBuffer;
+    int rxBuffer;
+
+    public static Medium createMedium(Synchronizer synch, Medium.Arbitrator arb) {
+        // TODO: we only support 19200 kbit/s
+        return new Medium(synch, arb, 19200, 4, 8, 128 * 8);
+    }
+
+    public Simulator getSimulator() {
+        return sim;
+    }
+
+    public Medium.Transmitter getTransmitter() {
+        return transmitter;
+    }
+
+    public Medium.Receiver getReceiver() {
+        return receiver;
+    }
+
+    public void setMedium(Medium m) {
+        medium = m;
+        transmitter = new Transmitter(m);
+        receiver = new Receiver(m);
+    }
+
+    public Medium getMedium() {
+        return medium;
+    }
 }
