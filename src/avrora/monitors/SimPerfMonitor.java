@@ -67,7 +67,7 @@ public class SimPerfMonitor extends MonitorFactory {
 
         public void report() {
 
-            TermUtil.printSeparator(Terminal.MAXLINE, "Simulator performance results");
+            TermUtil.printSeparator("Simulator performance results for node "+simulator.getID());
             Terminal.printGreen("  Time    Millis  Instant     Cumulative");
             Terminal.nextln();
             TermUtil.printSeparator();
@@ -104,6 +104,7 @@ public class SimPerfMonitor extends MonitorFactory {
                 pmillis = millis;
                 pcycles = cycles;
             }
+            Terminal.nextln();
         }
 
         class Event implements Simulator.Event {

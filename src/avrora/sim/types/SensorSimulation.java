@@ -269,7 +269,8 @@ public class SensorSimulation extends Simulation {
                 "that describes the physical layout of the sensor network. Also, each node's sensors can be " +
                 "supplied with random or replay sensor data through the \"sensor-data\" option.", options);
 
-        PLATFORM.setNewDefault("mica2");
+        PLATFORM.setNewDefault("mica2");       // set the new default monitors
+        MONITORS.setNewDefault("leds,packet"); // set the new default monitors
     }
 
     /**

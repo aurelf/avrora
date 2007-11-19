@@ -87,6 +87,7 @@
     3      sim  Global move to SimOutput and EventBuffer
 
 ----------------------------------- Completed -----------------------------------------
+    1    radio  Packet monitor selects start symbol by radio class           1.7.101
     1    radio  Packet monitor prints bytes, bits, scans for start symbol    1.7.100
     2    radio  CC2420 send / receive, checksumming                          1.7.100
     3     devs  First (seemingly) working CC2420 implementation              1.7.099
@@ -147,6 +148,7 @@
     1     util  migrate to StringUtil.*
 
 ----------------------------------- Completed -----------------------------------------
+    1     devs  LEDs generate no output by default; LEDMonitor introduced    1.7.101
     2    radio  Moved CC1000 implementation to use Medium instead of Channel 1.7.100
     1      sim  Inlined SimulateAction into SimAction                        1.7.099
     3     devs  Introduced RegisterView and BooleanView for many subfields   1.7.097

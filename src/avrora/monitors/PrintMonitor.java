@@ -54,6 +54,7 @@ public class PrintMonitor extends MonitorFactory {
         }
 
         public void report() {
+            // do nothing.
         }
     }
 

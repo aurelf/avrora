@@ -95,9 +95,8 @@ public class Mica2 extends Platform {
         LED green = new LED(sim, Terminal.COLOR_GREEN, "Green");
         LED red = new LED(sim, Terminal.COLOR_RED, "Red");
 
-        if (true) {
-            ledGroup = new LED.LEDGroup(sim, new LED[] { yellow, green, red });
-        }
+        ledGroup = new LED.LEDGroup(sim, new LED[] { yellow, green, red });
+        addDevice("leds", ledGroup);
 
         mcu.getPin("PA0").connectOutput(yellow);
         mcu.getPin("PA1").connectOutput(green);

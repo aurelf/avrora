@@ -34,8 +34,9 @@ package avrora.sim.mcu;
 
 import avrora.sim.RWRegister;
 import avrora.sim.Simulator;
+import avrora.sim.state.RegisterView;
+import avrora.sim.state.RegisterUtil;
 import avrora.sim.clock.Clock;
-import cck.util.Arithmetic;
 
 /**
  * Base class of 8-bit timers. Timer0 and Timer2 are subclasses of this.
@@ -54,19 +55,16 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
     final TCNTnRegister TCNTn_reg;
     final BufferedRegister OCRn_reg;
 
-    final int n; // number of timer. 0 for Timer0, 2 for Timer2
+    protected final int n; // number of timer. 0 for Timer0, 2 for Timer2
 
-    final Ticker ticker;
-
+    protected Simulator.Event ticker;
     protected final Clock externalClock;
     protected Clock timerClock;
 
-    boolean timerEnabled;
-    boolean countUp;
-    int timerMode;
-    long period;
+    protected int period;
 
     final AtmelMicrocontroller.Pin outputComparePin;
+    final Simulator.Event[] tickers;
 
     /* pg. 93 of manual. Block compareMatch for one period after
      * TCNTn is written to. */
@@ -84,7 +82,6 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
 
     protected Timer8Bit(AtmelMicrocontroller m, int n, int OCIEn, int TOIEn, int OCFn, int TOVn, int[] periods) {
         super("timer"+n, m);
-        ticker = new Ticker();
         TCCRn_reg = new ControlRegister();
         TCNTn_reg = new TCNTnRegister();
         OCRn_reg = new BufferedRegister();
@@ -107,6 +104,16 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
         installIOReg("TCCR"+n, TCCRn_reg);
         installIOReg("TCNT"+n, TCNTn_reg);
         installIOReg("OCR"+n, OCRn_reg);
+
+        tickers = new Simulator.Event[4];
+        installTickers();
+    }
+
+    private void installTickers() {
+        tickers[MODE_NORMAL] = new Mode_Normal();
+        tickers[MODE_CTC] = new Mode_CTC();
+        tickers[MODE_FASTPWM] = new Mode_FastPWM();
+        tickers[MODE_PWM] = new Mode_PWM();
     }
 
     protected void compareMatch() {
@@ -158,7 +165,7 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
 
         public void write(byte val) {
             super.write(val);
-            if (timerMode == MODE_NORMAL || timerMode == MODE_CTC) {
+            if (TCCRn_reg.mode == MODE_NORMAL || TCCRn_reg.mode == MODE_CTC) {
                 flush();
             }
         }
@@ -186,32 +193,48 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
         public static final int CSn1 = 1;
         public static final int CSn0 = 0;
 
+        final RegisterView CSn = RegisterUtil.bitRangeView(this, 0, 2);
+        final RegisterView COMn = RegisterUtil.bitRangeView(this, 4, 5);
+        final RegisterView WGMn = RegisterUtil.permutedView(this, new byte[] {6, 3});
+
+        int mode = -1;
+        int scale = -1;
+
         public void write(byte val) {
             // hardware manual states that high order bit is always read as zero
             value = (byte)(val & 0x7f);
 
             if ((val & 0x80) != 0) {
-                forcedOutputCompare(value);
+                forcedOutputCompare();
             }
 
             // decode modes and update internal state
-            decode(val);
+            int nmode = WGMn.getValue();
+            int nscale = CSn.getValue();
+            // if the scale or the mode has changed
+            if (nmode != mode || nscale != scale) {
+                if (ticker != null) timerClock.removeEvent(ticker);
+                mode = nmode;
+                scale = nscale;
+                ticker = tickers[mode];
+                period = periods[scale];
+                if (period != 0) {
+                    timerClock.insertEvent(ticker, period);
+                }
+            }
         }
 
-        private void forcedOutputCompare(byte val) {
+        private void forcedOutputCompare() {
 
             int count = TCNTn_reg.read() & 0xff;
             int compare = OCRn_reg.read() & 0xff;
-            int compareMode = Arithmetic.getBit(val, COMn1) ? 2 : 0;
-            compareMode |= Arithmetic.getBit(val, COMn0) ? 1 : 0;
-
 
             // the non-PWM modes are NORMAL and CTC
             // under NORMAL, there is no pin action for a compare match
             // under CTC, the action is to clear the pin.
 
             if (count == compare) {
-                switch (compareMode) {
+                switch (COMn.getValue()) {
                     case 1:
                         outputComparePin.write(!outputComparePin.read()); // toggle
                         break;
@@ -225,108 +248,70 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
 
             }
         }
+    }
 
-        private void decode(byte val) {
-            // get the mode of operation
-            timerMode = Arithmetic.getBit(val, WGMn1) ? 2 : 0;
-            timerMode |= Arithmetic.getBit(val, WGMn0) ? 1 : 0;
-
-            int prescaler = val & 0x7;
-
-            if (prescaler < periods.length)
-                resetPeriod(periods[prescaler]);
-        }
-
-        private void resetPeriod(int m) {
-            if (m == 0) {
-                if (timerEnabled) {
-                    if (devicePrinter.enabled) devicePrinter.println("Timer" + n + " disabled");
-                    timerClock.removeEvent(ticker);
-                }
-                return;
+    class Mode_Normal implements Simulator.Event {
+        public void fire() {
+            int ncount = 1 + (TCNTn_reg.read() & 0xff);
+            int ocount = ncount;
+            if (ncount == MAX) {
+                overflow();
+                ncount = 0;
             }
-            if (timerEnabled) {
-                timerClock.removeEvent(ticker);
-            }
-            if (devicePrinter.enabled) devicePrinter.println("Timer" + n + " enabled: period = " + m + " mode = " + timerMode);
-            period = m;
-            timerEnabled = true;
-            timerClock.insertEvent(ticker, period);
+            tickerFinish(this, ncount, ocount);
         }
     }
 
-    /**
-     * The <code>Ticker</class> implements the periodic behavior of the timer. It emulates the
-     * operation of the timer at each clock cycle and uses the global timed event queue to achieve the
-     * correct periodic behavior.
-     */
-    protected class Ticker implements Simulator.Event {
-
+    class Mode_PWM implements Simulator.Event {
+        protected byte increment = 1;
         public void fire() {
-            // perform one clock tick worth of work on the timer
-            int count = TCNTn_reg.read() & 0xff;
-            int compare = OCRn_reg.read() & 0xff;
-            int countSave = count;
-            if (devicePrinter.enabled)
-                devicePrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n +
-                        "(actual) = " + compare + ", OCR" + n + "(buffer) = " +
-                        (0xff & OCRn_reg.readBuffer()) + ']');
-
-            // TODO: this code has one off counting bugs!!!
-            switch (timerMode) {
-                case MODE_NORMAL: // NORMAL MODE
-                    count++;
-                    countSave = count;
-                    if (count == MAX) {
-                        overflow();
-                        count = 0;
-                    }
-
-                    break;
-                case MODE_PWM: // PULSE WIDTH MODULATION MODE
-                    if (countUp)
-                        count++;
-                    else
-                        count--;
-
-                    countSave = count;
-                    if (count >= MAX) {
-                        countUp = false;
-                        count = MAX;
-                        OCRn_reg.flush(); // pg. 102. update OCRn at TOP
-                    }
-                    if (count <= 0) {
-                        overflow();
-                        countUp = true;
-                        count = 0;
-                    }
-                    break;
-                case MODE_CTC: // CLEAR TIMER ON COMPARE MODE
-                    countSave = count;
-                    count++;
-                    if (countSave == compare) {
-                        count = 0;
-                    }
-                    break;
-                case MODE_FASTPWM: // FAST PULSE WIDTH MODULATION MODE
-                    count++;
-                    countSave = count;
-                    if (count == MAX) {
-                        count = 0;
-                        overflow();
-                        OCRn_reg.flush(); // pg. 102. update OCRn at TOP
-                    }
-                    break;
+            int ncount = increment + (TCNTn_reg.read() & 0xff);
+            int ocount = ncount;
+            if (ncount >= MAX) {
+                increment = -1;
+                ncount = MAX;
+                OCRn_reg.flush(); // pg. 102. update OCRn at TOP
             }
-
-            if (countSave == compare && !blockCompareMatch) {
-                compareMatch();
+            if (ncount <= 0) {
+                overflow();
+                increment = 1;
+                ncount = 0;
             }
-            TCNTn_reg.write((byte)count);
-            // I probably want to verify the timing on this.
-            blockCompareMatch = false;
-
-            if (period != 0) timerClock.insertEvent(this, period);
+            tickerFinish(this, ncount, ocount);
         }
+    }
+
+    class Mode_CTC implements Simulator.Event {
+        public void fire() {
+            int ncount = 1 + (TCNTn_reg.read() & 0xff);
+            int ocount = ncount;
+            if (ocount == (OCRn_reg.read() & 0xff)) {
+                ncount = 0;
+            }
+            tickerFinish(this, ncount, ocount);
+        }
+    }
+
+    class Mode_FastPWM implements Simulator.Event {
+        public void fire() {
+            int ncount = 1 + (TCNTn_reg.read() & 0xff);
+            int ocount = ncount;
+            if (ncount == MAX) {
+                ncount = 0;
+                overflow();
+                OCRn_reg.flush(); // pg. 102. update OCRn at TOP
+            }
+            tickerFinish(this, ncount, ocount);
+        }
+    }
+    
+    private void tickerFinish(Simulator.Event ticker, int ncount, int ocount) {
+        if (!blockCompareMatch && ocount == (OCRn_reg.read() & 0xff)) {
+            compareMatch();
+        }
+        TCNTn_reg.write((byte)ncount);
+        blockCompareMatch = false;
+
+        timerClock.insertEvent(ticker, period);
     }
 }

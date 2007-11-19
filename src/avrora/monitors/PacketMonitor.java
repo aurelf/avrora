@@ -42,10 +42,11 @@ import avrora.sim.platform.Platform;
 import avrora.sim.radio.*;
 import avrora.sim.util.SimUtil;
 import avrora.sim.output.SimPrinter;
+import avrora.syntax.Expr;
 import cck.text.*;
 import cck.util.Option;
-import java.util.Iterator;
-import java.util.LinkedList;
+
+import java.util.*;
 import java.text.StringCharacterIterator;
 
 
@@ -53,6 +54,7 @@ import java.text.StringCharacterIterator;
  * Packet monitor implementation. This class logs the number of packets, e.g. bytes sent and received.
  *
  * @author Olaf Landsiedel
+ * @author Ben L. Titzer
  */
 public class PacketMonitor extends MonitorFactory {
 
@@ -60,10 +62,12 @@ public class PacketMonitor extends MonitorFactory {
             "This option enables the printing of packets as they are transmitted.");
     protected Option.Bool PACKETS = newOption("show-packets", true,
             "This option enables the printing of packet contents in bits rather than in bytes.");
-    protected Option.Str START_SYMBOL = newOption("start-symbol", "33",
+    protected Option.Str START_SYMBOL = newOption("start-symbol", "",
             "When this option is not blank, the packet monitor will attempt to match the " +
             "start symbol of packet data in order to display both the preamble, start " +
             "symbol, and packet contents.");
+
+    protected List monitors = new LinkedList();
 
     class Mon implements Monitor, Medium.Probe {
         LinkedList bytes;
@@ -93,9 +97,23 @@ public class PacketMonitor extends MonitorFactory {
             bytes = new LinkedList();
             bits = BITS.get();
 
+            getStartSymbol(radio);
+            monitors.add(this);
+        }
+
+        private void getStartSymbol(Radio radio) {
             if (!START_SYMBOL.isBlank()) {
                 matchStart = true;
-                startSymbol = (byte)StringUtil.readHexValue(new StringCharacterIterator(START_SYMBOL.get()), 2);
+                startSymbol = (byte) StringUtil.readHexValue(new StringCharacterIterator(START_SYMBOL.get()), 2);
+            } else {
+                if (radio instanceof CC1000Radio) {
+                    matchStart = true;
+                    startSymbol = (byte)0x33;
+                }
+                if (radio instanceof CC2420Radio) {
+                    matchStart = true;
+                    startSymbol = (byte)0xA7;
+                }
             }
         }
 
@@ -196,11 +214,29 @@ public class PacketMonitor extends MonitorFactory {
         }
 
         public void report() {
-            TermUtil.reportQuantity("Bytes sent", bytesTransmitted, "");
-            TermUtil.reportQuantity("Packets sent", packetsTransmitted, "");
-            TermUtil.reportQuantity("Bytes received", bytesReceived, "");
-            TermUtil.reportQuantity("Bytes corrupted", bytesCorrupted, "");
-            TermUtil.reportQuantity("Packets received", packetsReceived, "");
+            if (monitors != null) {
+                TermUtil.printSeparator(Terminal.MAXLINE, "Packet monitor results");
+                Terminal.printGreen("Node     sent (b/p)          recv (b/p)    corrupted (b)");
+                Terminal.nextln();
+                TermUtil.printThinSeparator();
+                Iterator i = monitors.iterator();
+                while (i.hasNext()) {
+                    Mon mon = (Mon)i.next();
+                    Terminal.print(StringUtil.rightJustify(mon.simulator.getID(), 4));
+                    Terminal.print(StringUtil.rightJustify(mon.bytesTransmitted, 10));
+                    Terminal.print(" / ");
+                    Terminal.print(StringUtil.leftJustify(mon.packetsTransmitted, 8));
+
+                    Terminal.print(StringUtil.rightJustify(mon.bytesReceived, 10));
+                    Terminal.print(" / ");
+                    Terminal.print(StringUtil.leftJustify(mon.packetsReceived, 8));
+                    Terminal.print(StringUtil.rightJustify(mon.bytesCorrupted, 10));
+                    Terminal.nextln();
+                }
+                monitors = null;
+                Terminal.nextln();
+                
+            }
         }
 
     }
