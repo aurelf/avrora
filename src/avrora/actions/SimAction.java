@@ -181,8 +181,6 @@ public class SimAction extends Action {
         while (i.hasNext()) {
             Simulation.Node n = (Simulation.Node)i.next();
             Iterator im = n.getMonitors().iterator();
-            if ( im.hasNext() )
-                TermUtil.printSeparator(Terminal.MAXLINE, "Monitors for node "+n.id);
             while ( im.hasNext() ) {
                 Monitor m = (Monitor)im.next();
                 m.report();

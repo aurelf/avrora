@@ -212,11 +212,13 @@ public class TraceMonitor extends MonitorFactory {
          * number of executions of each instruction, compressed for basic blocks.
          */
         public void report() {
+            TermUtil.printSeparator("Trace results for node "+simulator.getID());
             long cycles = simulator.getClock().getCount();
             float ipc = count / (float)cycles;
             TermUtil.reportQuantity("Instructions executed", count, "");
             TermUtil.reportQuantity("Program throughput", ipc, "instrs/cycle");
             TermUtil.reportQuantity("Program throughput", ipc * simulator.getClock().getHZ() / 1000000, "mips");
+            Terminal.nextln();
         }
     }
 

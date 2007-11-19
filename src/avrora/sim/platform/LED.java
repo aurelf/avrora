@@ -48,12 +48,12 @@ import cck.text.Terminal;
  * @author Ben L. Titzer
  */
 public class LED implements Microcontroller.Pin.Output {
-    protected Simulator sim;
+    public Simulator sim;
 
-    protected final int colornum;
-    protected final String color;
+    public final int colornum;
+    public final String color;
 
-    protected final FiniteStateMachine state;
+    public final FiniteStateMachine state;
     protected final LEDProbe probe;
 
     //energy profile of this device
@@ -87,35 +87,13 @@ public class LED implements Microcontroller.Pin.Output {
         }
     }
 
-    public static class LEDGroup implements FiniteStateMachine.Probe {
-        protected Simulator sim;
-        protected LED[] leds;
+    public static class LEDGroup {
+        public final Simulator sim;
+        public final LED[] leds;
 
         public LEDGroup(Simulator sim, LED[] nleds) {
             this.sim = sim;
-            leds = nleds;
-            for ( int cntr = 0; cntr < nleds.length; cntr++ ) {
-                // insert the state probe on every LED's state
-                leds[cntr].state.insertProbe(this);
-            }
-        }
-
-        public void fireBeforeTransition(int beforeState, int afterState) {
-            // do nothing
-        }
-
-        public void fireAfterTransition(int beforeState, int afterState) {
-            if ( beforeState == afterState ) return;
-            // print the status of the LED
-            synchronized ( Terminal.class ) {
-                // synchronize on the terminal to prevent interleaved output
-                Terminal.print(SimUtil.getIDTimeString(sim));
-                for ( int cntr = 0; cntr < leds.length; cntr++ ) {
-                    if ( leds[cntr].state.getCurrentState() == 0 ) Terminal.print("off ");
-                    else Terminal.print(leds[cntr].colornum, "on  ");
-                }
-                Terminal.nextln();
-            }
+            this.leds = nleds;
         }
     }
 
@@ -143,6 +121,10 @@ public class LED implements Microcontroller.Pin.Output {
 
     public void disablePrinting() {
         state.removeProbe(probe);
+    }
+
+    public int getState() {
+        return state.getCurrentState();
     }
 
     /**

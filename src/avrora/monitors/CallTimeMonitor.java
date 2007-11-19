@@ -144,6 +144,7 @@ public class CallTimeMonitor extends MonitorFactory {
         }
 
         public void report() {
+            TermUtil.printSeparator("Call time results for node "+simulator.getID());
             Terminal.printGreen(" function                 calls         avg       cumul        max        min");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
@@ -152,7 +153,7 @@ public class CallTimeMonitor extends MonitorFactory {
             double std = Math.sqrt(((double)cumul_sqr / count) - (avg * avg));
 
             Terminal.println(" " + StringUtil.leftJustify(METHOD.get(), 20) + "  " + StringUtil.rightJustify(count, 8) + "  " + StringUtil.rightJustify(avg, 10) + "  " + StringUtil.rightJustify(cumul, 10) + "  " + StringUtil.rightJustify((float)max, 9) + "  " + StringUtil.rightJustify((float)min, 9));
-
+            Terminal.nextln();
         }
     }
 

@@ -59,6 +59,7 @@ public class SingleSimulation extends Simulation {
         addOptionSection("The most basic type of simulation, the single node simulation, is designed to " +
                 "simulate a single microcontroller running a single program. Help for specific options " +
                 "relating to simulating a single node is below.", options);
+        MONITORS.setNewDefault("leds");
     }
 
     /**

@@ -58,6 +58,7 @@ public class StackMonitor extends MonitorFactory {
         private boolean SPinit;
         private int minSP = 0;
         private int maxSP = 0;
+        protected final Simulator simulator;
 
         Mon(Simulator sim) {
             SPH_watch = new SPWatch();
@@ -67,7 +68,8 @@ public class StackMonitor extends MonitorFactory {
 
             // insert watches for SP registers
             MCUProperties props = sim.getMicrocontroller().getProperties();
-            sim.insertWatch(SPH_watch, props.getIOReg("SPH"));
+            simulator = sim;
+            simulator.insertWatch(SPH_watch, props.getIOReg("SPH"));
             sim.insertWatch(SPL_watch, props.getIOReg("SPL"));
             sim.getInterpreter().getInterruptTable().insertProbe(new IntProbe());
 
@@ -94,11 +96,14 @@ public class StackMonitor extends MonitorFactory {
          */
         public void report() {
             if ( SPinit ) {
+                TermUtil.printSeparator("Stack results for node "+simulator.getID());
                 TermUtil.reportQuantity("Maximum stack pointer", StringUtil.addrToString(maxSP), "");
                 TermUtil.reportQuantity("Minimum stack pointer", StringUtil.addrToString(minSP), "");
                 TermUtil.reportQuantity("Maximum stack size", (maxSP - minSP), "bytes");
+                Terminal.nextln();
             } else {
-                Terminal.println("No stack pointer information.");
+                Terminal.println("No stack pointer information for node "+simulator.getID()+".");
+                Terminal.nextln();
             }
         }
 

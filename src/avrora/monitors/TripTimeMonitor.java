@@ -241,6 +241,7 @@ public class TripTimeMonitor extends MonitorFactory {
         }
 
         public void report() {
+            TermUtil.printSeparator("Trip time results for node "+simulator.getID());
             Terminal.printGreen("  start      end     count         avg         std        max        min");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
@@ -248,6 +249,7 @@ public class TripTimeMonitor extends MonitorFactory {
                 for ( Pair p = startArray[cntr]; p != null; p = p.startLink ) {
                     if ( p.count > 0 ) p.report(Printer.STDOUT);
                 }
+            Terminal.nextln();
         }
     }
 

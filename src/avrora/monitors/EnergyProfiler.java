@@ -42,6 +42,8 @@ import avrora.core.SourceMapping;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import cck.text.Terminal;
+import cck.text.TermUtil;
+
 import java.util.*;
 
 
@@ -202,7 +204,7 @@ public class EnergyProfiler extends MonitorFactory {
                 }
             }
             //display data
-            Terminal.printCyan("\nEnergy Consumption Procedure Breakdown:\n\n");
+            TermUtil.printSeparator("Energy breakdown for node "+simulator.getID());
             Terminal.printCyan("notation: procedureName@Address: cycles\n");
             Iterator it = profiles.iterator();
             while (it.hasNext()) {

@@ -501,6 +501,17 @@ public abstract class Option {
         }
 
         /**
+         * The <code>setNewDefault()</code> method sets a new default value for this option. This is useful
+         * for inherited options that might have a different default value for different actions or different
+         * simulations.
+         *
+         * @param val the new default value for this option
+         */
+        public void setNewDefault(String val) {
+            parseString(val);
+        }
+
+        /**
          * The <code>get()</code> method returns the current value of the option.
          *
          * @return the value of the option as a <code>java.util.List</code>.

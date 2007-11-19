@@ -108,7 +108,7 @@ public class MemoryMonitor extends MonitorFactory {
         }
 
         public void report() {
-            TermUtil.printSeparator(Terminal.MAXLINE, "Memory profiling results");
+            TermUtil.printSeparator("Memory profiling results for node "+simulator.getID());
             Terminal.printGreen("   Address     Reads               Writes");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
@@ -146,6 +146,7 @@ public class MemoryMonitor extends MonitorFactory {
 
             }
             printLine("total ", (long)rtotal, rtotal, (long)wtotal, wtotal);
+            Terminal.nextln();
         }
 
         private void printLine(String addr, long r, double rtotal, long w, double wtotal) {

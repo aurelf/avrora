@@ -44,6 +44,7 @@ import avrora.sim.energy.*;
 import avrora.sim.platform.Platform;
 import avrora.sim.util.SimUtil;
 import cck.text.Terminal;
+import cck.text.TermUtil;
 import cck.util.Option;
 import cck.util.Util;
 import java.io.*;
@@ -122,7 +123,7 @@ public class EnergyMonitor extends MonitorFactory {
         public void report() {
             //simulation will end
             //provide component energy breakdown
-            Terminal.printCyan("\nEnergy Consumption Component Breakdown:\n\n");
+            TermUtil.printSeparator("Energy consumption results for node "+simulator.getID());
             Clock clock = simulator.getClock();
             long cycles = clock.getCount();
             Terminal.println("Node lifetime: " + cycles + " cycles,  " + clock.cyclesToMillis(cycles) / 1000.0+ " seconds\n");

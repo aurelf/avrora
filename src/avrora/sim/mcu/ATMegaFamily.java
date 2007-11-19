@@ -282,7 +282,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
     }
 
-    protected static final int[] periods2 = {0, 1, 8, 64, 256, 1024};
+    protected static final int[] periods2 = {0, 1, 8, 64, 256, 1024, 0, 0};
 
     /**
      * <code>Timer2</code> is an additional 8-bit timer on the ATMega128. It is not available in

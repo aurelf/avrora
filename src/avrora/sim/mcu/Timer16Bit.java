@@ -36,7 +36,6 @@ import avrora.sim.RWRegister;
 import avrora.sim.Simulator;
 import avrora.sim.state.BooleanView;
 import avrora.sim.clock.Clock;
-import cck.util.Arithmetic;
 
 /**
  * The <code>Timer16Bit</code> class emulates the functionality and behavior of a 16-bit timer on the
@@ -170,6 +169,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     final PairedRegister TCNTn_reg;
 
     final OutputCompareUnit[] compareUnits;
+    final Simulator.Event[] tickers;
 
     final RWRegister highTempReg;
 
@@ -177,15 +177,13 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     final RWRegister ICRnL_reg;
     final PairedRegister ICRn_reg;
 
-    final Ticker ticker;
+    Simulator.Event ticker;
 
     final RegisterSet.Field WGMn;
     final RegisterSet.Field CSn;
 
     final InputCapturePin inputCapturePin;
 
-    boolean timerEnabled;
-    boolean countUp;
     long period;
 
     boolean blockCompareMatch;
@@ -227,7 +225,11 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         initValues();
 
-        WGMn = rset.getField("WGM"+n);
+        WGMn = rset.installField("WGM"+n, new RegisterSet.Field() {
+           public void update() {
+               resetTicker(tickers[value]);
+           }
+        });
         CSn = rset.installField("CS"+n, new RegisterSet.Field() {
             public void update() {
                 resetPeriod(periods[value]);
@@ -236,8 +238,6 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         inputCaptureInterrupt = m.getProperties().getInterrupt("TIMER"+n+" CAPT");
         inputCapturePin = new InputCapturePin();
-
-        ticker = new Ticker();
 
         highTempReg = new RWRegister();
 
@@ -262,6 +262,31 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         installIOReg("ICR"+n+"H", highTempReg);
         installIOReg("ICR"+n+"L", ICRn_reg);
+
+        tickers = new Simulator.Event[16];
+        installTickers();
+    }
+
+    private void installTickers() {
+        Timer16Bit.OutputCompareUnit ocA = compareUnits[0];
+        Timer16Bit.BufferedRegister ocrah = ocA.OCRnXH_reg;
+        Timer16Bit.BufferedRegister ocral = ocA.OCRnXL_reg;
+        tickers[MODE_NORMAL] = new Mode_Normal();
+        tickers[MODE_PWM_PHASE_CORRECT_8_BIT] = new Mode_PWMPhaseCorrect(0xff, null, null);
+        tickers[MODE_PWM_PHASE_CORRECT_9_BIT] = new Mode_PWMPhaseCorrect(0x1ff, null, null);
+        tickers[MODE_PWM_PHASE_CORRECT_10_BIT] = new Mode_PWMPhaseCorrect(0x3ff, null, null);
+        tickers[MODE_CTC_OCRnA] = new Mode_CTC(ocrah, ocral);
+        tickers[MODE_FASTPWM_8_BIT] = new Mode_FastPWM(0xff, null, null);
+        tickers[MODE_FASTPWM_9_BIT] = new Mode_FastPWM(0x1ff, null, null);
+        tickers[MODE_FASTPWM_10_BIT] = new Mode_FastPWM(0x3ff, null, null);
+        tickers[MODE_PWM_PNF_ICRn] = new Mode_PWM_PNF(ICRnH_reg, ICRnL_reg);
+        tickers[MODE_PWM_PNF_OCRnA]  = new Mode_PWM_PNF(ocrah, ocral);
+        tickers[MODE_PWN_PHASE_CORRECT_ICRn] = new Mode_PWMPhaseCorrect(0, ICRnH_reg, ICRnL_reg);
+        tickers[MODE_PWN_PHASE_CORRECT_OCRnA] = new Mode_PWMPhaseCorrect(0, ocrah, ocral);
+        tickers[MODE_CTC_ICRn] = new Mode_CTC(ICRnH_reg, ICRnL_reg);
+        tickers[13] = new Mode_Reserved();
+        tickers[MODE_FASTPWM_ICRn] = new Mode_FastPWM(0, ICRnH_reg, ICRnL_reg);
+        tickers[MODE_FASTPWM_OCRnA] = new Mode_FastPWM(0, ocrah, ocral);
     }
 
     public BooleanView getInputCapturePin() {
@@ -374,21 +399,24 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
     private void resetPeriod(int nPeriod) {
         if (nPeriod == 0) {
-            if (timerEnabled) {
-                if (devicePrinter.enabled) devicePrinter.println("Timer" + n + " disabled");
-                timerClock.removeEvent(ticker);
-                timerEnabled = false;
-            }
-            return;
+            // disable the timer.
+            if (devicePrinter.enabled) devicePrinter.println("Timer" + n + " disabled");
+            if (ticker != null) timerClock.removeEvent(ticker);
+        } else {
+            // enable the timer.
+            if (devicePrinter.enabled)
+                devicePrinter.println("Timer" + n + " enabled: period = " + nPeriod + " mode = " + WGMn.value);
+            if (ticker != null) timerClock.removeEvent(ticker);
+            ticker = tickers[WGMn.value];
+            period = nPeriod;
+            timerClock.insertEvent(ticker, period);
         }
-        if (timerEnabled) {
-            timerClock.removeEvent(ticker);
-        }
-        if (devicePrinter.enabled) devicePrinter.println("Timer" + n + " enabled: period = " + nPeriod + " mode = " + WGMn.value);
-        period = nPeriod;
-        timerEnabled = true;
-        timerClock.insertEvent(ticker, period);
+    }
 
+    public void resetTicker(Simulator.Event e) {
+        if (ticker != null) simulator.removeEvent(ticker);
+        ticker = e;
+        simulator.insertEvent(e, period);
     }
 
     /**
@@ -427,212 +455,152 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         }
     }
 
-    /**
-     * The <code>Ticker</class> implements the periodic behavior of the timer. It emulates the
-     * operation of the timer at each clock cycle and uses the global timed event queue to achieve the
-     * correct periodic behavior.
-     */
-    protected class Ticker implements Simulator.Event {
-
-        private void flushOCRnx() {
-            for ( int cntr = 0; cntr < compareUnits.length; cntr++ )
-                compareUnits[cntr].flush();
-        }
-
-        private final int[] TOP = {0xffff, 0x00ff, 0x01ff, 0x03ff, 0, 0x0ff, 0x01ff, 0x03ff};
-
-
+    protected class Mode_Reserved implements Simulator.Event {
         public void fire() {
-
-            int count = read16(TCNTnH_reg, TCNTnL_reg);
-            int countSave = count;
-            int compareA = compareUnits[0].read();
-            /*
-            int compareB = read16(OCRnBH_reg, OCRnBL_reg);
-            int compareC = read16(OCRnCH_reg, OCRnCL_reg);
-            */
-            int compareI = read16(ICRnH_reg, ICRnL_reg);
-
-            if (devicePrinter.enabled) {
-                devicePrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "A = " + compareA + "]");
-            }
-
-            // What exactly should I do when I phase/frequency current?
-            // registers.
-            // Make sure these cases are doing what they are supposed to
-            // do.
-            int mode = WGMn.value;
-            switch (mode) {
-                case MODE_NORMAL:
-                    count++;
-                    countSave = count;
-                    if (count == MAX) {
-                        overflow();
-                        count = 0;
-                    }
-                    break;
-                case MODE_PWM_PHASE_CORRECT_8_BIT:
-                case MODE_PWM_PHASE_CORRECT_9_BIT:
-                case MODE_PWM_PHASE_CORRECT_10_BIT:
-                    if (countUp)
-                        count++;
-                    else
-                        count--;
-
-                    countSave = count;
-                    if (count >= TOP[mode]) {
-                        countUp = false;
-                        count = TOP[mode];
-                        flushOCRnx();
-                    }
-                    if (count <= 0) {
-                        overflow();
-                        countUp = true;
-                        count = 0;
-                    }
-                    break;
-
-                case MODE_CTC_OCRnA:
-                    count++;
-
-                    countSave = count;
-                    if (count == compareA) {
-                        count = 0;
-                    }
-                    if (count == MAX) {
-                        overflow();
-                    }
-                    break;
-                case MODE_FASTPWM_8_BIT:
-                case MODE_FASTPWM_9_BIT:
-                case MODE_FASTPWM_10_BIT:
-                    count++;
-
-                    countSave = count;
-                    if (count == TOP[mode]) {
-                        count = 0;
-                        overflow();
-                        flushOCRnx();
-                    }
-
-                    break;
-                case MODE_PWM_PNF_ICRn:
-                    if (countUp)
-                        count++;
-                    else
-                        count--;
-
-                    countSave = count;
-                    if (count >= compareI) {
-                        countUp = false;
-                        count = compareI;
-                    }
-                    if (count <= 0) {
-                        overflow();
-                        flushOCRnx();
-                        countUp = true;
-                        count = 0;
-                    }
-                    break;
-                case MODE_PWM_PNF_OCRnA:
-                    if (countUp)
-                        count++;
-                    else
-                        count--;
-
-                    countSave = count;
-                    if (count >= compareA) {
-                        countUp = false;
-                        count = compareA;
-                    }
-                    if (count <= 0) {
-                        overflow();
-                        flushOCRnx();
-                        countUp = true;
-                        count = 0;
-                    }
-                    break;
-                case MODE_PWN_PHASE_CORRECT_ICRn:
-                    if (countUp)
-                        count++;
-                    else
-                        count--;
-
-                    countSave = count;
-                    if (count >= compareI) {
-                        flushOCRnx();
-                        countUp = false;
-                        count = compareI;
-                    }
-                    if (count <= 0) {
-                        overflow();
-                        countUp = true;
-                        count = 0;
-                    }
-                    break;
-                case MODE_PWN_PHASE_CORRECT_OCRnA:
-                    if (countUp)
-                        count++;
-                    else
-                        count--;
-
-                    countSave = count;
-                    if (count >= compareA) {
-                        flushOCRnx();
-                        countUp = false;
-                        count = compareA;
-                    }
-                    if (count <= 0) {
-                        overflow();
-                        countUp = true;
-                        count = 0;
-                    }
-                    break;
-                case MODE_CTC_ICRn:
-                    count++;
-
-                    countSave = count;
-                    if (count == compareI) {
-                        count = 0;
-                    }
-                    if (count == MAX) {
-                        overflow();
-                    }
-                    break;
-                case MODE_FASTPWM_ICRn:
-                    count++;
-
-                    countSave = count;
-                    if (count == compareI) {
-                        count = 0;
-                        overflow();
-                        flushOCRnx();
-                    }
-                    break;
-                case MODE_FASTPWM_OCRnA:
-                    count++;
-
-                    countSave = count;
-                    if (count == compareA) {
-                        count = 0;
-                        overflow();
-                        flushOCRnx();
-                    }
-                    break;
-            }
-
-            // the compare match should be performed in any case.
-            if (!blockCompareMatch) {
-                for ( int cntr = 0; cntr < compareUnits.length; cntr++ )
-                    compareUnits[cntr].compare(countSave);
-            }
-            write16(count, TCNTnH_reg, TCNTnL_reg);
-            // make sure timings on this are correct
-            blockCompareMatch = false;
-
-
-            if (period != 0) timerClock.insertEvent(this, period);
+            // do nothing in the reserved mode.
         }
     }
 
+    protected class Mode_Normal implements Simulator.Event {
+        public void fire() {
+            int ncount = read16(TCNTnH_reg, TCNTnL_reg) + 1;
+            int ocount = ncount;
+            if (ncount == MAX) {
+                overflow();
+                ncount = 0;
+            }
+            tickerFinish(this, ocount, ncount);
+        }
+    }
+
+    protected class Mode_CTC implements Simulator.Event {
+        protected final RWRegister compareRegHigh;
+        protected final RWRegister compareRegLow;
+
+        public Mode_CTC(RWRegister compareRegH, RWRegister compareRegL) {
+            compareRegHigh = compareRegH;
+            compareRegLow = compareRegL;
+        }
+
+        public void fire() {
+            int ncount = read16(TCNTnH_reg, TCNTnL_reg) + 1;
+            int ocount = ncount;
+            if (compareRegHigh != null) {
+                if (ncount == read16(compareRegHigh, compareRegLow)) {
+                    ncount = 0;
+                }
+            }
+            if (ncount == MAX) {
+                overflow();
+            }
+            tickerFinish(this, ocount, ncount);
+        }
+    }
+
+    protected class Mode_FastPWM implements Simulator.Event {
+        protected final int top;
+        protected final RWRegister compareRegHigh;
+        protected final RWRegister compareRegLow;
+
+        protected Mode_FastPWM(int t, RWRegister compareRegH, RWRegister compareRegL) {
+            top = t;
+            compareRegHigh = compareRegH;
+            compareRegLow = compareRegL;
+        }
+        public void fire() {
+            int ncount = read16(TCNTnH_reg, TCNTnL_reg) + 1;
+            int top = this.top;
+            int ocount = ncount;
+            if (compareRegHigh != null) {
+                top = read16(compareRegHigh, compareRegLow);
+            }
+            if (ncount == top) {
+                ncount = 0;
+                overflow();
+                flushOCRnx();
+            }
+            tickerFinish(this, ocount, ncount);
+        }
+    }
+
+    protected class Mode_PWM_PNF implements Simulator.Event {
+        protected byte increment = 1;
+        protected final RWRegister compareRegHigh;
+        protected final RWRegister compareRegLow;
+
+        protected Mode_PWM_PNF(RWRegister compareRegH, RWRegister compareRegL) {
+            compareRegHigh = compareRegH;
+            compareRegLow = compareRegL;
+        }
+        public void fire() {
+            int ncount = read16(TCNTnH_reg, TCNTnL_reg) + increment;
+
+            int ocount = ncount;
+            if (compareRegHigh != null) {
+                int compare = read16(compareRegHigh, compareRegLow);
+                if (ncount >= compare) {
+                    increment = -1;
+                    ncount = compare;
+                }
+            }
+            if (ncount <= 0) {
+                overflow();
+                flushOCRnx();
+                increment = 1;
+                ncount = 0;
+            }
+            tickerFinish(this, ocount, ncount);
+        }
+    }
+
+    protected class Mode_PWMPhaseCorrect implements Simulator.Event {
+        protected byte increment = 1;
+        protected final int top;
+        protected final RWRegister compareRegHigh;
+        protected final RWRegister compareRegLow;
+
+        protected Mode_PWMPhaseCorrect(int t, RWRegister compareRegH, RWRegister compareRegL) {
+            top = t;
+            compareRegHigh = compareRegH;
+            compareRegLow = compareRegL;
+        }
+        public void fire() {
+            int ncount = read16(TCNTnH_reg, TCNTnL_reg) + increment;
+            int top = this.top;
+
+            int ocount = ncount;
+            if (compareRegHigh != null) {
+                top = read16(compareRegHigh, compareRegLow);
+            }
+            if (ncount >= top) {
+                increment = -1;
+                ncount = top;
+                flushOCRnx();
+            }
+            if (ncount <= 0) {
+                overflow();
+                increment = 1;
+                ncount = 0;
+            }
+            tickerFinish(this, ocount, ncount);
+        }
+    }
+
+    private void tickerFinish(Simulator.Event ticker, int ocount, int ncount) {
+        // the compare match should be performed in any case.
+        if (!blockCompareMatch) {
+            for ( int cntr = 0; cntr < compareUnits.length; cntr++ )
+                compareUnits[cntr].compare(ocount);
+        }
+        write16(ncount, TCNTnH_reg, TCNTnL_reg);
+        // make sure timings on this are correct
+        blockCompareMatch = false;
+
+        if (period != 0) timerClock.insertEvent(ticker, period);
+    }
+
+    private void flushOCRnx() {
+        for ( int cntr = 0; cntr < compareUnits.length; cntr++ )
+            compareUnits[cntr].flush();
+    }
 }

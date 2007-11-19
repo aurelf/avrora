@@ -148,6 +148,7 @@ public class ProfileMonitor extends MonitorFactory {
             if ( CLASSES.get() ) {
                 reportInstrProfile();
             }
+            Terminal.nextln();
         }
 
         long totalcount;
@@ -156,7 +157,7 @@ public class ProfileMonitor extends MonitorFactory {
         private void reportProfile() {
             int imax = icount.length;
 
-            TermUtil.printSeparator(Terminal.MAXLINE, "Profiling results");
+            TermUtil.printSeparator("Profiling results for node "+simulator.getID());
             Terminal.printGreen("       Address     Count  Run     Cycles     Cumulative");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);

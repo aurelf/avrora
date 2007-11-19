@@ -202,7 +202,7 @@ public class InterruptMonitor extends MonitorFactory {
         }
 
         public void report() {
-            TermUtil.printSeparator(Terminal.MAXLINE, "Interrupt monitor results");
+            TermUtil.printSeparator("Interrupt monitor results for node "+simulator.getID());
             Terminal.printGreen("Num  Name        Invocations  Separation  Latency     Wakeup");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
@@ -221,6 +221,7 @@ public class InterruptMonitor extends MonitorFactory {
                 Terminal.print(invocationWakeup(cntr));
                 Terminal.nextln();
             }
+            Terminal.nextln();
         }
 
         private String invocationLatency(int cntr) {
