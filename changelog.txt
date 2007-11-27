@@ -13,6 +13,7 @@
     1     devs  USART baud rates
     1     devs  USART frame sizes
     1  jintgen  DisassemblerGenerator: split fields that span word boundaries
+    1    radio  Nondeterminism in Medium receives: RippleSynchronizer
 
 ----------------------------------- Completed -----------------------------------------
     2    radio  Detect receives of radio bytes and notify radio probes        1.7.100
@@ -87,6 +88,7 @@
     3      sim  Global move to SimOutput and EventBuffer
 
 ----------------------------------- Completed -----------------------------------------
+    1    radio  AUTOCRC and reset features for CC2420                        1.7.102
     1    radio  Packet monitor selects start symbol by radio class           1.7.101
     1    radio  Packet monitor prints bytes, bits, scans for start symbol    1.7.100
     2    radio  CC2420 send / receive, checksumming                          1.7.100

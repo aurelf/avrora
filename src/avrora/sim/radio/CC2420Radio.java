@@ -33,15 +33,15 @@
  */
 package avrora.sim.radio;
 
-import avrora.sim.mcu.*;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Synchronizer;
-import avrora.sim.util.SimUtil;
+import avrora.sim.mcu.*;
 import avrora.sim.output.SimPrinter;
 import avrora.sim.state.*;
+import avrora.sim.util.SimUtil;
+import cck.text.StringUtil;
 import cck.util.Arithmetic;
 import cck.util.Util;
-import cck.text.StringUtil;
 
 /**
  * The <code>CC2420Radio</code> implements a simulation of the CC2420 radio
@@ -124,14 +124,6 @@ public class CC2420Radio implements Radio {
     protected Transmitter transmitter;
     protected Receiver receiver;
 
-    //-- state for managing configuration information
-    protected int configCommand;
-    protected int configByteCnt;
-    protected int configRegAddr;
-    protected byte configByteHigh;
-    protected int configRAMAddr;
-    protected int configRAMBank;
-
     //-- Strobes and status ----------------------------------------------
     // note that there is no actual "status register" on the CC2420.
     // The register here is used in the simulation implementation to
@@ -147,6 +139,10 @@ public class CC2420Radio implements Radio {
     protected final BooleanView txActive = RegisterUtil.booleanView(statusRegister, 3);
     protected final BooleanView signalLock = RegisterUtil.booleanView(statusRegister, 2);
     protected final BooleanView rssiValid = RegisterUtil.booleanView(statusRegister, 1);
+
+    protected final RegisterView MDMCTRL0_reg = new RegisterUtil.CharArrayView(registers, MDMCTRL0);
+
+    protected final BooleanView autoCRC = RegisterUtil.booleanView(MDMCTRL0_reg, 5);
 
     protected final BooleanView CCA_assessor = new ClearChannelAssessor();
     protected BooleanView SFD_value = new BooleanRegister();
@@ -169,10 +165,10 @@ public class CC2420Radio implements Radio {
     protected final SimPrinter printer;
 
     // the CC2420 allows reversing the polarity of these outputs.
-    protected boolean FIFO_active = true; // selects active high (true) or active low.
-    protected boolean FIFOP_active = true;
-    protected boolean CCA_active = true;
-    protected boolean SFD_active = true;
+    protected boolean FIFO_active; // selects active high (true) or active low.
+    protected boolean FIFOP_active;
+    protected boolean CCA_active;
+    protected boolean SFD_active;
 
     /**
      * The constructor for the CC2420 class creates a new instance connected
@@ -186,15 +182,44 @@ public class CC2420Radio implements Radio {
         this.sim = mcu.getSimulator();
         this.xfreq = xfreq;
 
-        // reset all registers
-        for ( int cntr = 0; cntr < NUM_REGISTERS; cntr++ ) resetRegister(cntr);
-
         // create a private medium for this radio
         // the simulation may replace this later with a new one.
-        medium = createMedium(null, null);
+        setMedium(createMedium(null, null));
 
+        // reset all registers
+        reset();
+        
         // get debugging channel.
         printer = SimUtil.getPrinter(mcu.getSimulator(), "radio.cc2420");
+    }
+
+    private void reset() {
+        for ( int cntr = 0; cntr < NUM_REGISTERS; cntr++ ) {
+            resetRegister(cntr);
+        }
+
+        // clear FIFOs.
+        txFIFO.clear();
+        rxFIFO.clear();
+
+        // reset the status register
+        statusRegister.setValue(0);
+
+        // restore default CCA and SFD values.
+        CCA_pin.level = CCA_assessor;
+        SFD_pin.level = SFD_value;
+
+        FIFO_active = true; // the default is active high for all of these pins
+        FIFOP_active = true;
+        CCA_active = true;
+        SFD_active = true;
+
+        // reset pins.
+        FIFO_pin.level.setValue(!FIFO_active);
+        FIFOP_pin.level.setValue(!FIFOP_active);
+
+        transmitter.endTransmit();
+        receiver.endReceive();
     }
 
     public void setSFDView(BooleanView sfd) {
@@ -232,7 +257,9 @@ public class CC2420Radio implements Radio {
         registers[addr] = (char)val;
         switch (addr) {
             case MAIN:
-                // TODO: main register write
+                if ((val & 0x8000) != 0) {
+                    reset();
+                }
                 break;
             case IOCFG1:
                 int ccaMux = val & 0x1f;
@@ -294,17 +321,17 @@ public class CC2420Radio implements Radio {
                 break;
             case SFLUSHRX:
                 rxFIFO.clear();
+                receiver.resetOverflow();
                 FIFO_pin.level.setValue(!FIFO_active);
                 FIFOP_pin.level.setValue(!FIFOP_active);
                 break;
             case SFLUSHTX:
                 txFIFO.clear();
+                txUnderflow.setValue(false);
                 break;
             case SACK:
-                // TODO: send acknowledging frame
                 break;
             case SACKPEND:
-                // TODO: send acknowledging frame with pending set
                 break;
             case SRXDEC:
                 // start RXFIFO in-line decryption/authentication as set by SPI_SEC_MODE
@@ -366,6 +393,14 @@ public class CC2420Radio implements Radio {
     protected static final int CMD_R_RAM = 6;
     protected static final int CMD_W_RAM = 7;
 
+    //-- state for managing configuration information
+    protected int configCommand;
+    protected int configByteCnt;
+    protected int configRegAddr;
+    protected byte configByteHigh;
+    protected int configRAMAddr;
+    protected int configRAMBank;
+    
     protected byte receiveConfigByte(byte val) {
         configByteCnt++;
         if ( configByteCnt == 1 ) {
@@ -566,11 +601,26 @@ public class CC2420Radio implements Radio {
                     SFD_value.setValue(SFD_active);
                     break;
                 case TX_IN_PACKET:
-                    // TODO: handle TX underlow.
+                    if (txFIFO.empty()) {
+                        // a transmit underflow has occurred. set the flag and stop transmitting.
+                        txUnderflow.setValue(true);
+                        val = 0;
+                        state = TX_END;
+                        break;
+                    }
+                    //  no underflow occurred.
                     val = txFIFO.remove();
-                    crc = crcAccumulate(crc, val);
-                    if (++counter >= length - 2) {
-                        state = TX_CRC_1;
+                    counter++;
+                    if (autoCRC.getValue()) {
+                        // accumulate CRC if enabled.
+                        crc = crcAccumulate(crc, val);
+                        if (counter >= length - 2) {
+                            // switch to CRC state if when 2 bytes remain.
+                            state = TX_CRC_1;
+                        }
+                    } else if (counter >= length) {
+                        // AUTOCRC not enabled, switch to packet end mode when done.
+                        state = TX_END;
                     }
                     break;
                 case TX_CRC_1:
@@ -631,6 +681,7 @@ public class CC2420Radio implements Radio {
     private static final int RECV_CRC_1 = 4;
     private static final int RECV_CRC_2 = 5;
     private static final int RECV_END_STATE = 6;
+    private static final int RECV_OVERFLOW = 7;
 
     public class Receiver extends Medium.Receiver {
         protected int state;
@@ -645,10 +696,14 @@ public class CC2420Radio implements Radio {
         public void nextByte(boolean lock, byte b) {
             if (!lock) {
                 // the transmission lock has been lost
-                if (state == RECV_END_STATE) ; // packet over.
-                if (state == RECV_IN_PACKET) ; // TODO: packet lost in middle.
-                state = RECV_SFD_SCAN;
                 SFD_value.setValue(!SFD_active);
+                if (state == RECV_IN_PACKET) {
+                    // TODO: packet lost in middle.
+                }
+                if (state != RECV_OVERFLOW) {
+                    // if we did not encounter overflow, return to the scan state.
+                    state = RECV_SFD_SCAN;
+                }
                 return;
             }
             if (printer.enabled) {
@@ -682,18 +737,31 @@ public class CC2420Radio implements Radio {
                     break;
                 case RECV_IN_PACKET:
                     // we are in the body of the packet.
-                    // TODO: handle RX overflow.
-                    crc = crcAccumulate(crc, b);
+                    counter++;
                     rxFIFO.add(b);
+                    if (rxFIFO.overFlow()) {
+                        // an RX overflow has occurred.
+                        FIFO_pin.level.setValue(!FIFO_active);
+                        signalFIFOP();
+                        state = RECV_OVERFLOW;
+                        break;
+                    }
+                    // no overflow occurred.
                     FIFO_pin.level.setValue(FIFO_active);
                     if (rxFIFO.size() >= getFIFOThreshold()) {
                         signalFIFOP();
                     }
-                    counter++;
-                    if (counter == length - 2) {
-                        // transition to receiving the CRC.
-                        state = RECV_CRC_1;
+                    if (autoCRC.getValue()) {
+                        crc = crcAccumulate(crc, b);
+                        if (counter == length - 2) {
+                            // transition to receiving the CRC.
+                            state = RECV_CRC_1;
+                        }
+                    } else if (counter == length) {
+                        // no AUTOCRC, but reached end of packet.
+                        state = RECV_END_STATE;
                     }
+
                     break;
                 case RECV_CRC_1:
                     crcLow = b;
@@ -721,6 +789,9 @@ public class CC2420Radio implements Radio {
                         rxFIFO.clear();
                     }
                     break;
+                case RECV_OVERFLOW:
+                    // do nothing. we have encountered an overflow.
+                    break;
             }
         }
 
@@ -745,6 +816,10 @@ public class CC2420Radio implements Radio {
 
         void shutdown() {
             endReceive();
+        }
+
+        void resetOverflow() {
+            state = RECV_SFD_SCAN;
         }
     }
 
@@ -796,40 +871,40 @@ public class CC2420Radio implements Radio {
 
     public static String regName(int reg) {
         switch (reg) {
-        case MAIN    : return "MAIN    ";
-        case MDMCTRL0: return "MDMCTRL0";
-        case MDMCTRL1: return "MDMCTRL1";
-        case RSSI    : return "RSSI    ";
-        case SYNCWORD: return "SYNCWORD";
-        case TXCTRL  : return "TXCTRL  ";
-        case RXCTRL0 : return "RXCTRL0 ";
-        case RXCTRL1 : return "RXCTRL1 ";
-        case FSCTRL  : return "FSCTRL  ";
-        case SECCTRL0: return "SECCTRL0";
-        case SECCTRL1: return "SECCTRL1";
-        case BATTMON : return "BATTMON ";
-        case IOCFG0  : return "IOCFG0  ";
-        case IOCFG1  : return "IOCFG1  ";
-        case MANFIDL : return "MANFIDL ";
-        case MANFIDH : return "MANFIDH ";
-        case FSMTC   : return "FSMTC   ";
-        case MANAND  : return "MANAND  ";
-        case MANOR   : return "MANOR   ";
-        case AGCCTRL0: return "AGCCTRL0";
-        case AGCTST0 : return "AGCTST0 ";
-        case AGCTST1 : return "AGCTST1 ";
-        case AGCTST2 : return "AGCTST2 ";
-        case FSTST0  : return "FSTST0  ";
-        case FSTST1  : return "FSTST1  ";
-        case FSTST2  : return "FSTST2  ";
-        case FSTST3  : return "FSTST3  ";
-        case RXBPFTST: return "RXBPFTST";
-        case FSMSTATE: return "FSMSTATE";
-        case ADCTST  : return "ADCTST  ";
-        case DACTST  : return "DACTST  ";
-        case TOPTST  : return "TOPTST  ";
-        case TXFIFO  : return "TXFIFO  ";
-        case RXFIFO  : return "RXFIFO  ";
+            case MAIN    : return "MAIN    ";
+            case MDMCTRL0: return "MDMCTRL0";
+            case MDMCTRL1: return "MDMCTRL1";
+            case RSSI    : return "RSSI    ";
+            case SYNCWORD: return "SYNCWORD";
+            case TXCTRL  : return "TXCTRL  ";
+            case RXCTRL0 : return "RXCTRL0 ";
+            case RXCTRL1 : return "RXCTRL1 ";
+            case FSCTRL  : return "FSCTRL  ";
+            case SECCTRL0: return "SECCTRL0";
+            case SECCTRL1: return "SECCTRL1";
+            case BATTMON : return "BATTMON ";
+            case IOCFG0  : return "IOCFG0  ";
+            case IOCFG1  : return "IOCFG1  ";
+            case MANFIDL : return "MANFIDL ";
+            case MANFIDH : return "MANFIDH ";
+            case FSMTC   : return "FSMTC   ";
+            case MANAND  : return "MANAND  ";
+            case MANOR   : return "MANOR   ";
+            case AGCCTRL0: return "AGCCTRL0";
+            case AGCTST0 : return "AGCTST0 ";
+            case AGCTST1 : return "AGCTST1 ";
+            case AGCTST2 : return "AGCTST2 ";
+            case FSTST0  : return "FSTST0  ";
+            case FSTST1  : return "FSTST1  ";
+            case FSTST2  : return "FSTST2  ";
+            case FSTST3  : return "FSTST3  ";
+            case RXBPFTST: return "RXBPFTST";
+            case FSMSTATE: return "FSMSTATE";
+            case ADCTST  : return "ADCTST  ";
+            case DACTST  : return "DACTST  ";
+            case TOPTST  : return "TOPTST  ";
+            case TXFIFO  : return "TXFIFO  ";
+            case RXFIFO  : return "RXFIFO  ";
             default: return StringUtil.to0xHex(reg,2) + "    ";
         }
     }
