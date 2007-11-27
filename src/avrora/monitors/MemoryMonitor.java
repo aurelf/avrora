@@ -97,7 +97,7 @@ public class MemoryMonitor extends MonitorFactory {
                 Iterator i = loc.iterator();
                 while ( i.hasNext() ) {
                     SourceMapping.Location location = (SourceMapping.Location)i.next();
-                    simulator.insertWatch(memprofile, location.vma_addr);
+                    simulator.insertWatch(memprofile, location.vma_addr - 0x800000);
                 }
             } else {
                 // instrument the entire memory
