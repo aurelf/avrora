@@ -304,7 +304,7 @@ public class TestEngine {
             Terminal.nextln();
         } else if (VERBOSE == 2) {
             if ( tc.result.isSuccess() ) {
-                Terminal.printGreen("t");
+                Terminal.printGreen("o");
             } else {
                 Terminal.printRed("X");
             }

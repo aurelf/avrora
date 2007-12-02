@@ -157,20 +157,7 @@ public class StringUtil {
     }
 
     public static int readDecimalValue(CharacterIterator i, int max_chars) {
-        StringBuffer buf = new StringBuffer();
-
-        if (peekAndEat(i, '-')) buf.append('-');
-
-        for (int cntr = 0; cntr < max_chars; cntr++) {
-            char c = i.current();
-
-            if (!Character.isDigit(c)) break;
-
-            buf.append(c);
-            i.next();
-        }
-
-        return Integer.parseInt(buf.toString());
+        return Integer.parseInt(readDecimalString(i, max_chars));
     }
 
     public static String readDecimalString(CharacterIterator i, int max_chars) {
