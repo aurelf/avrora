@@ -206,9 +206,6 @@ public class TestEngine {
     private void runTest(int num) {
         try {
             TestCase tc = runTest(testNames[num]);
-            synchronized(this) {
-                results[tc.result.code].add(tc);
-            }
         } catch (IOException e) {
             throw Util.unexpected(e);
         }
@@ -223,6 +220,7 @@ public class TestEngine {
 
     private void finishTest(TestCase tc) {
         synchronized(this) {
+            results[tc.result.code].add(tc);
             finishedTests++;
             reportVerbose(tc);
             if ( finishedTests >= numTests ) {
