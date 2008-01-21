@@ -32,6 +32,7 @@
 
 package avrora.monitors;
 
+import avrora.arch.avr.AVRProperties;
 import avrora.arch.legacy.LegacyRegister;
 import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
@@ -416,10 +417,22 @@ public class GDBServer extends MonitorFactory {
                     buf.append(StringUtil.toLowHex(value & 0xff, 2));
                 }
             } else {
+
                 // reading from program memory
+				byte value;
+				int progend=simulator.getProgram().program_end;
+				int flashend=((AVRProperties)simulator.getMicrocontroller().getProperties()).flash_size;
+				//Terminal.println("program_end="+StringUtil.toLowHex(progend,2));
+				//Terminal.println("flashend="+StringUtil.toLowHex(flashend,2));
+				
                 for ( int cntr = 0; cntr < length; cntr++ ) {
-                    byte value = s.getProgramByte(addr+cntr);
-                    buf.append(StringUtil.toLowHex(value & 0xff, 2));
+					if((addr+cntr)>= progend && 
+					   (addr+cntr)<flashend)
+						value = 0x00;
+					else
+						value = s.getProgramByte(addr+cntr);
+
+					buf.append(StringUtil.toLowHex(value & 0xff, 2));
                 }
             }
 
