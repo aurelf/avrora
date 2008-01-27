@@ -90,6 +90,7 @@ public class GDBServer extends MonitorFactory {
         BreakpointProbe BREAKPROBE = new BreakpointProbe();
         StepProbe STEPPROBE = new StepProbe();
         SimPrinter printer;
+        boolean isStepping;
 
 
         GDBMonitor(Simulator s, int p) {
@@ -103,6 +104,10 @@ public class GDBServer extends MonitorFactory {
             }
             // insert the startup probe at the beginning of the program
             simulator.insertProbe(new StartupProbe(), 0);
+
+            // insert the stepping probe 
+            isStepping=false;
+            simulator.insertProbe(STEPPROBE);
 
             // install the ExceptionWatch
             simulator.insertErrorWatch(new ExceptionWatch("sram"));
@@ -195,6 +200,7 @@ public class GDBServer extends MonitorFactory {
                     return false;
                 case 'i':
                     // STEP CYCLE
+                    isStepping=true;
                     break;
                 case 'k':
                     // KILL
@@ -223,10 +229,7 @@ public class GDBServer extends MonitorFactory {
                     break;
                 case 's':
                     // STEP INSTRUCTION
-                    int pc = simulator.getState().getPC();
-                    if ( printer.enabled )
-                        printer.println("--INSERTING STEP PROBE @ "+StringUtil.addrToString(pc)+"--");
-                    simulator.insertProbe(STEPPROBE, pc);
+                    isStepping=true;
                     sendPlus();
                     return true;
                 case 'z':
@@ -555,6 +558,8 @@ public class GDBServer extends MonitorFactory {
             public void fireBefore(State s, int pc) {
                 if ( printer.enabled )
                     printer.println("--IN BREAKPOINT PROBE @ "+StringUtil.addrToString(pc)+"--");
+                // if we already hit a breakpoint then we dont need to hit the step probe too
+                isStepping=false;
                 commandLoop("T05");
             }
         }
@@ -568,13 +573,15 @@ public class GDBServer extends MonitorFactory {
             public void fireBefore(State s, int pc) {
                 if ( printer.enabled )
                     printer.println("--IN STEP PROBE @ "+StringUtil.addrToString(pc)+"--");
+                if(isStepping){
+                    isStepping=false;
+                    commandLoop("T05");
+                }
             }
-
+            
             public void fireAfter(State s, int pc) {
                 if ( printer.enabled )
-                    printer.println("--AFTER STEP PROBE @ "+StringUtil.addrToString(pc)+"--");
-                commandLoop("T05");
-                simulator.removeProbe(this, pc);
+                    printer.println("--AFTER STEP PROBE @ "+StringUtil.addrToString(pc)+"--");               
             }
         }
 

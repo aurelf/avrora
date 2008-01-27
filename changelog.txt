@@ -16,6 +16,7 @@
     1    radio  Nondeterminism in Medium receives: RippleSynchronizer
 
 ----------------------------------- Completed -----------------------------------------
+    1      gdb  Added patch from Aurelien Francillon for stepping             1.7.103
     2    radio  Detect receives of radio bytes and notify radio probes        1.7.100
     1     devs  SPI master transfer bug (should not transmit until SPDR set)  1.7.098
     1     arch  Architecture registry map not synchronized                    1.7.091
