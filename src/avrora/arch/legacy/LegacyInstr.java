@@ -34,6 +34,7 @@ package avrora.arch.legacy;
 
 import avrora.arch.AbstractArchitecture;
 import avrora.arch.AbstractInstr;
+import cck.text.StringUtil;
 
 
 /**
@@ -663,6 +664,75 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         abstract LegacyInstr allocate(int pc, int imm1);
     }
 
+    public abstract static class  REL_ADDR_WORD_class extends LegacyInstr{
+              public final int imm1;
+
+        REL_ADDR_WORD_class(LegacyInstrProperties p, int i1) {
+            super(p);
+            imm1 = i1;
+        }
+
+       	public String getOperands() {
+	    String operand="";
+	    if (imm1>0)
+		operand="+";
+	    return operand + imm1*2;
+        }
+
+        public LegacyInstr build(int pc, LegacyOperand[] ops) {
+            need(1, ops);
+            return allocate(pc, WORD(ops[0]));
+        }
+
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof WORD_class) ) return false;
+            WORD_class i = (WORD_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.imm1 != this.imm1 ) return false;
+            return true;
+        }
+
+        abstract LegacyInstr allocate(int pc, int imm1);
+
+    }
+
+    public abstract static class ABS_ADDR_WORD_class extends LegacyInstr  {
+           public final int imm1;
+
+        ABS_ADDR_WORD_class(LegacyInstrProperties p, int i1) {
+            super(p);
+            imm1 = i1;
+        }
+
+       	public String getOperands() {
+	    return "" + "0x"+StringUtil.toLowHex(imm1*2,4);	    
+        }
+
+        public LegacyInstr build(int pc, LegacyOperand[] ops) {
+            need(1, ops);
+            return allocate(pc, WORD(ops[0]));
+        }
+
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof WORD_class) ) return false;
+            WORD_class i = (WORD_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.imm1 != this.imm1 ) return false;
+            return true;
+        }
+
+        abstract LegacyInstr allocate(int pc, int imm1);
+	
+    }
+
 
     public abstract static class REGREGIMM_class extends LegacyInstr {
         public final LegacyRegister r1;
@@ -967,7 +1037,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRCC extends WORD_class { // branch if carry flag is clear
+    public static class BRCC extends REL_ADDR_WORD_class { // branch if carry flag is clear
         static final LegacyInstrProperties props = new LegacyInstrProperties("brcc", "brcc", 2, 1);
         static final LegacyInstrProto prototype = new BRCC(0, SREL_default);
 
@@ -984,7 +1054,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRCS extends WORD_class { // branch if carry flag is set
+    public static class BRCS extends REL_ADDR_WORD_class { // branch if carry flag is set
         static final LegacyInstrProperties props = new LegacyInstrProperties("brcs", "brcs", 2, 1);
         static final LegacyInstrProto prototype = new BRCS(0, SREL_default);
 
@@ -1018,7 +1088,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BREQ extends WORD_class { // branch if equal
+    public static class BREQ extends REL_ADDR_WORD_class { // branch if equal
         static final LegacyInstrProperties props = new LegacyInstrProperties("breq", "breq", 2, 1);
         static final LegacyInstrProto prototype = new BREQ(0, SREL_default);
 
@@ -1035,7 +1105,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRGE extends WORD_class { // branch if greater or equal (signed)
+    public static class BRGE extends REL_ADDR_WORD_class { // branch if greater or equal (signed)
         static final LegacyInstrProperties props = new LegacyInstrProperties("brge", "brge", 2, 1);
         static final LegacyInstrProto prototype = new BRGE(0, SREL_default);
 
@@ -1052,7 +1122,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRHC extends WORD_class { // branch if H flag is clear
+    public static class BRHC extends REL_ADDR_WORD_class { // branch if H flag is clear
         static final LegacyInstrProperties props = new LegacyInstrProperties("brhc", "brhc", 2, 1);
         static final LegacyInstrProto prototype = new BRHC(0, SREL_default);
 
@@ -1069,7 +1139,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRHS extends WORD_class { // branch if H flag is set
+    public static class BRHS extends REL_ADDR_WORD_class { // branch if H flag is set
         static final LegacyInstrProperties props = new LegacyInstrProperties("brhs", "brhs", 2, 1);
         static final LegacyInstrProto prototype = new BRHS(0, SREL_default);
 
@@ -1086,7 +1156,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRID extends WORD_class { // branch if interrupts are disabled
+    public static class BRID extends REL_ADDR_WORD_class { // branch if interrupts are disabled
         static final LegacyInstrProperties props = new LegacyInstrProperties("brid", "brid", 2, 1);
         static final LegacyInstrProto prototype = new BRID(0, SREL_default);
 
@@ -1103,7 +1173,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRIE extends WORD_class { // branch if interrupts are enabled
+    public static class BRIE extends REL_ADDR_WORD_class { // branch if interrupts are enabled
         static final LegacyInstrProperties props = new LegacyInstrProperties("brie", "brie", 2, 1);
         static final LegacyInstrProto prototype = new BRIE(0, SREL_default);
 
@@ -1120,7 +1190,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRLO extends WORD_class { // branch if lower
+    public static class BRLO extends REL_ADDR_WORD_class { // branch if lower
         static final LegacyInstrProperties props = new LegacyInstrProperties("brlo", "brlo", 2, 1);
         static final LegacyInstrProto prototype = new BRLO(0, SREL_default);
 
@@ -1137,7 +1207,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRLT extends WORD_class { // branch if less than zero (signed)
+    public static class BRLT extends REL_ADDR_WORD_class { // branch if less than zero (signed)
         static final LegacyInstrProperties props = new LegacyInstrProperties("brlt", "brlt", 2, 1);
         static final LegacyInstrProto prototype = new BRLT(0, SREL_default);
 
@@ -1154,7 +1224,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRMI extends WORD_class { // branch if minus
+    public static class BRMI extends REL_ADDR_WORD_class { // branch if minus
         static final LegacyInstrProperties props = new LegacyInstrProperties("brmi", "brmi", 2, 1);
         static final LegacyInstrProto prototype = new BRMI(0, SREL_default);
 
@@ -1171,7 +1241,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRNE extends WORD_class { // branch if not equal
+    public static class BRNE extends REL_ADDR_WORD_class { // branch if not equal
         static final LegacyInstrProperties props = new LegacyInstrProperties("brne", "brne", 2, 1);
         static final LegacyInstrProto prototype = new BRNE(0, SREL_default);
 
@@ -1188,7 +1258,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRPL extends WORD_class { // branch if positive
+    public static class BRPL extends REL_ADDR_WORD_class { // branch if positive
         static final LegacyInstrProperties props = new LegacyInstrProperties("brpl", "brpl", 2, 1);
         static final LegacyInstrProto prototype = new BRPL(0, SREL_default);
 
@@ -1205,7 +1275,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRSH extends WORD_class { // branch if same or higher
+    public static class BRSH extends REL_ADDR_WORD_class { // branch if same or higher
         static final LegacyInstrProperties props = new LegacyInstrProperties("brsh", "brsh", 2, 1);
         static final LegacyInstrProto prototype = new BRSH(0, SREL_default);
 
@@ -1222,7 +1292,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRTC extends WORD_class { // branch if T flag is clear
+    public static class BRTC extends REL_ADDR_WORD_class { // branch if T flag is clear
         static final LegacyInstrProperties props = new LegacyInstrProperties("brtc", "brtc", 2, 1);
         static final LegacyInstrProto prototype = new BRTC(0, SREL_default);
 
@@ -1239,7 +1309,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRTS extends WORD_class { // branch if T flag is set
+    public static class BRTS extends REL_ADDR_WORD_class { // branch if T flag is set
         static final LegacyInstrProperties props = new LegacyInstrProperties("brts", "brts", 2, 1);
         static final LegacyInstrProto prototype = new BRTS(0, SREL_default);
 
@@ -1256,7 +1326,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRVC extends WORD_class { // branch if V flag is clear
+    public static class BRVC extends REL_ADDR_WORD_class { // branch if V flag is clear
         static final LegacyInstrProperties props = new LegacyInstrProperties("brvc", "brvc", 2, 1);
         static final LegacyInstrProto prototype = new BRVC(0, SREL_default);
 
@@ -1273,7 +1343,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class BRVS extends WORD_class { // branch if V flag is set
+    public static class BRVS extends REL_ADDR_WORD_class { // branch if V flag is set
         static final LegacyInstrProperties props = new LegacyInstrProperties("brvs", "brvs", 2, 1);
         static final LegacyInstrProto prototype = new BRVS(0, SREL_default);
 
@@ -1324,7 +1394,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class CALL extends WORD_class { // call absolute address
+    public static class CALL extends ABS_ADDR_WORD_class { // call absolute address
         static final LegacyInstrProperties props = new LegacyInstrProperties("call", "call", 4, 4);
         static final LegacyInstrProto prototype = new CALL(0, PADDR_default);
 
@@ -1851,7 +1921,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class JMP extends WORD_class { // absolute jump
+    public static class JMP extends ABS_ADDR_WORD_class { // absolute jump
         static final LegacyInstrProperties props = new LegacyInstrProperties("jmp", "jmp", 4, 3);
         static final LegacyInstrProto prototype = new JMP(0, PADDR_default);
 
@@ -2259,7 +2329,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class RCALL extends WORD_class { // relative call
+    public static class RCALL extends REL_ADDR_WORD_class { // relative call
         static final LegacyInstrProperties props = new LegacyInstrProperties("rcall", "rcall", 2, 3);
         static final LegacyInstrProto prototype = new RCALL(0, LREL_default);
 
@@ -2310,7 +2380,7 @@ public abstract class LegacyInstr implements LegacyInstrProto, AbstractInstr {
         }
     }
 
-    public static class RJMP extends WORD_class { // relative jump
+    public static class RJMP extends REL_ADDR_WORD_class { // relative jump
         static final LegacyInstrProperties props = new LegacyInstrProperties("rjmp", "rjmp", 2, 2);
         static final LegacyInstrProto prototype = new RJMP(0, LREL_default);
 
