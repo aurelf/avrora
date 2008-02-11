@@ -11,10 +11,9 @@ import cck.text.Terminal;
 import java.util.Collections;
 import java.util.Set;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.TreeMap;   
 import java.util.Iterator;
 
-import com.ibm.xslt4j.bcel.classfile.Code;
 
 /**
  * The <code>GadgetsSet</code>  used to manage gadgest of code ...
