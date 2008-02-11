@@ -60,10 +60,16 @@ public class ELFParser extends ProgramReader {
     ELFStringTable shstrtab;
     AbstractArchitecture arch;
 
-    protected final Option.Bool SYMBOLS = newOption("load-symbols", true, "This option causes the ELF loader to load the symbol table (if it exists) from " + "the ELF file. The symbol table contains information about the names and sizes of " + "data items and functions within the executable. Enabling this option allows for " + "more source-level information during simulation, but disabling it speeds up loading " + "of ELF files.");
+    protected final Option.Bool SYMBOLS = newOption("load-symbols", true, 
+            "This option causes the ELF loader to load the symbol table (if it exists) from " + 
+            "the ELF file. The symbol table contains information about the names and sizes of " + 
+            "data items and functions within the executable. Enabling this option allows for " 
+            + "more source-level information during simulation, but disabling it speeds up loading " 
+            + "of ELF files.");
 
     public ELFParser() {
-        super("The \"elf\" format loader reads a program from an ELF (Executable and Linkable " + "Format) as a binary and disassembles the sections corresponding to executable code.");
+        super("The \"elf\" format loader reads a program from an ELF (Executable and Linkable " 
+                + "Format) as a binary and disassembles the sections corresponding to executable code.");
     }
 
     public Program read(String[] args) throws Exception {
