@@ -32,11 +32,14 @@
 
 package avrora.actions;
 
+import avrora.Defaults;
 import avrora.Main;
 import avrora.arch.*;
 import avrora.arch.legacy.*;
 import avrora.actions.Gadget;
 import avrora.actions.GadgetsSet;
+import avrora.core.Program;
+import avrora.core.ProgramReader;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 import cck.util.Option;
@@ -84,17 +87,19 @@ public class FindGadgetsAction extends Action {
     public void run(String[] args) throws Exception {
         byte[] buf = new byte[128];
 
-        AbstractArchitecture arch = ArchitectureRegistry.getArchitecture(ARCH.get());
-        da = arch.getDisassembler();
+        //AbstractArchitecture arch = ArchitectureRegistry.getArchitecture(ARCH.get());
+        //da = arch.getDisassembler();
         if ( !FILE.isBlank() ) {
-                       // load and lookup a file for gadgets
+            // load and lookup a file for gadgets
+            System.out.println("searching for gadgets in file "+ FILE.get());
             findGadgets();
-            //gadgets.print();
+            gadgets.print();
+            System.out.println("using file "+ FILE.get());
             // Gadgets with pop
             GadgetsSet popgadgets = gadgetsWithPop(gadgets);
             Terminal.println("there are "+ popgadgets.size() + " gadgets with pop instr" );
-            //popgadgets.print();
-            
+            popgadgets.print();
+            System.out.println("using file "+ FILE.get());
             
             // Well memcpy needs registers r22, r23, r24,r25 to be set wiuth addresses 
             // or r26, r27, r30,r31 to be set wiuth addresses 
@@ -109,6 +114,7 @@ public class FindGadgetsAction extends Action {
 //           popgadgets=findGadgetsPopR(25,popgadgets);
 //           popgadgets=findGadgetsPopR(30,popgadgets); 
 //           popgadgets=findGadgetsPopR(31,popgadgets);
+            
             
 //            Terminal.println("there are "+ popgadgets.size() + " gadgets with pop r22,r23,r24,r25 instr" );
 
@@ -141,7 +147,7 @@ public class FindGadgetsAction extends Action {
             movwGadgets=gadgetsWithInstr(gadgets,LegacyInstr.MOVW.class,null);
             movwGadgets.print();
 */
-            CreateShellCodeInjectByteToMemory();
+//            CreateShellCodeInjectByteToMemory();
             
 
         } else {
@@ -165,6 +171,8 @@ public class FindGadgetsAction extends Action {
         
         // step 1 find shortests ld gadgets 
         GadgetsSet stGadgets=gadgetsWithInstr(gadgets,LegacyInstr.ST.class, null);
+        System.out.println("found gadgets ");
+        stGadgets.print();
         Gadget smallSt=smallestGadget(stGadgets);
         System.out.println("smallest ST gadget");
         smallSt.print();
@@ -276,42 +284,45 @@ public class FindGadgetsAction extends Action {
         }
     }
 
-    private void findGadgets() throws IOException {
+    private void findGadgets() {
         String fname = FILE.get();
-        Main.checkFileExists(fname);
-        FileInputStream fis = new FileInputStream(fname);
-        byte[] buf = new byte[fis.available()];
-        fis.read(buf);
-
-        // last ret we met ....
+        String args[]= new String[1];
+        args[0]=fname;      
+        ProgramReader reader=new Defaults.AutoProgramReader();
+        Program program;
+        try {
+            program = reader.read(args);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            System.out.println("failed to read program " + FILE.get());
+            e.printStackTrace();
+            return;
+        }
         int lastret=0;
-
-        for ( int cntr = 0; cntr < buf.length; ) {
+        // starting direct from flash_data as we don't care it a section is marked as 
+        // executable or not ... we just can execute them is we find interesting 
+        // gadgets in there ...    
+        for ( int cntr = program.program_start; cntr < program.program_end; ) {
             try{
-                AbstractInstr instr = da.disassemble(0, cntr, buf);                  
+                AbstractInstr instr = program.disassembleInstr(cntr);                
             
                 cntr=cntr+2;
                 if(instr instanceof LegacyInstr.RET || instr instanceof LegacyInstr.RETI){
                     int from=cntr-60;
                     if(lastret>from)
                         from=lastret;
-
-                    Gadget newGadget=createGadget(buf, from, cntr);
+                     System.out.println("asking for gadget from "+from+ " to " + cntr);
+                    Gadget newGadget=createGadget(program, from, cntr);
                     gadgets.addGadget(newGadget);
-                }   
-            } 
-            catch(Exception i){
-                 //    i.printStackTrace();
+                    lastret=cntr;
+                }
             }
-            lastret=cntr;
+            catch(Exception i){
+               i.printStackTrace();
+            }
         }
     }
 
-
-
-    //    private void findRegLoadGadget(,,AbstractDisassembler da) throws IOException {
-
-    //     }
 
     private Gadget createGadget(byte[] buf,int from , int to) throws IOException {
         Gadget currGadget=new Gadget(to);
@@ -319,6 +330,24 @@ public class FindGadgetsAction extends Action {
 
         for ( int addr = from; addr < buf.length && addr < to  ; ) {
             AbstractInstr instr=da.disassemble(0, addr, buf);
+
+            if ( instr != null )
+                len = instr.getSize();
+            else
+                len=2;
+
+            currGadget.addInstr(new Integer(addr), instr);
+            addr+=len;
+        }
+        return currGadget;
+    }
+
+    private Gadget createGadget(Program p,int from , int to) throws IOException {
+        Gadget currGadget=new Gadget(to);
+        int len = 2;
+
+        for ( int addr = from; addr < p.program_end && addr < to  ; ) {
+            AbstractInstr instr=p.disassembleInstr(addr);
 
             if ( instr != null )
                 len = instr.getSize();
