@@ -32,53 +32,173 @@
 
 package avrora.actions;
 
-import avrora.actions.Gadget;
-
-import java.util.Comparator;
-import java.util.Set;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import avrora.actions.FindGadgetsAction.Feature;
+import avrora.arch.legacy.LegacyInstr;
 import cck.text.Terminal;
 
 /**
- * The <code>GadgetsSet</code>  used to manage gadgest of code ...
- * // TODO 
+ * The <code>GadgetsSet</code> used to manage gadgest of code ... // TODO
+ * 
  * @author A. Francillon
  */
 
-
-public class GadgetsSet{
-    TreeSet gadgets; 
-    Map.Entry entry;
-    Gadget currGadget;   
+public class GadgetsSet implements Cloneable {
+    TreeSet<Gadget> gadgets;
+    //private int gadgetsAdded =0;
+    
+    
     public GadgetsSet() {
-        gadgets=new TreeSet();
+        gadgets = new TreeSet<Gadget>();
     }
-    
+
+    public Object clone() {
+        GadgetsSet o = null;
+        o = new GadgetsSet();
+        o.gadgets.addAll(this.gadgets);
+        return (Object) o;
+    }
+
+    public Gadget smallest() {
+        // assuming proper ordering of the tree set
+        return (Gadget) this.gadgets.first();
+    }
+
+    public Gadget smallestStackSize() {
+        // assuming proper ordering of the tree set
+        // return (Gadget)this.gadgets.first();
+        TreeSet<Gadget> stacksizesorted = new TreeSet<Gadget>(
+                new StackSizeComparator());
+        stacksizesorted.addAll(gadgets);
+        return stacksizesorted.first();
+    }
+
     public void addGadget(Gadget elem) {
-        gadgets.add(elem) ;
+ 
+        //gadgetsAdded ++;
+        gadgets.add(elem);
+    }
+
+    public void retainAll(GadgetsSet set) {
+        gadgets.retainAll(set.gadgets);
+    }
+
+    public GadgetsSet intersection(GadgetsSet other) {
+        GadgetsSet Set = new GadgetsSet();
+        Iterator i = this.iterator();
+        while (i.hasNext()) {
+            Gadget ig = (Gadget) i.next();
+            Iterator o = other.iterator();
+            while (o.hasNext()) {
+                Gadget og = (Gadget) o.next();
+                if (ig.addr == og.addr) {
+                    Set.addGadget(ig);
+                    break;
+                }
+            }
+
+        }
+        return Set;
+    }
+
+    public GadgetsSet filterGadgets(ArrayList<Feature> features ){
+
+        GadgetsSet gadgetsSet=new GadgetsSet();
+        Iterator<Gadget> gadIterator =gadgets.iterator();
+        while (gadIterator.hasNext()) {
+            Gadget element = (Gadget) gadIterator.next();
+            gadgetsSet.addGadget(element);           
+        }
+//        /gadgetsSet.print();
+        Iterator<Feature> i=features.iterator();        
+        while(i.hasNext()){
+            Feature f=i.next();            
+            //Terminal.println("filtering gadgets for instr="
+            //            +f.instruction.getName()+" reg="+f.register1);
+            //gadgetsSet.print(); 
+            //Terminal.println("===============================");
+            
+            gadgetsSet=gadgetsWithInstrFullLength(gadgetsSet,f.instruction,f.register1);
+        }
+//        Terminal.println("===========returned stripped gadget set ============");
+//        gadgetsSet.print();
+        // auto strinpping gadgets
+        return gadgetSetStrip(gadgetsSet, features);
+        //return gadgetsSet;
+    }    
+
+    public GadgetsSet excludeGadgetsWithCall(){
+        GadgetsSet gadgetsSet=new GadgetsSet();
+        Iterator<Gadget> gadIterator =gadgets.iterator();
+        while (gadIterator.hasNext()) {
+            Gadget element = (Gadget) gadIterator.next();
+            if(element==null){
+//                Terminal.printRed("set is null");
+                return gadgetsSet;
+            }
+           if(element.hasInstr(LegacyInstr.CALL.class, null)==null)
+                gadgetsSet.addGadget(element);
+        }
+        return gadgetsSet;
     }
     
-    public Iterator iterator() {
-        return gadgets.iterator();        
+    public GadgetsSet gadgetsWithInstrFullLength(GadgetsSet gadgets,Class instr,Integer register){
+        GadgetsSet result= new GadgetsSet();
+        Iterator<Gadget> i= gadgets.iterator();        
+        while(i.hasNext()){
+            Gadget g=gadgets.nextGadget(i);
+            if(g.hasInstr(instr,register)!=null){
+                //Terminal.println("Fitering Keeping gadget :");
+                //g.print();
+                result.addGadget(g);               
+            }else{
+                //Terminal.println("Fitering Dropping gadget :");
+                //g.print();
+            }
+                
+        }
+        return result; 
     }
-    public Gadget nextGadget(Iterator i) {
-        return (Gadget)i.next();        
+    public GadgetsSet gadgetSetStrip(GadgetsSet gadgets,ArrayList<Feature> features){
+        
+        Iterator<Gadget> ig=gadgets.iterator();
+        GadgetsSet cleanGadgetSet=new GadgetsSet();
+        while(ig.hasNext()){
+            Gadget aGadget=gadgets.nextGadget(ig);
+            cleanGadgetSet.addGadget(aGadget.gadgetStrip(features));
+        }   
+        return cleanGadgetSet; 
     }
+
     
+    public Iterator<Gadget> iterator() {
+        return gadgets.iterator();
+    }
+
+    public Gadget nextGadget(Iterator<Gadget> i) {
+        return i.next();
+    }
+
+    /**
+     * returns the number of gadgets in the set 
+     * @return the number of gadgets 
+     */
     public Integer size() {
         return gadgets.size();
     }
+
     public void print() {
-    	Iterator i=gadgets.iterator();
-        
-	    while(i.hasNext()){
-	    	Gadget g=this.nextGadget(i);
-	       g.print();
+        Iterator<Gadget> i = gadgets.iterator();
+        //Terminal.println(gadgetsAdded+"gadgets were added while "+gadgets.size() +"are reported ");
+        while (i.hasNext()) {
+            i.next().print();
         }
     }
-    
+
+    public boolean isEmpty() {
+        return gadgets.isEmpty();
+    }
 }
