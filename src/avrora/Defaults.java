@@ -418,7 +418,7 @@ public class Defaults {
                 reader = new ObjDumpProgramReader();
             else if (".odpp".equals(extension))
                 reader = new ObjDump2ProgramReader();
-            else if (".elf".equals(extension))
+            else if (".elf".equals(extension)|| ".exe".equals(extension))
                 reader = new ELFParser();
 
             if ( reader == null ) {
