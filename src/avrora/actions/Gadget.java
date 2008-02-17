@@ -1,19 +1,19 @@
 package avrora.actions;
 
-import avrora.actions.FindGadgetsAction.Feature;
-import avrora.arch.*;
-import avrora.arch.legacy.*;
-
-import cck.text.StringUtil;
-import cck.text.Terminal;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Set;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import avrora.actions.Feature;
+import avrora.arch.AbstractInstr;
+import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.legacy.LegacyRegister;
+import cck.text.StringUtil;
+import cck.text.Terminal;
 
 /**
  * The <code>GadgetsSet</code> used to manage gadgest of code ... // TODO
@@ -356,6 +356,7 @@ public class Gadget implements Comparable<Gadget> {
      * 
      * @return entry point address
      */
+    @SuppressWarnings("unchecked")
     public Integer entryPointAddr() {
         Integer entrypoint = addr; // start at first instruction
         Set instructions = entrySet();

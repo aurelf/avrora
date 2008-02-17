@@ -36,9 +36,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import avrora.actions.FindGadgetsAction.Feature;
 import avrora.arch.legacy.LegacyInstr;
-import cck.text.Terminal;
 
 /**
  * The <code>GadgetsSet</code> used to manage gadgest of code ... // TODO
