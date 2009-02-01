@@ -34,6 +34,7 @@ package avrora.arch.legacy;
 
 import avrora.arch.AbstractDisassembler;
 import avrora.arch.AbstractInstr;
+import avrora.arch.legacy.LegacyInstr.InvalidImmediate;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
 
@@ -93,6 +94,8 @@ public class LegacyDisassembler implements AbstractDisassembler {
             this.code = code;
             return decode_root(word1);
         } catch ( InvalidInstruction e ) {
+            return null;
+        } catch ( InvalidImmediate e ) {
             return null;
         }
     }
