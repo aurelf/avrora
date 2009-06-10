@@ -39,6 +39,7 @@ import avrora.core.Program;
 import avrora.sim.mcu.RegisterSet;
 import avrora.sim.util.*;
 import avrora.sim.state.VolatileBehavior;
+import cck.text.Terminal;
 import cck.util.Arithmetic;
 import cck.util.Util;
 
@@ -256,6 +257,8 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
          * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid program memory range
          */
         public byte getProgramByte(int address) {
+            //Terminal.println("reading Program memory byte "+ cck.text.StringUtil.to0xHex(flash.get(address),8)
+            //            +" at address "+cck.text.StringUtil.to0xHex(address,16));
             return flash.get(address);
         }
 

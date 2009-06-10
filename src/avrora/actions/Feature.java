@@ -15,7 +15,15 @@ public class Feature {
     Byte val1 = null;
 
     Byte val2 = null;
-
+    
+    int status=0;
+    int status1=0;
+    int status2=0;
+    static int ADDR_HIGH=1;
+    static int ADDR_LOW=2;
+    static int DATA=3;
+    
+    
     // Feature(Class instruction,boolean match){
     // if (match)
     // this.instruction=instruction;
@@ -32,6 +40,13 @@ public class Feature {
         this.register1 = register;
         this.val1 = val1;
     }
+    
+    Feature(Class instruction, Integer register, byte val1, int kindof) {
+        this.instruction = instruction;
+        this.register1 = register;
+        this.val1 = val1;
+        this.status=kindof;
+    }
 
     Feature(Class instruction, Integer register1, byte val1, Integer register2,
             byte val2) {
@@ -40,6 +55,18 @@ public class Feature {
         this.val1 = val1;
         this.register2 = register2;
         this.val2 = val2;
+
+    }
+    Feature(Class instruction, Integer register1, byte val1, int kindof1, Integer register2,
+            byte val2, int kindof2) {
+        this.instruction = instruction;
+        this.register1 = register1;
+        this.val1 = val1;
+        this.register2 = register2;
+        this.val2 = val2;
+        this.status1=kindof1;
+        this.status2=kindof2;
+         
     }
 
     /**

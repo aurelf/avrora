@@ -94,6 +94,8 @@ public class Status {
 
     private static void print(int color, String s) {
         long time = -1;
+        if(stack.empty())
+               return;
         Item i = (Item) stack.pop();
         if (i != null) {
             time = System.currentTimeMillis() - i.starttime;

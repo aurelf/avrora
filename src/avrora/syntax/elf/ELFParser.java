@@ -37,6 +37,7 @@ import avrora.actions.ELFDumpAction;
 import avrora.arch.*;
 import avrora.core.*;
 import cck.elf.*;
+import cck.text.Printer;
 import cck.text.StringUtil;
 import cck.util.Option;
 import cck.util.Util;
@@ -162,6 +163,10 @@ public class ELFParser extends ProgramReader {
     }
 
     private void disassembleSection(byte[] sect, ELFProgramHeaderTable.Entry32 e, Program p) {
+        System.out.println("disassemble section : "+sect);
+        System.out.println("program start "+StringUtil.to0xHex(p.program_start,4));
+        System.out.println("program end "+StringUtil.to0xHex(p.program_end,4));
+        System.out.println("program len "+StringUtil.to0xHex(p.program_length,4));
         AbstractDisassembler d = arch.getDisassembler();
         for (int off = 0; off < sect.length; off += 2) {
             AbstractInstr i = d.disassemble(e.p_paddr, off, sect);

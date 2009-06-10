@@ -50,11 +50,11 @@ import cck.text.Terminal;
  * @author Ben L. Titzer
  */
 public class IcallMonitor extends MonitorFactory {
-
+    public static String HELP = "the Icall monitor is used to track icalls ";
     public class Mon implements Monitor {
         public final Simulator simulator;
         private final SourceMapping sourceMap;
-
+        
         Mon(Simulator s) {
             simulator = s;
 

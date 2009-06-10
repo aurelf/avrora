@@ -64,9 +64,10 @@ public class ELFProgramHeaderTable {
     public static final int PT_NOTE = 4;
     public static final int PT_SHLIB = 5;
     public static final int PT_PHDR = 6;
+    public static final int PT_PAX_FLAGS = 0x65041580;
     public static final int PT_LOPROC = 0x70000000;
     public static final int PT_HIPROC = 0x7fffffff;
-
+    
     public static final int PF_EXEC = 0x1;
     public static final int PF_WRITE = 0x2;
     public static final int PF_READ = 0x4;

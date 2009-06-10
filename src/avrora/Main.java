@@ -339,7 +339,7 @@ public class Main {
      *                   error, etc
      */
     public static Program loadProgram(String[] args) throws Exception {
-        Status.begin("Loading "+args[0]);
+        //Status.begin("Loading "+args[0]);
         ProgramReader reader = Defaults.getProgramReader(INPUT.get());
         reader.options.process(mainOptions);
         Program program = reader.read(args);

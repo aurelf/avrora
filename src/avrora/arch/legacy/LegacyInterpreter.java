@@ -36,6 +36,9 @@ import avrora.arch.avr.AVRProperties;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.mcu.MCUProperties;
+import avrora.sim.mcu.RegisterSet;
+import cck.text.StringUtil;
+import cck.text.Terminal;
 import cck.util.Arithmetic;
 
 /**
@@ -114,6 +117,7 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
                     fastLoop();
                 else
                     instrumentedLoop();
+
             }
         }
     }
@@ -262,15 +266,63 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
     private void instrumentedLoop() {
         innerLoop = true;
         while (innerLoop) {
-            // get the current instruction
-            int curPC = nextPC; // at this point pc == nextPC
-            LegacyInstr i = shared_instr[nextPC];
+            try {
+//              get the current instruction
+                int curPC = nextPC; // at this point pc == nextPC
+                //Terminal.print("PC= " +StringUtil.to0xHex(simulator.getState().getPC(),2));
+                //Terminal.println("     SP= " +StringUtil.to0xHex(simulator.getState().getSP(),2));
+                LegacyInstr i = shared_instr[nextPC];
+                Terminal.println("PC= " +StringUtil.to0xHex(simulator.getState().getPC(),2));
 
-            // visit the actual instruction (or probe)
-            globalProbe.fireBefore(state, curPC);
-            i.accept(this);
-            commit();
-            globalProbe.fireAfter(state, curPC);
+                // visit the actual instruction (or probe)
+                globalProbe.fireBefore(state, curPC);
+                i.accept(this);
+                commit();
+                globalProbe.fireAfter(state, curPC);
+    
+            } catch (ArrayIndexOutOfBoundsException e){
+                e.printStackTrace();
+                Terminal.println("exception occured simulation stopped, registers dump:");
+                Terminal.println("PC= " +StringUtil.to0xHex(simulator.getState().getPC(),2));
+                Terminal.println("SP= " +StringUtil.to0xHex(simulator.getState().getSP(),2));
+                Terminal.println("R0= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R0),1)) ;
+                Terminal.println("R1= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R1),1)) ;
+                Terminal.println("R2= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R2),1)) ;
+                Terminal.println("R3= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R3),1)) ;
+                Terminal.println("R4= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R4),1)) ;
+                Terminal.println("R5= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R5),1)) ;
+                Terminal.println("R6= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R6),1)) ;
+                Terminal.println("R7= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R7),1)) ;
+                Terminal.println("R8= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R8),1)) ;
+                Terminal.println("R9= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R9),1)) ;
+                Terminal.println("R10= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R10),1)) ;
+                Terminal.println("R11= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R11),1)) ;
+                Terminal.println("R12= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R12),1)) ;
+                Terminal.println("R13= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R13),1)) ;
+                Terminal.println("R14= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R14),1)) ;
+                Terminal.println("R15= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R15),1)) ;
+                Terminal.println("R16= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R16),1)) ;
+                Terminal.println("R17= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R17),1)) ;
+                Terminal.println("R18= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R18),1)) ;
+                Terminal.println("R19= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R19),1)) ;
+                Terminal.println("R20= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R20),1)) ;
+                Terminal.println("R21= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R21),1)) ;
+                Terminal.println("R22= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R22),1)) ;
+                Terminal.println("R23= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R23),1)) ;
+                Terminal.println("R24= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R24),1)) ;
+                Terminal.println("R25= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R25),1)) ;
+                Terminal.println("R26= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R26),1)) ;
+                Terminal.println("R27= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R27),1)) ;
+                Terminal.println("R28= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R28),1)) ;
+                Terminal.println("R29= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R29),1)) ;
+                Terminal.println("R30= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R30),1)) ;
+                Terminal.print("R31= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R31),1)+"  ") ;
+                Terminal.println("Z= " + StringUtil.to0xHex(getRegisterUnsigned(LegacyRegister.R31)<<8+getRegisterUnsigned(LegacyRegister.R30),2)) ;
+                
+                //Terminal.println("PC="+StringUtil.toHex(,16));
+                throw e; 
+            }
+            
         }
     }
 

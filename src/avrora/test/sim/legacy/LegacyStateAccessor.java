@@ -34,11 +34,12 @@
 
 package avrora.test.sim.legacy;
 
-import avrora.arch.legacy.*;
+import avrora.arch.legacy.LegacyInterpreter;
+import avrora.arch.legacy.LegacyRegister;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.test.sim.StateAccessor;
-import cck.util.Arithmetic;
 
 /**
  * The <code>LegacyStateAccessor</code> class provides access to the state of the AVR simulator

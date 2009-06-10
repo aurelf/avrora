@@ -117,8 +117,11 @@ public class Terminal {
     }
 
     public static void print(int color, String s) {
-        if (color >= MAXCOLORS || color < 0) print(s);
-        else outputColor(color, s);
+        if  (useColors){
+            if (color >= MAXCOLORS || color < 0) print(s);
+            else outputColor(color, s);
+        }else 
+            out.print(s);     
     }
 
     public static void println(int color, String s) {

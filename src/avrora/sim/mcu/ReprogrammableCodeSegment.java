@@ -210,7 +210,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
      * @param pagesize the size of the page offset field of an address into the flash
      */
     public ReprogrammableCodeSegment(String name, int size, AtmelInterpreter bi, int pagesize) {
-        super(name, size, bi);
+        super(name,  size, bi);
         SPMCSR = new SPMCSR_reg();
         mainClock = bi.getMainClock();
         this.pagesize = pagesize;

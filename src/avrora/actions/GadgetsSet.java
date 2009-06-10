@@ -39,7 +39,7 @@ import java.util.TreeSet;
 import avrora.arch.legacy.LegacyInstr;
 
 /**
- * The <code>GadgetsSet</code> used to manage gadgest of code ... // TODO
+ * The <code>GadgetsSet</code> used to manage gadgeset of code ... // TODO
  * 
  * @author A. Francillon
  */
@@ -48,11 +48,17 @@ public class GadgetsSet implements Cloneable {
     TreeSet<Gadget> gadgets;
     //private int gadgetsAdded =0;
     
-    
+    /**
+     * default constructor for the set, it starts empty
+     */
     public GadgetsSet() {
         gadgets = new TreeSet<Gadget>();
     }
 
+    /**
+     * overrides default clone constructor,
+     * returns a new cloned object  
+     */
     public Object clone() {
         GadgetsSet o = null;
         o = new GadgetsSet();
@@ -60,36 +66,60 @@ public class GadgetsSet implements Cloneable {
         return (Object) o;
     }
 
+    /**
+     * used to find the smallest gadget of the set 
+     * what small is, depends on the sorting algorithm, 
+     * it can be i.e. number of instructions or the stack size it uses   
+     * @return the smallest gadget of the set
+     */
     public Gadget smallest() {
         // assuming proper ordering of the tree set
         return (Gadget) this.gadgets.first();
     }
 
-    public Gadget smallestStackSize() {
+    
+    /**
+     * used to find the smallest gadget, when gadgets are sorted by stack size usage
+     * @return the smallest gadget of the set
+     */
+     public Gadget smallestStackSize() {
         // assuming proper ordering of the tree set
         // return (Gadget)this.gadgets.first();
         TreeSet<Gadget> stacksizesorted = new TreeSet<Gadget>(
                 new StackSizeComparator());
         stacksizesorted.addAll(gadgets);
+        if(stacksizesorted.isEmpty()){
+            return null;
+        };
         return stacksizesorted.first();
     }
 
+    /**
+     * add gadgets to the set
+     * @param elem the gadget to add
+     */
     public void addGadget(Gadget elem) {
  
         //gadgetsAdded ++;
         gadgets.add(elem);
     }
 
+    /**
+     * TODO : i don't remember the exact meaning :-P 
+     * in the set all the gadgets that are an intersection with the gadgets in set "set"
+     * @param set set of gadgets to retain from the current set...
+     */
     public void retainAll(GadgetsSet set) {
         gadgets.retainAll(set.gadgets);
     }
 
+    
     public GadgetsSet intersection(GadgetsSet other) {
         GadgetsSet Set = new GadgetsSet();
-        Iterator i = this.iterator();
+        Iterator<Gadget> i = this.iterator();
         while (i.hasNext()) {
             Gadget ig = (Gadget) i.next();
-            Iterator o = other.iterator();
+            Iterator<Gadget> o = other.iterator();
             while (o.hasNext()) {
                 Gadget og = (Gadget) o.next();
                 if (ig.addr == og.addr) {
@@ -175,7 +205,11 @@ public class GadgetsSet implements Cloneable {
     public Iterator<Gadget> iterator() {
         return gadgets.iterator();
     }
-
+    /**
+     * return next available gadget
+     * @param i iterator over the gadget set 
+     * @return next gadget
+     */
     public Gadget nextGadget(Iterator<Gadget> i) {
         return i.next();
     }
@@ -188,6 +222,9 @@ public class GadgetsSet implements Cloneable {
         return gadgets.size();
     }
 
+    /**
+     * prints the gadgets in the set 
+     */    
     public void print() {
         Iterator<Gadget> i = gadgets.iterator();
         //Terminal.println(gadgetsAdded+"gadgets were added while "+gadgets.size() +"are reported ");
@@ -196,6 +233,10 @@ public class GadgetsSet implements Cloneable {
         }
     }
 
+    /**
+     * checks the set for emptyness
+     * @return true if the set is empty
+     */
     public boolean isEmpty() {
         return gadgets.isEmpty();
     }

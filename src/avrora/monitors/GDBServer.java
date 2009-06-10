@@ -117,7 +117,7 @@ public class GDBServer extends MonitorFactory {
             
             simulator = s;
             printer = SimUtil.getPrinter(simulator, "monitor.gdb");
-
+						//printer.enabled=true;
             Set conns = (Set)portMap.get(new Integer(s.getID()));
             // no gdb connections were configured for this node id 
             if ( conns == null )
@@ -229,7 +229,8 @@ public class GDBServer extends MonitorFactory {
                     return false;
                 case 'G':
                     // WRITE REGISTERS
-                    // TODO: implement update of registers
+                    // TODO implement writeAllRegisters
+                    //writeAllRegisters();
                     break;
                 case 'H':
                     // SET THREAD CONTEXT -- THERE IS ONLY ONE
@@ -259,6 +260,7 @@ public class GDBServer extends MonitorFactory {
                 case 'P':
                     // WRITE SELECTED REGISTERS
                     // TODO: implement writes to selected registers
+                    
                     break;
                 case 'q':
                     // QUERY A VARIABLE
@@ -394,6 +396,24 @@ public class GDBServer extends MonitorFactory {
             byte value = s.getRegisterByte(LegacyRegister.getRegisterByNumber(cntr));
             buf.append(StringUtil.toLowHex(value & 0xff, 2));
         }
+
+
+        /**
+         * The <code>writeAllRegisters()</code> method simply writes registers values 
+         * @throws IOException if there is a problem communicating over the socket
+         */
+//        void readAllRegisters() throws IOException {
+//            StringBuffer buf = new StringBuffer(84);
+//            LegacyState s = (LegacyState)simulator.getState();
+//            for ( int cntr = 0; cntr < 32; cntr++ ) {
+//                appendGPR(s, cntr, buf);
+//            }
+//						s.
+//            appendSREG(s, buf);
+//            appendSP(s, buf);
+//            appendPC(s, buf);
+//            sendPacketOK(buf.toString());
+//        }
 
         /**
          * The <code>readOneRegister()</code> method simply reads the value of one register

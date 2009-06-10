@@ -34,6 +34,7 @@ package avrora.sim;
 
 import avrora.arch.legacy.*;
 import avrora.core.Program;
+import avrora.sim.mcu.ATMega128;
 import avrora.sim.util.MulticastProbe;
 import cck.util.Util;
 import java.util.Arrays;

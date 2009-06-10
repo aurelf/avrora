@@ -1,5 +1,7 @@
 package avrora.actions;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -14,11 +16,13 @@ class Payload {
     static final int MAX_PAYLOAD_LENGTH = 100;
 
     // the actual paload
-    Stack<Byte> payload;
-
+    
+    protected Stack<Byte> payload;
+    // a description of the stack in a buyte array 
+    Byte [] buf; 
     // describes the gadgets chaining that will occur chen "executing" the
     // payload
-    GadgetsSet flow;
+    protected GadgetsSet flow;
 
     public Payload() {
         payload = new Stack<Byte>();
@@ -58,6 +62,10 @@ class Payload {
                 // Terminal.println("adding parameter in stack
                 // "+StringUtil.to0xHex(f.val1, 2));
                 payload.add(f.val1);
+                if(this instanceof PayloadLD &&  f.status==Feature.ADDR_HIGH)
+                    ((PayloadLD)this).addrPosInPayload=payload.size();
+                if(this instanceof PayloadLD && f.status==Feature.DATA)
+                    ((PayloadLD)this).dataPosInPayload=payload.size();
                 // we are done with this one ...
                 iterFeatures.remove();
                 // TODO make this clean ...
@@ -93,8 +101,8 @@ class Payload {
             throw new LegacyInstr.InvalidImmediate(1, addr[0] + 255 * addr[1],
                     0, 65536);
         // TODO check endianess ....
-        payload.push(addr[1]);
         payload.push(addr[0]);
+        payload.push(addr[1]);
 
     }
 
@@ -117,7 +125,10 @@ class Payload {
     public void addAddress( Integer addr)
             throws LegacyInstr.InvalidImmediate {
 
-        addAddressToPayload(toBytes(addr));
+        // divide by 2 
+        // value of program counter stored on stack are always
+        // /2 of the address to jump to 
+        addAddressToPayload(toBytes(addr/2));
 
     }
     
@@ -151,15 +162,6 @@ class Payload {
         return array;
     }
 
-    class PayloadLoad extends Payload {
-        // for "Load" payloads value in memory to load
-        byte value;
-
-        // for "Load" payloads, value in memory to load
-        Integer address;
-
-    }
-
     public Byte pop() {
         return payload.pop();
     }
@@ -168,7 +170,8 @@ class Payload {
         return payload.push(item);
     }
 
-    static class PayloadLD extends Payload{
+    
+    static class PayloadMemcpy extends Payload{
         private Integer addr;
         private Integer data;
 
@@ -199,10 +202,129 @@ class Payload {
         public void setDataReg(Integer dataReg) {
             this.dataReg = dataReg;
         }
+        
+    }
+    static class PayloadLD extends Payload{
+        private Integer addr;
+        private Integer data;
+
+        private Integer addrPosInPayload;
+        private Integer dataPosInPayload;
+
+        private Integer addrReg;
+        private Integer dataReg;
+          
+        public String getParamsString() {
+            String Params=new String();            
+            // mind the reversed stack order ....
+            if (buf==null)  
+                buf=this.toByteArray();
+            
+            //int length=buf.length;
+            Terminal.println("Payload Size"+buf.length);
+            Params+="#define  payload_data_pos " + (buf.length-dataPosInPayload)+ "\n";
+            Params+="#define payload_addr_pos " + (buf.length-addrPosInPayload)+ "\n";
+            Params+="#define payload_length " + buf.length+ "\n";
+            return Params;
+        }
+
+        public Integer getAddr() {
+            return addr;
+        }
+        public void setAddr(Integer addr) {
+            this.addr = addr;
+        }
+        public Integer getAddrReg() {
+            return addrReg;
+        }
+        public void setAddrReg(Integer addrReg) {
+            this.addrReg = addrReg;
+        }
+        public Integer getData() {
+            return data;
+        }
+        public void setData(Integer data) {
+            this.data = data;
+        }
+        public Integer getDataReg() {
+            return dataReg;
+        }
+        public void setDataReg(Integer dataReg) {
+            this.dataReg = dataReg;
+        }
     }
 
     public int size() {
         return payload.size();
     }
     
+    
+
+    /**
+     * Print a C shapped array containing payload
+     * 
+     * @param buf
+     */
+
+    public void PrintPayload() {
+        if (buf==null)
+            buf=toByteArray();
+        if (toByteArray()== null) {
+            Terminal.println("//none");
+            return;
+        }
+
+        
+        Terminal.println("uint8_t payload_length=" + buf.length + ";");
+        Terminal.print("uint8_t payload[]={");
+        for (int i = 0; i < buf.length; i++) {
+            Terminal.print(StringUtil.to0xHex(buf[i], 2));
+            if (i < buf.length - 1)
+                Terminal.print(",");
+        }
+        Terminal.println("};");
+    }
+    
+    public void PrintPayload(String fname) {
+        if (buf==null)
+            buf=this.toByteArray();
+        PrintWriter fis;
+        try {
+            fis = new PrintWriter(fname);
+        } catch (FileNotFoundException e) {
+            Terminal.println("file "+fname+" not found " );
+            e.printStackTrace();
+            return;
+        }
+        
+        if (buf == null) {
+            fis.print("//none ");
+            return;
+        }
+        Terminal.print("To file " + fname +"\n");
+        fis.print(getParamsString());
+        fis.print("uint8_t payload[]={");
+        for (int i = 0; i < buf.length; i++) {
+            //Terminal.print(StringUtil.to0xHex(buf[i], 2)+" ");
+            fis.print(StringUtil.to0xHex(buf[i], 2));
+             if (i < buf.length - 1)
+                fis.print(",");
+        }
+        //Terminal.print("\n");       
+        fis.println("};");
+        fis.close();
+    }
+
+    private String getParamsString() {
+            String Params=new String();          
+            if (buf==null)  
+                buf=this.toByteArray();
+              
+            if (this.getClass() ==PayloadLD.class){
+                return ((PayloadLD)this).getParamsString();
+            }
+            Params+="uint8_t payload_length=" + buf.length+ ";\n";
+            return Params;
+    }
+
 }

@@ -104,10 +104,12 @@ public class SimulatorThread extends Thread {
             Terminal.println(": breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
         } catch (Util.Error e) {
             e.report();
-        } finally {
-            if ( synchronizer != null )
-                synchronizer.removeNode(node);
-        }
+        } 
+//        finally {
+//                
+//            if ( synchronizer != null )
+//                synchronizer.removeNode(node);
+//        }
     }
 
     /**
