@@ -55,6 +55,7 @@ public class LiveStackMonitor extends MonitorFactory {
     public class Mon implements Monitor {
         private final SPWatch SPH_watch;
         private final SPWatch SPL_watch;
+        private final TESTWatch TEST_watch;
 
         private boolean SPinit;
         private int minSP = 0;
@@ -64,14 +65,21 @@ public class LiveStackMonitor extends MonitorFactory {
         Mon(Simulator sim) {
             SPH_watch = new SPWatch();
             SPL_watch = new SPWatch();
+						TEST_watch = new TESTWatch();
 
             SPProbe probe = new SPProbe();
 
             // insert watches for SP registers
             MCUProperties props = sim.getMicrocontroller().getProperties();
             simulator = sim;
-            simulator.insertWatch(SPH_watch, props.getIOReg("SPH"));
-            sim.insertWatch(SPL_watch, props.getIOReg("SPL"));
+
+						Terminal.println("props.getIOReg(SPH)="+
+														 StringUtil.addrToString(props.getIOReg("SPH"))+ " ("+props.getIOReg("SPH")+")");
+						Terminal.println("props.getIOReg(SPL)="+
+														 StringUtil.addrToString(props.getIOReg("SPL"))+ " ("+props.getIOReg("SPL")+")");
+            simulator.insertWatch(SPH_watch, props.getIOReg("SPH")+0x20);
+            simulator.insertWatch(TEST_watch, 0x5E);
+            sim.insertWatch(SPL_watch, props.getIOReg("SPL")+0x20);
             sim.getInterpreter().getInterruptTable().insertProbe(new IntProbe());
 
             // insert probes to catch "implicit" updates to SP for certain instructions
@@ -112,37 +120,52 @@ public class LiveStackMonitor extends MonitorFactory {
             boolean written;
             // fire when either SPH or SPL is written
             public void fireAfterWrite(State state, int data_addr, byte value) {
+								//Terminal.println("fire ("+state.getCycles()+") after write addr:"+StringUtil.addrToString(data_addr)+" value "+ value); 
                 written = true;
                 checkSPWrite(state);
+            }
+        }
+
+        class TESTWatch extends Simulator.Watch.Empty {
+            boolean written;
+            // fire when either SPH or SPL is written
+            public void fireAfterWrite(State state, int data_addr, byte value) {
+								//Terminal.println("watch ("+state.getCycles()+") write addr:"+StringUtil.addrToString(data_addr)+" val: "+ value+"at PC="
+								//+StringUtil.addrToString(state.getPC())); 
             }
         }
 
         class IntProbe extends Simulator.InterruptProbe.Empty {
             // fire when any interrupt is invoked
             public void fireAfterInvoke(State s, int inum) {
-                newSP(s.getSP());
+								//TermUtil.reportQuantity("(Int probe) Fire ("+s.getCycles()+") after invoke Cur SP : ",StringUtil.addrToString(s.getSP()),""); 
+                newSP(s.getCycles(),s.getSP());
             }
         }
 
         class SPProbe extends Simulator.Probe.Empty {
             // fire after a call, push, pop, or ret instruction
             public void fireAfter(State state, int pc) {
-                newSP(state.getSP());
+							  //TermUtil.reportQuantity("SP Probe Fire ("+state.getCycles()+") after Cur SP : ",StringUtil.addrToString(state.getSP()),""); 
+                newSP(state.getCycles(),state.getSP());
             }
         }
 
         void checkSPWrite(State state) {
+						//TermUtil.reportQuantity("checkSPWrite ("+state.getCycles()+") Cur SP : ",StringUtil.addrToString(state.getSP()),""); 
             // only record SP values after both SPH and SPL written
             if ( SPH_watch.written && SPL_watch.written ) {
-                newSP(state.getSP());
+                newSP(state.getCycles(),state.getSP());
                 SPH_watch.written = false;
                 SPL_watch.written = false;
             }
         }
 
-        void newSP(int sp) {
+        void newSP(long cycles, int sp) {
+						//Terminal.println("newSP cycles="+cycles+" SP : "+sp); 
+						// CSV for  gnuplot
+						Terminal.println(cycles+" "+sp); 
             // record a new stack pointer value
-						TermUtil.reportQuantity("Cur SP : ",StringUtil.addrToString(sp),""); 
             if ( !SPinit ) {
                 maxSP = sp;
                 minSP = sp;
