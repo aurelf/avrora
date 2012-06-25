@@ -15,7 +15,7 @@ cd bin
 
 JARFILE=avrora-$RELEASE.jar
 
-jar cmf MANIFEST.MF ../jars/$JARFILE avrora cck
+jar cmf MANIFEST.MF ../$JARFILE avrora cck
 if [ ! "$?" = 0 ]; then
     echo "  -> Error: could not build jar file $JARFILE."
     exit 1

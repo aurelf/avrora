@@ -1,0 +1,10 @@
+This git tree comes from the old avrora cvs tree that was imported into git using the update.sh command (provided in the root of the tree)
+This git repository includes a branch "Find Gadgets" that includes a tool 
+to search for gadgets in AVR binaries using heuristics, that tool
+was also automatically constructing final payloads with gadgets found.
+It was efficient but probably not optimal... The tool is based on
+AVRORA, which already took care of the disassembly. 
+
+This tool was used in "Code injection attacks on harvard-architecture devices"
+A. Francillon, C. Castelluccia. ACM CCS'08
+
